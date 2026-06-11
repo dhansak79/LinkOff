@@ -37,8 +37,12 @@ const handleSortByRecent = async (checkNeedUpdate) => {
 }
 
 const extractPostText = (el) => {
+  const textEl =
+    el.querySelector('[data-testid="expandable-text-box"]') ??
+    el.querySelector('.update-components-text') ??
+    el
   const tmp = document.createElement('div')
-  tmp.innerHTML = el.innerHTML
+  tmp.innerHTML = textEl.innerHTML
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/(?:p|div|li|h[1-6]|blockquote)>/gi, '\n')
   return tmp.textContent
@@ -59,7 +63,7 @@ const addRevealBanner = (post, signals) => {
   btn.className = 'linkoff-slop-reveal'
   btn.textContent = 'Reveal post'
   btn.onclick = () => {
-    post.classList.remove('linkoff-slop-soft-hide', 'hide', 'dim')
+    post.classList.remove('hide', 'dim', 'linkoff-slop-soft-hide')
     post.dataset.slopRevealed = true
     banner.remove()
   }

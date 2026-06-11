@@ -59,10 +59,17 @@
   zoom: 1;
 }
 
-.linkoff-slop-soft-hide {
-  opacity: 0 !important;
+/* Visually hides the post while keeping it in the layout (non-zero dimensions).
+   clip-path clips to nothing visually; max-height:4px keeps the bounding box
+   non-zero so LinkedIn's IntersectionObserver sees isIntersecting:true and
+   does not reset the "see more" expanded state.
+   The [class] attribute selector raises specificity to match .hide[class]. */
+.linkoff-slop-soft-hide[class] {
+  display: block !important;
+  clip-path: inset(50%) !important;
+  max-height: 4px !important;
+  overflow: hidden !important;
   pointer-events: none !important;
-  user-select: none !important;
 }
 
 .linkoff-slop-collapsed {

@@ -55,6 +55,7 @@ const baseConfig = { 'feed-keywords': '', 'hide-by-age': 'disabled' }
 
 // ---------------------------------------------------------------------------
 // detect-slop: collapse post with a reveal banner (soft mode)
+// Uses linkoff-slop-soft-hide (not display:none) to preserve LinkedIn DOM state
 // ---------------------------------------------------------------------------
 
 describe('detect-slop - collapse with reveal banner', () => {
@@ -85,7 +86,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     expect(posts[0].previousElementSibling?.querySelector('.linkoff-slop-reveal')).not.toBeNull()
   })
 
-  it('clicking reveal makes the post visible and removes the banner', () => {
+  it('clicking reveal removes soft-hide class and removes the banner', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
@@ -191,10 +192,34 @@ describe('detect-slop - collapse with reveal banner', () => {
 
     expect(posts[0].classList.contains('linkoff-slop-soft-hide')).toBe(true)
   })
+
+  it('does not flag a clean post when LinkedIn reply-suggestion chips add emoji noise to the DOM', () => {
+    // LinkedIn injects auto-generated reply chips (🎉🎉🎉 etc.) into the post's DOM
+    // subtree. extractPostText must scope to [data-testid="expandable-text-box"] so
+    // those chips don't inflate the emoji count and trigger a false positive.
+    const postWithReplySuggestions = `
+      <div data-testid="expandable-text-box">
+        I grew my first strawberry from my balcony garden!
+      </div>
+      <div data-testid="reply-recommendations-container">
+        <button>Congratulations! 🎉</button>
+        <button>🎉 Excited for you</button>
+        <button>🎉🎉🎉</button>
+        <button>👏 Well deserved!</button>
+        <button>🌟 Amazing result!</button>
+      </div>
+    `
+    const posts = buildFeedDOM([postWithReplySuggestions, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    expect(posts[0].classList.contains('linkoff-slop-soft-hide')).toBe(false)
+  })
 })
 
 // ---------------------------------------------------------------------------
-// hide-slop: completely hidden, no reveal banner (hard mode)
+// hide-slop: completely hidden via display:none, no reveal banner (hard mode)
 // ---------------------------------------------------------------------------
 
 describe('hide-slop - completely hidden', () => {
