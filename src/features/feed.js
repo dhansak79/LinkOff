@@ -1,10 +1,11 @@
 import {
   DROPDOWN_TRIGGER_SELECTOR,
-  FEED_SELECTOR,
+  FEED_SELECTOR_CANDIDATES,
   POST_SELECTOR,
   RECENT_OPTION_SELECTOR,
 } from '../constants.js'
 import {
+  findElement,
   getCustomSelector,
   hidePost,
   removeHideClasses,
@@ -60,6 +61,7 @@ const blockPostsByKeywords = (keywords, mode, disablePostCount) => {
   }
 
   const runBlockPosts = () => {
+    if (!findElement(FEED_SELECTOR_CANDIDATES)) return
     if (runs % 10 === 0) resetBlockedPosts()
     const posts = document.querySelectorAll(
       getCustomSelector(POST_SELECTOR, 'pristine')
@@ -80,12 +82,12 @@ const blockPostsByKeywords = (keywords, mode, disablePostCount) => {
 
 const toggleFeed = async (shown) => {
   if (!window.location.pathname.startsWith('/feed/')) return
-
+  const feed = findElement(FEED_SELECTOR_CANDIDATES)
   if (shown) {
-    document.querySelector(FEED_SELECTOR)?.classList.remove('hide')
+    feed?.classList.remove('hide')
     console.log(`LinkOff: feed enabled`)
   } else {
-    document.querySelector(FEED_SELECTOR)?.classList.add('hide')
+    feed?.classList.add('hide')
     console.log(`LinkOff: feed disabled`)
   }
 }
