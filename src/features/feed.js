@@ -38,7 +38,9 @@ const handleSortByRecent = async (checkNeedUpdate) => {
 
 const extractPostText = (el) => {
   const tmp = document.createElement('div')
-  tmp.innerHTML = el.innerHTML.replace(/<br\s*\/?>/gi, '\n')
+  tmp.innerHTML = el.innerHTML
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(?:p|div|li|h[1-6]|blockquote)>/gi, '\n')
   return tmp.textContent
 }
 

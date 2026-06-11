@@ -23,6 +23,17 @@ const SLOP_POST = [
   '🚀 💡 🔥 💪 ⚡ 🎯',
 ].join('<br>')
 
+// Slop post using <div> elements for line breaks (not <br>), as LinkedIn does
+// for checklist-style posts. Tests that extractPostText handles block elements.
+const SLOP_POST_DIVS = [
+  '<div>🚨 Exciting opportunity ahead 🚨</div>',
+  '<div>✅ Excellent benefits package</div>',
+  '<div>✅ Amazing collaborative team</div>',
+  '<div>✅ Fantastic company culture</div>',
+  '<div>✨ Someone who loves connecting people</div>',
+  '<div>✨ A person who gets things done efficiently</div>',
+].join('')
+
 const CLEAN_POST = 'We shipped a new feature today. The team is proud of the work done.'
 
 let doFeed
@@ -170,6 +181,15 @@ describe('detect-slop - collapse with reveal banner', () => {
     vi.advanceTimersByTime(350)
 
     expect(window.alert).not.toHaveBeenCalled()
+  })
+
+  it('collapses a sloppy post whose line breaks are <div> elements rather than <br>', () => {
+    const posts = buildFeedDOM([SLOP_POST_DIVS, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    expect(posts[0].classList.contains('linkoff-slop-soft-hide')).toBe(true)
   })
 })
 
