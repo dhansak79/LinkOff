@@ -1,5 +1,4 @@
 import { SLOP_PHRASES } from './slop-keywords.js'
-import { NAIF_PHRASES } from './ai-fanboy-keywords.js'
 
 const EMOJI_THRESHOLD = 4
 const MIN_LINES_FOR_PATTERN = 5
@@ -9,17 +8,9 @@ const HEAVY_LINE_RATIO = 0.8
 
 export const SLOP_THRESHOLD = 2
 
-const PHRASE_CAP = 3
-const NAIF_THRESHOLD = 3
-
 const countSlopPhrases = (text) => {
   const lower = text.toLowerCase()
   return SLOP_PHRASES.filter((phrase) => lower.includes(phrase)).length
-}
-
-const countNaifPhrases = (text) => {
-  const lower = text.toLowerCase()
-  return NAIF_PHRASES.filter((phrase) => lower.includes(phrase)).length
 }
 
 const hasHighEmojiDensity = (text) => {
@@ -44,10 +35,9 @@ const linePatternScore = (text) => {
 }
 
 export const getSlopScore = (text) =>
-  Math.min(countSlopPhrases(text), PHRASE_CAP) +
+  (countSlopPhrases(text) > 0 ? SLOP_THRESHOLD : 0) +
   (hasHighEmojiDensity(text) ? 1 : 0) +
-  linePatternScore(text) +
-  (countNaifPhrases(text) >= NAIF_THRESHOLD ? SLOP_THRESHOLD : 0)
+  linePatternScore(text)
 
 export const getSlopSignals = (text) => {
   const signals = []
@@ -57,8 +47,6 @@ export const getSlopSignals = (text) => {
   const lps = linePatternScore(text)
   if (lps === 2) signals.push('extreme line stacking')
   else if (lps === 1) signals.push('line stacking')
-  const naifCount = countNaifPhrases(text)
-  if (naifCount >= NAIF_THRESHOLD) signals.push(`AI hype (${naifCount})`)
   return signals
 }
 

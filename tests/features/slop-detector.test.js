@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { getSlopScore, getSlopSignals, isSlop } from '../../src/features/slop-detector.js'
 
 // ---------------------------------------------------------------------------
-// Phrase signal — binary: any matching phrase = 1 point regardless of count
+// Phrase signal — binary: any matching phrase scores SLOP_THRESHOLD (triggers alone)
 // ---------------------------------------------------------------------------
 
 describe('getSlopScore - slop phrases', () => {
@@ -10,46 +10,34 @@ describe('getSlopScore - slop phrases', () => {
     expect(getSlopScore('Had a great meeting today. Really enjoyed the discussion about our roadmap.')).toBe(0)
   })
 
-  it('scores above 0 when a known slop phrase is present', () => {
-    expect(getSlopScore("In today's fast-paced world, we need to adapt.")).toBeGreaterThan(0)
+  it('scores SLOP_THRESHOLD when a known slop phrase is present', () => {
+    expect(getSlopScore("In today's fast-paced world, we need to adapt.")).toBeGreaterThanOrEqual(2)
   })
 
-  it('scores above 0 for "let that sink in"', () => {
-    expect(getSlopScore('Let that sink in.')).toBeGreaterThan(0)
+  it('triggers for "let that sink in"', () => {
+    expect(isSlop('Let that sink in.')).toBe(true)
   })
 
-  it('scores above 0 for "game-changer"', () => {
-    expect(getSlopScore('This tool is a game-changer for productivity.')).toBeGreaterThan(0)
+  it('triggers for "game-changer"', () => {
+    expect(isSlop('This tool is a game-changer for productivity.')).toBe(true)
   })
 
-  it('scores above 0 for "thought leadership"', () => {
-    expect(getSlopScore('Real thought leadership is rare these days.')).toBeGreaterThan(0)
+  it('triggers for "thought leadership"', () => {
+    expect(isSlop('Real thought leadership is rare these days.')).toBe(true)
   })
 
-  it('scores above 0 for "key takeaways"', () => {
-    expect(getSlopScore('Key takeaways from the conference:')).toBeGreaterThan(0)
+  it('triggers for "key takeaways"', () => {
+    expect(isSlop('Key takeaways from the conference:')).toBe(true)
   })
 
-  it('each additional phrase adds one more point to the score', () => {
+  it('a single phrase match alone crosses the slop threshold', () => {
+    expect(isSlop("In today's fast-paced world, we need to adapt.")).toBe(true)
+  })
+
+  it('phrase score is the same regardless of how many phrases match', () => {
     const one = getSlopScore("In today's fast-paced world, adapting is key.")
-    const two = getSlopScore("In today's fast-paced world, let that sink in.")
-    const three = getSlopScore("In today's fast-paced world, let that sink in. Game-changer!")
-    expect(two).toBeGreaterThan(one)
-    expect(three).toBeGreaterThan(two)
-  })
-
-  it('scores exactly 2 for two phrase matches', () => {
-    expect(getSlopScore("In today's fast-paced world, let that sink in.")).toBe(2)
-  })
-
-  it('caps phrase score at 3 regardless of how many phrases match', () => {
-    // 5+ phrase matches — score must not exceed PHRASE_CAP
-    const text = "In today's fast-paced world, let that sink in. Game-changer! Leverage thought leadership. Key takeaways."
-    expect(getSlopScore(text)).toBe(3)
-  })
-
-  it('two phrase matches alone cross the slop threshold without any other signal', () => {
-    expect(isSlop("In today's fast-paced world, let that sink in.")).toBe(true)
+    const five = getSlopScore("In today's fast-paced world, let that sink in. Game-changer! Leverage thought leadership. Key takeaways.")
+    expect(one).toBe(five)
   })
 })
 
@@ -251,8 +239,12 @@ describe('isSlop', () => {
     expect(isSlop('Just shipped a new feature today. The team worked really hard on it and I am proud of what we built.')).toBe(false)
   })
 
-  it('returns false when only one signal is present', () => {
-    expect(isSlop("In today's fast-paced world, we need to adapt. This is a normal follow-on sentence expressing a single normal thought.")).toBe(false)
+  it('returns true when a single slop phrase is present', () => {
+    expect(isSlop("In today's fast-paced world, we need to adapt.")).toBe(true)
+  })
+
+  it('returns false when no signals are present', () => {
+    expect(isSlop('We shipped a new feature today. The team is proud of the work done.')).toBe(false)
   })
 
   it('returns true for a post combining phrase slop with high emoji density', () => {
@@ -338,42 +330,6 @@ describe('isSlop - numbered list CTA pattern', () => {
 })
 
 // ---------------------------------------------------------------------------
-// NAIF signal — AI hype phrases, threshold 3 (fires when count >= 3, adds +1)
-// ---------------------------------------------------------------------------
-
-describe('getSlopScore - NAIF phrases', () => {
-  it('scores 0 for a post with 2 NAIF phrases (below threshold)', () => {
-    expect(getSlopScore('ChatGPT just changed my workflow. Vibe coding is amazing.')).toBe(0)
-  })
-
-  it('scores enough to trigger for a post with exactly 3 NAIF phrases and no other signals', () => {
-    const text = 'ChatGPT just transformed how I work. I asked ChatGPT to rewrite my strategy. Vibe coding is the future.'
-    expect(getSlopScore(text)).toBeGreaterThanOrEqual(2)
-  })
-
-  it('scores the same for 5 NAIF phrases as 3 — NAIF contribution is capped', () => {
-    const three = getSlopScore('ChatGPT just transformed how I work. I asked ChatGPT to rewrite my strategy. Vibe coding is the future.')
-    const five = getSlopScore('ChatGPT just changed everything. I asked ChatGPT for help. Vibe coding rules. Agents will replace us. The future of work is AI.')
-    expect(five).toBe(three)
-  })
-
-  it('crosses the slop threshold when 3 NAIF phrases combine with 1 slop phrase', () => {
-    const text = "In today's fast-paced world, ChatGPT just changed everything. I asked ChatGPT for help. Vibe coding rules."
-    expect(getSlopScore(text)).toBeGreaterThanOrEqual(2)
-  })
-
-  it('isSlop returns true when NAIF signal combines with a slop phrase', () => {
-    const text = "In today's fast-paced world, ChatGPT just changed everything. I asked ChatGPT for help. Vibe coding rules."
-    expect(isSlop(text)).toBe(true)
-  })
-
-  it('isSlop returns true for a post with only 3 NAIF phrases and no other signals', () => {
-    const text = 'ChatGPT just transformed how I work. I asked ChatGPT to rewrite my strategy. Vibe coding is the future.'
-    expect(isSlop(text)).toBe(true)
-  })
-})
-
-// ---------------------------------------------------------------------------
 // getSlopSignals — human-readable labels for each triggered signal
 // ---------------------------------------------------------------------------
 
@@ -408,22 +364,6 @@ describe('getSlopSignals', () => {
   it('does not include "extreme line stacking" for moderate stacking', () => {
     const text = ['Hook.', 'Second.', 'Third.', 'Fourth.', 'Fifth.', 'Sixth.'].join('\n')
     expect(getSlopSignals(text)).not.toContain('extreme line stacking')
-  })
-
-  it('includes "AI hype (n)" when NAIF phrase count reaches threshold', () => {
-    const text = 'ChatGPT just transformed how I work. I asked ChatGPT to rewrite my strategy. Vibe coding is the future.'
-    expect(getSlopSignals(text)).toContain('AI hype (3)')
-  })
-
-  it('does not include "AI hype" when NAIF count is below threshold', () => {
-    const text = 'ChatGPT just changed my workflow. Vibe coding is cool.'
-    expect(getSlopSignals(text).some((s) => s.startsWith('AI hype'))).toBe(false)
-  })
-
-  it('includes the NAIF count in the signal label', () => {
-    const text = 'ChatGPT just changed things. I asked ChatGPT a question. Vibe coding is everywhere. Agents will take over.'
-    const signals = getSlopSignals(text)
-    expect(signals).toContain('AI hype (4)')
   })
 
   it('returns all triggered signals when multiple fire', () => {

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { MIN_POST_COUNT } from '../../src/constants.js'
 
 // Current LinkedIn DOM uses data-testid="mainFeed" + data-lazy-mount-id children.
 // Legacy DOM used componentkey + data-display-contents="true" children.
@@ -131,8 +132,8 @@ describe('runBlockPosts - keyword matching', () => {
 // ---------------------------------------------------------------------------
 
 describe('runBlockPosts - post count prompt', () => {
-  it('shows an alert when fewer than 6 posts are loaded in hide mode', () => {
-    buildFeedDOM(['Post 1', 'Post 2', 'Post 3'])
+  it('shows an alert when at or below MIN_POST_COUNT posts are loaded in hide mode', () => {
+    buildFeedDOM(Array.from({ length: MIN_POST_COUNT }, (_, i) => `Post ${i + 1}`))
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-promoted': true })
     vi.advanceTimersByTime(350)
@@ -140,8 +141,8 @@ describe('runBlockPosts - post count prompt', () => {
     expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('Scroll down'))
   })
 
-  it('does not show the alert when there are 6 or more posts', () => {
-    buildFeedDOM(['P1', 'P2', 'P3', 'P4', 'P5', 'P6'])
+  it('does not show the alert when above MIN_POST_COUNT posts are loaded', () => {
+    buildFeedDOM(Array.from({ length: MIN_POST_COUNT + 1 }, (_, i) => `P${i + 1}`))
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-promoted': true })
     vi.advanceTimersByTime(350)
@@ -163,7 +164,7 @@ describe('runBlockPosts - post count prompt', () => {
   })
 
   it('shows the alert only once when the interval fires multiple times', () => {
-    buildFeedDOM(['Post 1', 'Post 2', 'Post 3'])
+    buildFeedDOM(Array.from({ length: MIN_POST_COUNT }, (_, i) => `Post ${i + 1}`))
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-promoted': true })
     vi.advanceTimersByTime(350) // first tick → alert fires, postCountPrompted = true
@@ -182,8 +183,8 @@ describe('runBlockPosts - post count prompt', () => {
     expect(window.alert).not.toHaveBeenCalled()
   })
 
-  it('shows an alert when there are exactly 5 posts in hide mode', () => {
-    buildFeedDOM(['P1', 'P2', 'P3', 'P4', 'P5'])
+  it('shows an alert when there are exactly MIN_POST_COUNT posts in hide mode', () => {
+    buildFeedDOM(Array.from({ length: MIN_POST_COUNT }, (_, i) => `P${i + 1}`))
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-promoted': true })
     vi.advanceTimersByTime(350)

@@ -1,6 +1,7 @@
 import {
   DROPDOWN_TRIGGER_SELECTOR,
   FEED_SELECTOR_CANDIDATES,
+  MIN_POST_COUNT,
   POST_SELECTOR,
   RECENT_OPTION_SELECTOR,
 } from '../constants.js'
@@ -127,7 +128,7 @@ const blockPostsByKeywords = (keywords, mode, disablePostCount, detectSlop, hide
     const posts = document.querySelectorAll(
       getCustomSelector(POST_SELECTOR, 'pristine')
     )
-    if (posts.length > 5 || mode == 'dim') {
+    if (posts.length > MIN_POST_COUNT || mode == 'dim') {
       posts.forEach(applyKeywordToPost)
     } else if (keywords.length) {
       promptScrollIfNeeded()
