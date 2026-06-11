@@ -8,9 +8,11 @@ const HEAVY_LINE_RATIO = 0.8
 
 export const SLOP_THRESHOLD = 2
 
-const hasSlopPhrase = (text) => {
+const PHRASE_CAP = 3
+
+const countSlopPhrases = (text) => {
   const lower = text.toLowerCase()
-  return SLOP_PHRASES.some((phrase) => lower.includes(phrase))
+  return SLOP_PHRASES.filter((phrase) => lower.includes(phrase)).length
 }
 
 const hasHighEmojiDensity = (text) => {
@@ -35,13 +37,14 @@ const linePatternScore = (text) => {
 }
 
 export const getSlopScore = (text) =>
-  (hasSlopPhrase(text) ? 1 : 0) +
+  Math.min(countSlopPhrases(text), PHRASE_CAP) +
   (hasHighEmojiDensity(text) ? 1 : 0) +
   linePatternScore(text)
 
 export const getSlopSignals = (text) => {
   const signals = []
-  if (hasSlopPhrase(text)) signals.push('buzzword phrases')
+  const phraseCount = countSlopPhrases(text)
+  if (phraseCount > 0) signals.push(`buzzword phrases (${phraseCount})`)
   if (hasHighEmojiDensity(text)) signals.push('emoji overload')
   const lps = linePatternScore(text)
   if (lps === 2) signals.push('extreme line stacking')

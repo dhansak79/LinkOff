@@ -30,10 +30,26 @@ describe('getSlopScore - slop phrases', () => {
     expect(getSlopScore('Key takeaways from the conference:')).toBeGreaterThan(0)
   })
 
-  it('phrase signal is binary — one phrase and five phrases score the same', () => {
-    const one = getSlopScore('This is a game-changer.')
-    const five = getSlopScore("game-changer, thought leadership, leverage, let that sink in, key takeaways")
-    expect(one).toBe(five)
+  it('each additional phrase adds one more point to the score', () => {
+    const one = getSlopScore("In today's fast-paced world, adapting is key.")
+    const two = getSlopScore("In today's fast-paced world, let that sink in.")
+    const three = getSlopScore("In today's fast-paced world, let that sink in. Game-changer!")
+    expect(two).toBeGreaterThan(one)
+    expect(three).toBeGreaterThan(two)
+  })
+
+  it('scores exactly 2 for two phrase matches', () => {
+    expect(getSlopScore("In today's fast-paced world, let that sink in.")).toBe(2)
+  })
+
+  it('caps phrase score at 3 regardless of how many phrases match', () => {
+    // 5+ phrase matches — score must not exceed PHRASE_CAP
+    const text = "In today's fast-paced world, let that sink in. Game-changer! Leverage thought leadership. Key takeaways."
+    expect(getSlopScore(text)).toBe(3)
+  })
+
+  it('two phrase matches alone cross the slop threshold without any other signal', () => {
+    expect(isSlop("In today's fast-paced world, let that sink in.")).toBe(true)
   })
 })
 
@@ -330,8 +346,13 @@ describe('getSlopSignals', () => {
     expect(getSlopSignals('We shipped a new feature. The team worked hard on it.')).toEqual([])
   })
 
-  it('includes "buzzword phrases" when a slop phrase matches', () => {
-    expect(getSlopSignals("In today's fast-paced world, we need to adapt.")).toContain('buzzword phrases')
+  it('includes "buzzword phrases (n)" when a slop phrase matches', () => {
+    const signals = getSlopSignals("In today's fast-paced world, we need to adapt.")
+    expect(signals.some((s) => s.startsWith('buzzword phrases'))).toBe(true)
+  })
+
+  it('includes the phrase count in the buzzword signal label', () => {
+    expect(getSlopSignals("In today's fast-paced world, let that sink in.")).toContain('buzzword phrases (2)')
   })
 
   it('includes "emoji overload" when emoji density exceeds threshold', () => {
@@ -363,7 +384,7 @@ describe('getSlopSignals', () => {
       'Line four.',
     ].join('\n')
     const signals = getSlopSignals(text)
-    expect(signals).toContain('buzzword phrases')
+    expect(signals.some((s) => s.startsWith('buzzword phrases'))).toBe(true)
     expect(signals).toContain('emoji overload')
     expect(signals).toContain('line stacking')
   })
