@@ -37,20 +37,44 @@ const handleSortByRecent = async (checkNeedUpdate) => {
 }
 
 const extractPostText = (el) => {
-  const clone = el.cloneNode(true)
-  clone.querySelectorAll('br').forEach((br) => br.replaceWith('\n'))
-  return clone.textContent
+  const tmp = document.createElement('div')
+  tmp.innerHTML = el.innerHTML.replace(/<br\s*\/?>/gi, '\n')
+  return tmp.textContent
 }
 
-const warnSlop = (post, signals) => {
-  const warning = document.createElement('div')
-  warning.className = 'linkoff-slop-warning'
-  warning.textContent = `🚨 Possible AI slop detected ↓↓↓ — ${signals.join(', ')} — click to dismiss`
-  warning.onclick = () => warning.remove()
-  post.prepend(warning)
+const extractAuthorName = (post) =>
+  post.querySelector('a[href*="/in/"] strong')?.textContent?.trim() ?? null
+
+const addRevealBanner = (post, signals) => {
+  if (post.previousElementSibling?.classList.contains('linkoff-slop-collapsed')) return
+  const author = extractAuthorName(post)
+  const banner = document.createElement('div')
+  banner.className = 'linkoff-slop-collapsed'
+
+  const row = document.createElement('div')
+  row.className = 'linkoff-slop-row'
+  const btn = document.createElement('button')
+  btn.className = 'linkoff-slop-reveal'
+  btn.textContent = 'Reveal post'
+  btn.onclick = () => {
+    post.classList.remove('linkoff-slop-soft-hide', 'hide', 'dim')
+    post.dataset.slopRevealed = true
+    banner.remove()
+  }
+  row.append(document.createTextNode(`🤖 AI slop hidden (${signals.join(', ')})`), btn)
+  banner.append(row)
+
+  if (author) {
+    const authorEl = document.createElement('div')
+    authorEl.className = 'linkoff-slop-author'
+    authorEl.textContent = author
+    banner.append(authorEl)
+  }
+
+  post.before(banner)
 }
 
-const blockPostsByKeywords = (keywords, mode, disablePostCount, detectSlop) => {
+const blockPostsByKeywords = (keywords, mode, disablePostCount, detectSlop, hideSlop) => {
   if (oldFeedKeywords.some((kw) => !keywords.includes(kw))) {
     resetShownPosts()
   }
@@ -58,10 +82,26 @@ const blockPostsByKeywords = (keywords, mode, disablePostCount, detectSlop) => {
   oldFeedKeywords = keywords
 
   const applyKeywordToPost = (post) => {
-    if (keywords.some((keyword) => post.outerHTML.indexOf(keyword) !== -1)) {
+    const isKeywordMatch = keywords.some((keyword) => post.outerHTML.indexOf(keyword) !== -1)
+    let slopSignals = null
+    const shouldCheckSlop = (detectSlop || hideSlop) && !post.dataset.slopRevealed
+    if (shouldCheckSlop) {
+      const text = extractPostText(post)
+      if (isSlop(text)) slopSignals = getSlopSignals(text)
+    }
+    if (isKeywordMatch) {
       hidePost(post, mode)
+    } else if (slopSignals) {
+      if (hideSlop) {
+        hidePost(post, mode)
+      } else {
+        post.classList.add('linkoff-slop-soft-hide')
+        post.dataset.hidden = true
+        addRevealBanner(post, slopSignals)
+      }
     } else {
       removeHideClasses(post)
+      post.classList.remove('linkoff-slop-soft-hide')
       post.dataset.hidden = false
     }
   }
@@ -86,19 +126,9 @@ const blockPostsByKeywords = (keywords, mode, disablePostCount, detectSlop) => {
     } else if (keywords.length) {
       promptScrollIfNeeded()
     }
-    if (detectSlop) {
-      document
-        .querySelectorAll(getCustomSelector(POST_SELECTOR, 'all'))
-        .forEach((post) => {
-          if (post.dataset.slopChecked) return
-          post.dataset.slopChecked = true
-          const text = extractPostText(post)
-          if (isSlop(text)) warnSlop(post, getSlopSignals(text))
-        })
-    }
   }
 
-  if (keywords.length || detectSlop)
+  if (keywords.length || detectSlop || hideSlop)
     feedInterval = setInterval(() => {
       runBlockPosts()
       runs++
@@ -136,7 +166,7 @@ const handleFilterFeed = (mode, config) => {
 
   resetBlockedPosts()
   clearInterval(feedInterval)
-  blockPostsByKeywords(feedKeywords, mode, config['disable-postcount-prompt'], !!config['detect-slop'])
+  blockPostsByKeywords(feedKeywords, mode, config['disable-postcount-prompt'], !!config['detect-slop'], !!config['hide-slop'])
 }
 
 export default (checkNeedUpdate, enabled, mode, config) => {

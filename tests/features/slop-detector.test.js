@@ -269,6 +269,59 @@ describe('isSlop', () => {
 })
 
 // ---------------------------------------------------------------------------
+// Keycap emoji numbers — 1️⃣–9️⃣ use U+20E3 which \p{Emoji_Presentation} misses
+// ---------------------------------------------------------------------------
+
+describe('getSlopScore - keycap emoji numbers', () => {
+  it('counts 5 keycap emojis as exceeding the emoji threshold', () => {
+    // All on one line so line stacking cannot score — only emoji signal fires
+    // 1️⃣–5️⃣ each contain U+20E3 (Combining Enclosing Keycap), threshold is >4
+    const text = '1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ some content here without any phrases'
+    expect(getSlopScore(text)).toBeGreaterThan(0)
+  })
+
+  it('does not trigger on exactly 4 keycap emojis', () => {
+    // threshold is strictly > 4, so 4 should not score
+    const text = '1️⃣ 2️⃣ 3️⃣ 4️⃣ some content here without any phrases'
+    expect(getSlopScore(text)).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// LinkedIn CTA phrases — "join the journey", "repost to", "save this"
+// ---------------------------------------------------------------------------
+
+describe('getSlopScore - LinkedIn CTA phrases', () => {
+  it('scores above 0 for "join the journey"', () => {
+    expect(getSlopScore('Follow Ivan Davidov to join the journey.')).toBeGreaterThan(0)
+  })
+
+  it('scores above 0 for "repost to"', () => {
+    expect(getSlopScore('Repost to help another engineer level up.')).toBeGreaterThan(0)
+  })
+
+  it('scores above 0 for "save this"', () => {
+    expect(getSlopScore('Save this for your next architecture review.')).toBeGreaterThan(0)
+  })
+})
+
+describe('isSlop - numbered list CTA pattern', () => {
+  it('detects a numbered-emoji list with LinkedIn CTA phrases', () => {
+    // Classic: 8 keycap items + "join the journey" / "repost to" at the bottom
+    const post = [
+      '1️⃣ seed state in one call',
+      '2️⃣ mock the response inline',
+      '3️⃣ attach auth once',
+      '4️⃣ wait for the API to settle',
+      '5️⃣ block the heavy assets',
+      'repost to help another qa architect level up',
+      'join the journey',
+    ].join('\n')
+    expect(isSlop(post)).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // getSlopSignals — human-readable labels for each triggered signal
 // ---------------------------------------------------------------------------
 

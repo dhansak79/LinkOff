@@ -13,8 +13,11 @@ const hasSlopPhrase = (text) => {
   return SLOP_PHRASES.some((phrase) => lower.includes(phrase))
 }
 
-const hasHighEmojiDensity = (text) =>
-  (text.match(/\p{Emoji_Presentation}/gu) ?? []).length > EMOJI_THRESHOLD
+const hasHighEmojiDensity = (text) => {
+  const standard = (text.match(/\p{Emoji_Presentation}/gu) ?? []).length
+  const keycap = (text.match(/⃣/gu) ?? []).length
+  return standard + keycap > EMOJI_THRESHOLD
+}
 
 // Returns 0 (no pattern), 1 (moderate stacking), or 2 (extreme stacking).
 // Extreme stacking — 15+ single-sentence lines at 80%+ ratio — is suspicious

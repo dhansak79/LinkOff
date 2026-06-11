@@ -19,4 +19,7 @@ export const SLOP_PHRASES = [
   'delve',
   'leverage',
   'unlock your',
+  'join the journey',
+  'repost to',
+  'save this',
 ]

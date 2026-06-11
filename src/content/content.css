@@ -59,22 +59,50 @@
   zoom: 1;
 }
 
-.linkoff-slop-warning {
+.linkoff-slop-soft-hide {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+.linkoff-slop-collapsed {
   background: rgba(220, 38, 38, 0.88);
   border-left: 4px solid #7f1d1d;
   color: #fff;
   padding: 8px 14px;
   font-size: 13px;
   font-weight: 600;
-  cursor: pointer;
   border-radius: 0 4px 4px 0;
-  margin-bottom: 10px;
-  user-select: none;
+  margin-bottom: 4px;
   letter-spacing: 0.01em;
 }
 
-.linkoff-slop-warning:hover {
-  background: rgba(220, 38, 38, 1);
+.linkoff-slop-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.linkoff-slop-author {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.linkoff-slop-reveal {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 3px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+}
+
+.linkoff-slop-reveal:hover {
+  background: rgba(255, 255, 255, 0.28);
 }
 
 .wide-mode {
