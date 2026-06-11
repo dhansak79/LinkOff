@@ -24,6 +24,10 @@ export const SLOP_PHRASES = [
   'save this',
   "sit with that for",
   "let that sit",
+  "digital ambition",
+  "strategy becomes real",
+  "seeing an interesting shift",
+  "excited to be part of",
 
   // LLM tells
   'in the realm of',

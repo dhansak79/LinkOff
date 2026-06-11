@@ -338,6 +338,42 @@ describe('isSlop - numbered list CTA pattern', () => {
 })
 
 // ---------------------------------------------------------------------------
+// NAIF signal — AI hype phrases, threshold 3 (fires when count >= 3, adds +1)
+// ---------------------------------------------------------------------------
+
+describe('getSlopScore - NAIF phrases', () => {
+  it('scores 0 for a post with 2 NAIF phrases (below threshold)', () => {
+    expect(getSlopScore('ChatGPT just changed my workflow. Vibe coding is amazing.')).toBe(0)
+  })
+
+  it('scores enough to trigger for a post with exactly 3 NAIF phrases and no other signals', () => {
+    const text = 'ChatGPT just transformed how I work. I asked ChatGPT to rewrite my strategy. Vibe coding is the future.'
+    expect(getSlopScore(text)).toBeGreaterThanOrEqual(2)
+  })
+
+  it('scores the same for 5 NAIF phrases as 3 — NAIF contribution is capped', () => {
+    const three = getSlopScore('ChatGPT just transformed how I work. I asked ChatGPT to rewrite my strategy. Vibe coding is the future.')
+    const five = getSlopScore('ChatGPT just changed everything. I asked ChatGPT for help. Vibe coding rules. Agents will replace us. The future of work is AI.')
+    expect(five).toBe(three)
+  })
+
+  it('crosses the slop threshold when 3 NAIF phrases combine with 1 slop phrase', () => {
+    const text = "In today's fast-paced world, ChatGPT just changed everything. I asked ChatGPT for help. Vibe coding rules."
+    expect(getSlopScore(text)).toBeGreaterThanOrEqual(2)
+  })
+
+  it('isSlop returns true when NAIF signal combines with a slop phrase', () => {
+    const text = "In today's fast-paced world, ChatGPT just changed everything. I asked ChatGPT for help. Vibe coding rules."
+    expect(isSlop(text)).toBe(true)
+  })
+
+  it('isSlop returns true for a post with only 3 NAIF phrases and no other signals', () => {
+    const text = 'ChatGPT just transformed how I work. I asked ChatGPT to rewrite my strategy. Vibe coding is the future.'
+    expect(isSlop(text)).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // getSlopSignals — human-readable labels for each triggered signal
 // ---------------------------------------------------------------------------
 
@@ -372,6 +408,22 @@ describe('getSlopSignals', () => {
   it('does not include "extreme line stacking" for moderate stacking', () => {
     const text = ['Hook.', 'Second.', 'Third.', 'Fourth.', 'Fifth.', 'Sixth.'].join('\n')
     expect(getSlopSignals(text)).not.toContain('extreme line stacking')
+  })
+
+  it('includes "AI hype (n)" when NAIF phrase count reaches threshold', () => {
+    const text = 'ChatGPT just transformed how I work. I asked ChatGPT to rewrite my strategy. Vibe coding is the future.'
+    expect(getSlopSignals(text)).toContain('AI hype (3)')
+  })
+
+  it('does not include "AI hype" when NAIF count is below threshold', () => {
+    const text = 'ChatGPT just changed my workflow. Vibe coding is cool.'
+    expect(getSlopSignals(text).some((s) => s.startsWith('AI hype'))).toBe(false)
+  })
+
+  it('includes the NAIF count in the signal label', () => {
+    const text = 'ChatGPT just changed things. I asked ChatGPT a question. Vibe coding is everywhere. Agents will take over.'
+    const signals = getSlopSignals(text)
+    expect(signals).toContain('AI hype (4)')
   })
 
   it('returns all triggered signals when multiple fire', () => {
