@@ -80,8 +80,6 @@ const extractAuthorName = (post) => {
   return null
 }
 
-const SLOP_SCORE_COMMENT =
-  `This is triggering our "AI created content" algorithm. Do you normally write this way or is this an AI/LinkedIn thing? I am building an extension to detect AI generated and non-human content and it would be great to understand if my test passed or failed. Happy for a direct message for obvious reasons. We will send a list of real human content at the end of our study.`
 
 const addRevealBanner = (post, signals) => {
   if (post.previousElementSibling?.classList.contains('linkoff-slop-collapsed')) return
