@@ -58,16 +58,6 @@ The App Store charges $100/year to post apps, which makes this impractical for a
 
 Since neither Chrome nor Firefox allow extensions in mobile browsers, you need a Chromium distribution that does — Kiwi Browser works well (please report any issues).
 
-## Contributing
-
-Please create an issue before submitting a pull request.
-
-Use `npm install` to install dependencies. To build the CSS from SCSS run `npm run css-build`.
-
-You can also trigger the build on changes by running the watcher with `npm start`.
-
-To install the extension locally follow the instructions below for your browser.
-
 **Firefox**
 
 - Type `about:debugging` in the Firefox URL bar and press <kbd>Enter</kbd>
@@ -81,8 +71,18 @@ To install the extension locally follow the instructions below for your browser.
 - Click **Load Unpacked** on the left side of the window
 - Navigate to the location of the folder you unzipped, and click **Select Folder**
 
-Run `npm test` for the unit tests and `npm run mutate` for mutation testing. The latest [mutation report](https://dhansak79.github.io/FocusIn/) is published to GitHub Pages on each merge to `main`.
+### Testing
 
-### Commit message format
+| Command | Purpose |
+|---|---|
+| `npm test` | Run unit tests (fast, no coverage) |
+| `npm run coverage` | Run unit tests with coverage report |
+| `npm run mutate` | Run mutation tests |
 
-We use [Conventional Commit format](https://www.conventionalcommits.org/en/v1.0.0/)
+CI enforces two quality gates on every PR:
+
+- **Unit test coverage ≥ 90%** across lines, functions, branches, and statements (via [test.yml](https://github.com/dhansak79/FocusIn/actions/workflows/test.yml))
+- **Mutation score ≥ 75%** (via [mutation.yml](https://github.com/dhansak79/FocusIn/actions/workflows/mutation.yml))
+
+The latest [mutation report](https://dhansak79.github.io/FocusIn/) is published to GitHub Pages on each merge to `main`.
+
