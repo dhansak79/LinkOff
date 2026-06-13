@@ -1,7 +1,7 @@
 /.DS_Store
 /.vscode
 node_modules
-/.claude
+/.claude/settings.local.json
 .stryker-tmp
 reports
 coverage
