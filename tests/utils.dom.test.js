@@ -4,6 +4,7 @@ import {
   findElement,
   removeHideClasses,
   waitForSelector,
+  waitForSelectorAll,
   hideBySelector,
   showBySelector,
   hideParentBySelector,
@@ -460,6 +461,46 @@ describe('waitForSelector', () => {
     document.body.innerHTML = ''
     const result = await waitForSelector('.target', 10)
     expect(result).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// waitForSelectorAll
+// ---------------------------------------------------------------------------
+
+describe('waitForSelectorAll', () => {
+  it('resolves immediately when elements already exist', async () => {
+    document.body.innerHTML = '<div class="item">a</div><div class="item">b</div>'
+    const result = await waitForSelectorAll('.item')
+    expect(result.length).toBe(2)
+  })
+
+  it('resolves when elements are added to the DOM after the call', async () => {
+    document.body.innerHTML = ''
+    const promise = waitForSelectorAll('.item')
+
+    const el = document.createElement('div')
+    el.className = 'item'
+    document.body.appendChild(el)
+
+    const result = await promise
+    expect(result.length).toBe(1)
+  })
+
+  it('waits for skeleton content to be replaced before resolving', async () => {
+    document.body.innerHTML = '<div class="item"><div class="skeleton"></div></div>'
+    const promise = waitForSelectorAll('.item')
+
+    document.querySelector('.item').innerHTML = 'real content'
+
+    const result = await promise
+    expect(result.length).toBe(1)
+  })
+
+  it('resolves via timeout when no elements appear', async () => {
+    document.body.innerHTML = ''
+    const result = await waitForSelectorAll('.item', 10)
+    expect(result.length).toBe(0)
   })
 })
 
