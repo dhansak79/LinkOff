@@ -330,6 +330,38 @@ describe('isSlop - numbered list CTA pattern', () => {
 })
 
 // ---------------------------------------------------------------------------
+// Regex patterns — SLOP_PATTERNS from slop-keywords.js
+// ---------------------------------------------------------------------------
+
+describe('getSlopScore - em dash', () => {
+  it('flags a post containing an em dash', () => {
+    expect(isSlop('We shipped the feature — and it went great.')).toBe(true)
+  })
+
+  it('does not flag a post with only a regular hyphen', () => {
+    expect(getSlopScore('We shipped the feature - and it went great.')).toBe(0)
+  })
+})
+
+describe('getSlopScore - "It\'s not X. It\'s Y." pattern', () => {
+  it('flags the classic contrasting-clause structure', () => {
+    expect(isSlop("It's not experience. It's exposure.")).toBe(true)
+  })
+
+  it('flags when the clauses are separated by a newline', () => {
+    expect(isSlop("It's not about the tools.\nIt's about the mindset.")).toBe(true)
+  })
+
+  it('flags with curly apostrophes', () => {
+    expect(isSlop('It’s not luck. It’s consistency.')).toBe(true)
+  })
+
+  it('does not flag a sentence that only has one clause', () => {
+    expect(getSlopScore("It's not the destination that matters.")).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Markdown formatting — raw markdown pasted from an AI chat window
 // ---------------------------------------------------------------------------
 
@@ -357,7 +389,7 @@ describe('getSlopScore - raw markdown', () => {
   })
 
   it('does not flag a clean post with a single asterisk used naturally', () => {
-    expect(getSlopScore('Revenue grew 3x — it was a great quarter*.')).toBe(0)
+    expect(getSlopScore('Revenue grew 3x - it was a great quarter*.')).toBe(0)
   })
 })
 

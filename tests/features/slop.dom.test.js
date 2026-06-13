@@ -77,22 +77,22 @@ describe('detect-slop - collapse with reveal banner', () => {
     expect(posts[0].previousElementSibling?.classList.contains('linkoff-slop-collapsed')).toBe(true)
   })
 
-  it('reveal banner contains a reveal button', () => {
+  it('reveal banner is clickable (has the collapsed class)', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].previousElementSibling?.querySelector('.linkoff-slop-reveal')).not.toBeNull()
+    expect(posts[0].previousElementSibling?.classList.contains('linkoff-slop-collapsed')).toBe(true)
   })
 
-  it('clicking reveal removes soft-hide class and removes the banner', () => {
+  it('clicking the banner removes soft-hide class and removes the banner', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
-    posts[0].previousElementSibling.querySelector('.linkoff-slop-reveal').click()
+    posts[0].previousElementSibling.click()
 
     expect(posts[0].classList.contains('linkoff-slop-soft-hide')).toBe(false)
     expect(posts[0].classList.contains('hide')).toBe(false)
@@ -104,7 +104,7 @@ describe('detect-slop - collapse with reveal banner', () => {
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
-    posts[0].previousElementSibling.querySelector('.linkoff-slop-reveal').click()
+    posts[0].previousElementSibling.click()
 
     vi.advanceTimersByTime(350)
     vi.advanceTimersByTime(350)
@@ -163,6 +163,51 @@ describe('detect-slop - collapse with reveal banner', () => {
     vi.advanceTimersByTime(350)
 
     expect(posts[0].previousElementSibling?.textContent).toContain('Test Author')
+  })
+
+  it('uses the post author not the person who liked it', () => {
+    const likedPost = `<span><a href="/in/liker"><strong>Some Liker</strong></a> likes this</span><a href="/in/real-author"><strong>Real Author</strong></a><br>${SLOP_POST}`
+    const posts = buildFeedDOM([likedPost, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    const bannerText = posts[0].previousElementSibling?.textContent ?? ''
+    expect(bannerText).toContain('Real Author')
+    expect(bannerText).not.toContain('Some Liker')
+  })
+
+  it('extracts author from aria-label on the actor card (current LinkedIn DOM)', () => {
+    const realLinkedInPost = `
+      <div aria-label="Jane Smith Premium Profile 2nd">${SLOP_POST}</div>
+    `
+    const posts = buildFeedDOM([realLinkedInPost, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    expect(posts[0].previousElementSibling?.textContent).toContain('Jane Smith')
+  })
+
+  it('extracts author from aria-label without Premium qualifier', () => {
+    const post = `<div aria-label="Alex Jones Profile 3rd+">${SLOP_POST}</div>`
+    const posts = buildFeedDOM([post, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    expect(posts[0].previousElementSibling?.textContent).toContain('Alex Jones')
+  })
+
+  it('extracts author from non-premium aria-label (name + double-space + degree)', () => {
+    // Non-premium LinkedIn: "Naveen Kumar  3rd+" — no "Profile" word
+    const post = `<div aria-label="Naveen Kumar  3rd+">${SLOP_POST}</div>`
+    const posts = buildFeedDOM([post, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    expect(posts[0].previousElementSibling?.textContent).toContain('Naveen Kumar')
   })
 
   it('shows the banner without author info when no author link is present', () => {

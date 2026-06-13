@@ -1,4 +1,4 @@
-import { SLOP_PHRASES } from './slop-keywords.js'
+import { SLOP_PHRASES, SLOP_PATTERNS } from './slop-keywords.js'
 
 const EMOJI_THRESHOLD = 4
 const MIN_LINES_FOR_PATTERN = 5
@@ -10,7 +10,10 @@ export const SLOP_THRESHOLD = 1
 
 const countSlopPhrases = (text) => {
   const lower = text.toLowerCase()
-  return SLOP_PHRASES.filter((phrase) => lower.includes(phrase)).length
+  return (
+    SLOP_PHRASES.filter((phrase) => lower.includes(phrase)).length +
+    SLOP_PATTERNS.filter((pattern) => pattern.test(text)).length
+  )
 }
 
 const hasHighEmojiDensity = (text) => {

@@ -50,8 +50,35 @@ const extractPostText = (el) => {
   return tmp.textContent
 }
 
-const extractAuthorName = (post) =>
-  post.querySelector('a[href*="/in/"] strong')?.textContent?.trim() ?? null
+const SOCIAL_PROOF_RE = /likes this|celebrates this|commented on|reposted/i
+
+const extractAuthorName = (post) => {
+  // Actor card aria-label: "Name [Premium] Profile Degree" (premium) or "Name  Degree" (non-premium)
+  // Degree is always 1st/2nd/3rd with optional +
+  const actorDiv = post.querySelector(
+    '[aria-label*=" Profile"],[aria-label*="st+"],[aria-label*="nd+"],[aria-label*="rd+"]'
+  )
+  if (actorDiv) {
+    const name = actorDiv
+      .getAttribute('aria-label')
+      .replace(/\s+(?:Premium\s+)?(?:Profile\s+)?\d(?:st|nd|rd)\+?\s*$/i, '')
+      .trim()
+    if (name) return name
+  }
+  // Fallback: Follow button always names the post author
+  const followBtn = post.querySelector('button[aria-label^="Follow "]')
+  if (followBtn) return followBtn.getAttribute('aria-label').replace(/^Follow /, '').trim()
+  // Fallback: <strong> in /in/ link (older LinkedIn HTML and tests)
+  for (const strong of post.querySelectorAll('a[href*="/in/"] strong')) {
+    const parent = strong.closest('a')?.parentElement
+    const directText = [...(parent?.childNodes ?? [])]
+      .filter((n) => n.nodeType === Node.TEXT_NODE)
+      .map((n) => n.textContent)
+      .join('')
+    if (!SOCIAL_PROOF_RE.test(directText)) return strong.textContent.trim()
+  }
+  return null
+}
 
 const SLOP_SCORE_COMMENT =
   `This is triggering our "AI created content" algorithm. Do you normally write this way or is this an AI/LinkedIn thing? I am building an extension to detect AI generated and non-human content and it would be great to understand if my test passed or failed. Happy for a direct message for obvious reasons. We will send a list of real human content at the end of our study.`
@@ -61,31 +88,16 @@ const addRevealBanner = (post, signals) => {
   const author = extractAuthorName(post)
   const banner = document.createElement('div')
   banner.className = 'linkoff-slop-collapsed'
-
-  const row = document.createElement('div')
-  row.className = 'linkoff-slop-row'
-
-  const revealBtn = document.createElement('button')
-  revealBtn.className = 'linkoff-slop-reveal'
-  revealBtn.textContent = 'Reveal post'
-  revealBtn.onclick = () => {
+  banner.onclick = () => {
     post.classList.remove('hide', 'dim', 'linkoff-slop-soft-hide')
     post.dataset.slopRevealed = true
     banner.remove()
   }
 
-  const scoreBtn = document.createElement('button')
-  scoreBtn.className = 'linkoff-slop-score'
-  scoreBtn.textContent = 'SlopScore'
-  scoreBtn.onclick = () => {
-    post.classList.remove('hide', 'dim', 'linkoff-slop-soft-hide')
-    post.dataset.slopRevealed = true
-    banner.remove()
-    navigator.clipboard.writeText(SLOP_SCORE_COMMENT)
-  }
+  const label = document.createElement('div')
+  label.textContent = `🤖 AI slop hidden (${signals.join(', ')})`
 
-  row.append(document.createTextNode(`🤖 AI slop hidden (${signals.join(', ')})`), revealBtn, scoreBtn)
-  banner.append(row)
+  banner.append(label)
 
   if (author) {
     const authorEl = document.createElement('div')

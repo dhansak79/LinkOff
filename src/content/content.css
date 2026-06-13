@@ -82,12 +82,11 @@
   border-radius: 0 4px 4px 0;
   margin-bottom: 4px;
   letter-spacing: 0.01em;
+  cursor: pointer;
 }
 
-.linkoff-slop-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.linkoff-slop-collapsed:hover {
+  background: rgba(220, 38, 38, 1);
 }
 
 .linkoff-slop-author {
@@ -95,36 +94,6 @@
   font-weight: 400;
   opacity: 0.85;
   margin-top: 2px;
-}
-
-.linkoff-slop-reveal {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 3px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-}
-
-.linkoff-slop-reveal:hover {
-  background: rgba(255, 255, 255, 0.28);
-}
-
-.linkoff-slop-score {
-  background: rgba(255, 160, 0, 0.2);
-  border: 1px solid rgba(255, 160, 0, 0.7);
-  border-radius: 3px;
-  color: #ffa000;
-  cursor: pointer;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-}
-
-.linkoff-slop-score:hover {
-  background: rgba(255, 160, 0, 0.35);
 }
 
 .wide-mode {

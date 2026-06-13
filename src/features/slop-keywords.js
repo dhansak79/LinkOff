@@ -171,3 +171,10 @@ export const SLOP_PHRASES = [
   'thread below',
   'a thread'
 ]
+
+export const SLOP_PATTERNS = [
+  // "It’s not X. It’s Y." — short contrasting clauses, classic AI-ghostwritten LinkedIn structure
+  /it['‘’]s not [^.!?\n]{1,60}[.!?][ \t\n]+it['‘’]s /i,
+  // Em dash — almost never typed manually; heavily used by LLMs
+  /—/,
+]
