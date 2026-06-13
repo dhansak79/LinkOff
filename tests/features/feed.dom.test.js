@@ -47,15 +47,14 @@ const neverTrigger = () => false
 const baseConfig = { 'feed-keywords': '', 'hide-by-age': 'disabled' }
 
 // ---------------------------------------------------------------------------
-// runBlockPosts — keyword matching
+// Post processing — keyword matching (initial scan is synchronous)
 // ---------------------------------------------------------------------------
 
-describe('runBlockPosts - keyword matching', () => {
+describe('post processing - keyword matching', () => {
   it('hides a post whose outerHTML contains a matched keyword', () => {
     const posts = buildFeedDOM(['Post 1', 'Post 2', 'Post 3', 'Alice likes this post', 'Post 5', 'Post 6'])
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
-    vi.advanceTimersByTime(350)
 
     const liked = Array.from(posts).find((p) => p.textContent.includes('likes this'))
     expect(liked.classList.contains('hide')).toBe(true)
@@ -65,7 +64,6 @@ describe('runBlockPosts - keyword matching', () => {
     const posts = buildFeedDOM(['Post 1', 'Post 2', 'Post 3', 'Alice likes this post', 'Post 5', 'Post 6'])
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
-    vi.advanceTimersByTime(350)
 
     Array.from(posts)
       .filter((p) => !p.textContent.includes('likes this'))
@@ -76,7 +74,6 @@ describe('runBlockPosts - keyword matching', () => {
     const [post] = buildFeedDOM(['Alice likes this post'])
 
     doFeed(neverTrigger, true, 'dim', { ...baseConfig, 'hide-liked': true })
-    vi.advanceTimersByTime(350)
 
     expect(post.classList.contains('dim')).toBe(true)
     expect(post.classList.contains('hide')).toBe(false)
@@ -87,7 +84,6 @@ describe('runBlockPosts - keyword matching', () => {
     posts[0].classList.add('hide', 'showIcon')
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
-    vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('hide')).toBe(false)
     expect(posts[0].classList.contains('showIcon')).toBe(false)
@@ -108,7 +104,6 @@ describe('runBlockPosts - keyword matching', () => {
       'hide-liked': true,
       'hide-suggested': true,
     })
-    vi.advanceTimersByTime(350)
 
     const liked     = Array.from(posts).find((p) => p.textContent.includes('likes this'))
     const suggested = Array.from(posts).find((p) => p.textContent.includes('Suggested'))
@@ -116,11 +111,10 @@ describe('runBlockPosts - keyword matching', () => {
     expect(suggested.classList.contains('hide')).toBe(true)
   })
 
-  it('does not start the interval when there are no keywords', () => {
+  it('does not process any posts when there are no keywords', () => {
     const posts = buildFeedDOM(['P1', 'P2', 'P3', 'P4', 'P5', 'P6'])
 
     doFeed(neverTrigger, true, 'hide', baseConfig)
-    vi.advanceTimersByTime(350)
 
     posts.forEach((p) => expect(p.dataset.hidden).toBeUndefined())
   })
@@ -131,11 +125,10 @@ describe('runBlockPosts - keyword matching', () => {
 // ---------------------------------------------------------------------------
 
 describe('enabled flag', () => {
-  it('does not start the interval when enabled is false', () => {
+  it('does not process any posts when enabled is false', () => {
     const posts = buildFeedDOM(['P1', 'P2', 'P3', 'P4', 'P5', 'P6'])
 
     doFeed(neverTrigger, false, 'hide', { ...baseConfig, 'hide-promoted': true })
-    vi.advanceTimersByTime(350)
 
     posts.forEach((p) => expect(p.dataset.hidden).toBeUndefined())
   })
@@ -146,12 +139,11 @@ describe('enabled flag', () => {
 // ---------------------------------------------------------------------------
 
 describe('main-toggle and hide-whole-feed', () => {
-  it('does not start the interval when main-toggle triggers handleToggledOff', () => {
+  it('does not process any posts when main-toggle triggers handleToggledOff', () => {
     const posts = buildFeedDOM(['P1', 'P2', 'P3'])
     const triggerToggleOff = (field, bool) => field === 'main-toggle' && bool === false
 
     doFeed(triggerToggleOff, true, 'hide', { ...baseConfig, 'hide-promoted': true })
-    vi.advanceTimersByTime(350)
 
     posts.forEach((p) => expect(p.dataset.hidden).toBeUndefined())
   })
@@ -183,13 +175,12 @@ describe('main-toggle and hide-whole-feed', () => {
 })
 
 // ---------------------------------------------------------------------------
-// resetShownPosts guard (oldFeedKeywords.some)
+// Keyword change handling — rescan re-evaluates all existing posts
 // ---------------------------------------------------------------------------
 
-describe('resetShownPosts guard', () => {
-  it('does not call resetShownPosts when no keywords have been removed', () => {
+describe('keyword change handling', () => {
+  it('keeps shown posts shown when the keyword set does not change', () => {
     // Pre-populate posts as "shown" (data-hidden=false) before first call.
-    // oldFeedKeywords is [] initially, so some() → false → resetShownPosts NOT called.
     const posts = buildFeedDOM(['P1', 'P2', 'P3'])
     posts.forEach((p) => p.setAttribute('data-hidden', 'false'))
 
@@ -198,22 +189,35 @@ describe('resetShownPosts guard', () => {
     posts.forEach((p) => expect(p.dataset.hidden).toBe('false'))
   })
 
-  it('calls resetShownPosts when a keyword is removed from config', () => {
-    // Call 1: two keyword flags → all 6 posts get data-hidden=false after interval tick.
-    const posts = buildFeedDOM(['P1', 'P2', 'P3', 'P4', 'P5', 'P6'])
-    doFeed(neverTrigger, true, 'hide', {
-      ...baseConfig,
-      'hide-liked': true,
-      'hide-suggested': true,
-    })
-    vi.advanceTimersByTime(350)
-    posts.forEach((p) => expect(p.dataset.hidden).toBe('false'))
+  it('un-hides a previously blocked post when its keyword is removed', () => {
+    const posts = buildFeedDOM(['P1', 'P2', 'P3', 'Alice likes this post', 'P5', 'P6'])
 
-    // Call 2: remove hide-suggested → oldFeedKeywords has 'Suggested' which is no longer
-    // in new keywords → some() → true → resetShownPosts removes data-hidden from shown posts.
+    // First call: both flags active — liked post is blocked
+    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true, 'hide-suggested': true })
+
+    const liked = Array.from(posts).find((p) => p.textContent.includes('likes this'))
+    expect(liked.classList.contains('hide')).toBe(true)
+
+    // Second call: remove hide-liked but keep hide-suggested — rescan un-hides the liked post
+    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-suggested': true })
+
+    expect(liked.classList.contains('hide')).toBe(false)
+    expect(liked.dataset.hidden).toBe('false')
+  })
+
+  it('hides a previously visible post when a new matching keyword is added', () => {
+    const posts = buildFeedDOM(['P1', 'P2', 'P3', 'Alice likes this post', 'P5', 'P6'])
+
+    // First call: no keyword filters — post is shown
+    doFeed(neverTrigger, true, 'hide', { ...baseConfig })
+
+    const liked = Array.from(posts).find((p) => p.textContent.includes('likes this'))
+    expect(liked.classList.contains('hide')).toBe(false)
+
+    // Second call: add hide-liked — post should now be hidden on rescan
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
 
-    posts.forEach((p) => expect(p.dataset.hidden).toBeUndefined())
+    expect(liked.classList.contains('hide')).toBe(true)
   })
 })
 
@@ -267,7 +271,6 @@ describe('legacy DOM fallback', () => {
     const posts = buildLegacyFeedDOM(['Post 1', 'Post 2', 'Post 3', 'Alice likes this post', 'Post 5', 'Post 6'])
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
-    vi.advanceTimersByTime(350)
 
     const liked = Array.from(posts).find((p) => p.textContent.includes('likes this'))
     expect(liked.classList.contains('hide')).toBe(true)
@@ -277,7 +280,6 @@ describe('legacy DOM fallback', () => {
     document.body.innerHTML = '<div id="not-a-feed"><div><div>Promoted post</div></div></div>'
 
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-promoted': true })
-    vi.advanceTimersByTime(350)
 
     // No known container — no posts should be processed
     expect(window.alert).not.toHaveBeenCalled()
