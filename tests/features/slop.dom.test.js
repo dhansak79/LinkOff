@@ -55,7 +55,7 @@ const baseConfig = { 'feed-keywords': '', 'hide-by-age': 'disabled' }
 
 // ---------------------------------------------------------------------------
 // detect-slop: collapse post with a reveal banner (soft mode)
-// Uses linkoff-slop-soft-hide (not display:none) to preserve LinkedIn DOM state
+// Uses focusedin-slop-soft-hide (not display:none) to preserve LinkedIn DOM state
 // ---------------------------------------------------------------------------
 
 describe('detect-slop - collapse with reveal banner', () => {
@@ -65,7 +65,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].classList.contains('linkoff-slop-soft-hide')).toBe(true)
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(true)
   })
 
   it('injects a sibling reveal banner for the collapsed post', () => {
@@ -74,7 +74,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].previousElementSibling?.classList.contains('linkoff-slop-collapsed')).toBe(true)
+    expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
   })
 
   it('reveal banner is clickable (has the collapsed class)', () => {
@@ -83,7 +83,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].previousElementSibling?.classList.contains('linkoff-slop-collapsed')).toBe(true)
+    expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
   })
 
   it('clicking the banner removes soft-hide class and removes the banner', () => {
@@ -94,9 +94,9 @@ describe('detect-slop - collapse with reveal banner', () => {
 
     posts[0].previousElementSibling.click()
 
-    expect(posts[0].classList.contains('linkoff-slop-soft-hide')).toBe(false)
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
     expect(posts[0].classList.contains('hide')).toBe(false)
-    expect(posts[0].previousElementSibling?.classList.contains('linkoff-slop-collapsed')).toBeFalsy()
+    expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBeFalsy()
   })
 
   it('does not re-collapse the post after the user reveals it', () => {
@@ -109,7 +109,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     vi.advanceTimersByTime(350)
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].classList.contains('linkoff-slop-soft-hide')).toBe(false)
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
     expect(posts[0].classList.contains('hide')).toBe(false)
   })
 
@@ -120,7 +120,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     vi.advanceTimersByTime(350)
 
     posts.forEach((post) => {
-      expect(post.classList.contains('linkoff-slop-soft-hide')).toBe(false)
+      expect(post.classList.contains('focusedin-slop-soft-hide')).toBe(false)
       expect(post.classList.contains('hide')).toBe(false)
     })
   })
@@ -131,7 +131,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': false })
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].classList.contains('linkoff-slop-soft-hide')).toBe(false)
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
     expect(posts[0].classList.contains('hide')).toBe(false)
   })
 
@@ -143,7 +143,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     vi.advanceTimersByTime(350)
     vi.advanceTimersByTime(350)
 
-    expect(document.querySelectorAll('.linkoff-slop-collapsed').length).toBe(1)
+    expect(document.querySelectorAll('.focusedin-slop-collapsed').length).toBe(1)
   })
 
   it('runs without any keyword filters active', () => {
@@ -152,7 +152,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].classList.contains('linkoff-slop-soft-hide')).toBe(true)
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(true)
   })
 
   it('includes the author name in the banner when an author link is present', () => {
@@ -216,7 +216,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].previousElementSibling?.classList.contains('linkoff-slop-collapsed')).toBe(true)
+    expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
   })
 
   it('does not show the scroll-down alert when only detect-slop is active', () => {
@@ -235,7 +235,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].classList.contains('linkoff-slop-soft-hide')).toBe(true)
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(true)
   })
 
   it('does not flag a clean post when LinkedIn reply-suggestion chips add emoji noise to the DOM', () => {
@@ -259,7 +259,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].classList.contains('linkoff-slop-soft-hide')).toBe(false)
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
   })
 })
 
@@ -283,7 +283,7 @@ describe('hide-slop - completely hidden', () => {
     doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-slop': true })
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].previousElementSibling?.classList.contains('linkoff-slop-collapsed')).toBeFalsy()
+    expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBeFalsy()
   })
 
   it('does not hide a clean post', () => {
@@ -340,6 +340,6 @@ describe('hide-slop - completely hidden', () => {
     vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('hide')).toBe(true)
-    expect(posts[0].previousElementSibling?.classList.contains('linkoff-slop-collapsed')).toBeFalsy()
+    expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBeFalsy()
   })
 })

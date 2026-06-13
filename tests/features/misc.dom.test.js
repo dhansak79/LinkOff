@@ -43,7 +43,7 @@ describe('unfollowAll', () => {
 
   it('logs success immediately when no buttons are present', async () => {
     await unfollowAll()
-    expect(logSpy).toHaveBeenCalledWith('LinkOff: Successfully unfollowed all')
+    expect(logSpy).toHaveBeenCalledWith('FocusedIn: Successfully unfollowed all')
   })
 
   it('clicks all buttons and logs success after they disappear', async () => {
@@ -65,7 +65,7 @@ describe('unfollowAll', () => {
     await promise
 
     clickSpies.forEach((spy) => expect(spy).toHaveBeenCalled())
-    expect(logSpy).toHaveBeenCalledWith('LinkOff: Successfully unfollowed all')
+    expect(logSpy).toHaveBeenCalledWith('FocusedIn: Successfully unfollowed all')
   })
 
   it('terminates after 10 rounds when buttons never disappear', async () => {
@@ -77,7 +77,7 @@ describe('unfollowAll', () => {
     await promise
 
     // Terminated without logging success (buttons never cleared)
-    expect(logSpy).not.toHaveBeenCalledWith('LinkOff: Successfully unfollowed all')
+    expect(logSpy).not.toHaveBeenCalledWith('FocusedIn: Successfully unfollowed all')
   })
 })
 

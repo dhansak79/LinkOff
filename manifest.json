@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "LinkOff - Filter and Customizer for LinkedIn™",
-  "short_name": "LinkOff",
+  "name": "FocusedIn - Filter and Customizer for LinkedIn™",
+  "short_name": "FocusedIn",
   "author": "Daniel Webb",
   "version": "1.0.0",
-  "description": "LinkOff cleans and customizes LinkedIn. It filters out the junk, leaving behind the posts and page elements that you want to see.",
+  "description": "FocusedIn cleans and customizes LinkedIn. It filters out the junk, leaving behind the posts and page elements that you want to see.",
   "browser_specific_settings": {
     "gecko": {
       "id": "{dc212c1b-5965-471e-ac34-56c908222386}",

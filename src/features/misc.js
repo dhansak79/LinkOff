@@ -104,7 +104,7 @@ export const unfollowAll = async () => {
   for (let round = 0; round < MAX_ROUNDS; round++) {
     const buttons = document.querySelectorAll(UNFOLLOW_ALL_BUTTON_SELECTOR)
     if (!buttons.length) {
-      console.log('LinkOff: Successfully unfollowed all')
+      console.log('FocusedIn: Successfully unfollowed all')
       return
     }
     for (const button of buttons) {
