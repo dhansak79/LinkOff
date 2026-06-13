@@ -73,6 +73,9 @@ const handleNavigation = (url) => {
   }
 }
 
+// Initialize on the current page immediately, then listen for subsequent navigations
+handleNavigation(window.location.href)
+
 if (typeof window.navigation !== 'undefined' && window.navigation !== null) {
   window.navigation.addEventListener('navigate', (e) => {
     if (!e.canIntercept || e.hashChange || e.downloadRequest !== null) return
@@ -80,7 +83,7 @@ if (typeof window.navigation !== 'undefined' && window.navigation !== null) {
   })
 } else {
   // Fallback for environments where the Navigation API is unavailable
-  let lastUrl
+  let lastUrl = window.location.href
   let urlCheckIntervalId = null
 
   const startUrlCheck = () => {

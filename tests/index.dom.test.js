@@ -55,10 +55,30 @@ describe('Navigation API — when navigation is in window', () => {
       }),
     })
     await import('../src/index.js')
+    // Flush and clear the initial handleNavigation call that fires on import
+    await Promise.resolve()
+    await Promise.resolve()
+    mockGet.mockClear()
   })
 
   it('registers a navigate listener', () => {
     expect(navigateHandlers.length).toBe(1)
+  })
+
+  it('calls initialize immediately for the current page on load', async () => {
+    // Re-import with an authorized URL as the starting location
+    vi.resetModules()
+    mockGet.mockClear()
+    vi.stubGlobal('location', { href: 'https://www.linkedin.com/feed/', pathname: '/feed/' })
+    navigateHandlers = []
+    vi.stubGlobal('navigation', {
+      addEventListener: vi.fn((event, handler) => {
+        if (event === 'navigate') navigateHandlers.push(handler)
+      }),
+    })
+    await import('../src/index.js')
+    await Promise.resolve()
+    expect(mockGet).toHaveBeenCalled()
   })
 
   it('ignores hash-change navigations', async () => {
@@ -165,8 +185,8 @@ describe('Interval fallback — when navigation is not in window', () => {
   beforeEach(async () => {
     vi.stubGlobal('location', { href: 'https://www.linkedin.com/feed/', pathname: '/feed/' })
     await import('../src/index.js')
-    // Let the first interval tick fire (sets lastUrl from undefined → current URL)
-    await vi.advanceTimersByTimeAsync(2000)
+    // Flush the initial handleNavigation call that fires synchronously on import
+    await Promise.resolve()
     await Promise.resolve()
     mockGet.mockClear()
   })
