@@ -1,7 +1,6 @@
 import {
   DROPDOWN_TRIGGER_SELECTOR,
   FEED_SELECTOR_CANDIDATES,
-  MIN_POST_COUNT,
   POST_SELECTOR,
   RECENT_OPTION_SELECTOR,
 } from '../constants.js'
@@ -17,8 +16,7 @@ import {
 import { getFeedKeywords } from './feed-keywords.js'
 import { getSlopSignals, isSlop } from './slop-detector.js'
 
-let runs = 0
-let feedInterval
+let feedObserver = null
 let feedKeywords = []
 let oldFeedKeywords = []
 let lastAutoScrolledUrl = null
@@ -106,11 +104,18 @@ const addRevealBanner = (post, signals) => {
   post.before(banner)
 }
 
-const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
-  if (oldFeedKeywords.some((kw) => !keywords.includes(kw))) {
-    resetShownPosts()
-  }
+// Returns true if a DOM node is a feed post (not an intermediate container or non-element)
+const isPostNode = (node) => {
+  if (node.nodeType !== Node.ELEMENT_NODE) return false
+  const parent = node.parentElement
+  return (
+    node.matches('[role="listitem"]') ||
+    parent?.hasAttribute('data-lazy-mount-id') ||
+    parent?.getAttribute('data-display-contents') === 'true'
+  )
+}
 
+const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
   oldFeedKeywords = keywords
 
   const applyKeywordToPost = (post) => {
@@ -138,22 +143,36 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
     }
   }
 
-  const runBlockPosts = () => {
-    if (!findElement(FEED_SELECTOR_CANDIDATES)) return
-    if (runs % 10 === 0) resetBlockedPosts()
-    const posts = document.querySelectorAll(
-      getCustomSelector(POST_SELECTOR, 'pristine')
-    )
-    if (posts.length > MIN_POST_COUNT || mode == 'dim') {
-      posts.forEach(applyKeywordToPost)
+  const processAddedNode = (node) => {
+    if (node.nodeType !== Node.ELEMENT_NODE) return
+    if (isPostNode(node)) {
+      applyKeywordToPost(node)
+    } else {
+      // Intermediate container — check descendants for posts
+      node.querySelectorAll(getCustomSelector(POST_SELECTOR, 'all')).forEach(applyKeywordToPost)
     }
   }
 
-  if (keywords.length || detectSlop || hideSlop)
-    feedInterval = setInterval(() => {
-      runBlockPosts()
-      runs++
-    }, 350)
+  const connectObserver = () => {
+    const feedContainer = findElement(FEED_SELECTOR_CANDIDATES)
+    if (!feedContainer) {
+      requestAnimationFrame(connectObserver)
+      return
+    }
+
+    // Process posts already in the DOM (handles initial load and keyword changes)
+    document.querySelectorAll(getCustomSelector(POST_SELECTOR, 'all')).forEach(applyKeywordToPost)
+
+    feedObserver = new MutationObserver((mutations) => {
+      for (const { addedNodes } of mutations) {
+        addedNodes.forEach(processAddedNode)
+      }
+    })
+
+    feedObserver.observe(feedContainer, { childList: true, subtree: true })
+  }
+
+  if (keywords.length || detectSlop || hideSlop) connectObserver()
 }
 
 const toggleFeed = async (shown) => {
@@ -168,18 +187,22 @@ const toggleFeed = async (shown) => {
   }
 }
 
+const disconnectObserver = () => {
+  feedObserver?.disconnect()
+  feedObserver = null
+}
+
 const handleToggledOff = () => {
   toggleFeed(true)
-
-  clearInterval(feedInterval)
+  disconnectObserver()
   resetBlockedPosts()
   resetShownPosts()
 }
 
 const handleHideWholeFeed = () => {
   toggleFeed(false)
+  disconnectObserver()
   resetBlockedPosts()
-  clearInterval(feedInterval)
 }
 
 const autoScrollFeed = () => {
@@ -194,9 +217,8 @@ const autoScrollFeed = () => {
 
 const handleFilterFeed = (mode, config) => {
   toggleFeed(true)
-
+  disconnectObserver()
   resetBlockedPosts()
-  clearInterval(feedInterval)
   autoScrollFeed()
   blockPostsByKeywords(feedKeywords, mode, !!config['detect-slop'], !!config['hide-slop'])
 }
