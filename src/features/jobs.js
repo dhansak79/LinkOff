@@ -2,7 +2,6 @@ import { JOB_SELECTORS } from '../constants.js'
 import { getCustomSelector, resetJobs } from '../utils.js'
 import { getJobKeywords } from './job-keywords.js'
 
-let runs = 0
 let jobKeywordInterval
 let jobKeywords = []
 let oldJobKeywords = []
@@ -20,11 +19,7 @@ const blockByJobKeywords = (keywords, mode) => {
 
   if (keywords.length)
     jobKeywordInterval = setInterval(() => {
-      if (runs % 10 === 0) resetJobs()
-
       posts = document.querySelectorAll(getCustomSelector(JOB_SELECTORS, 'all'))
-
-      console.log(`LinkOff: Found ${posts.length} unblocked jobs`)
 
       posts.forEach((post) => {
         const found = keywords.find((keyword) => {
@@ -39,8 +34,6 @@ const blockByJobKeywords = (keywords, mode) => {
           post.classList.remove('hide', 'dim', 'showIcon')
         }
       })
-
-      runs++
     }, 350)
 }
 
