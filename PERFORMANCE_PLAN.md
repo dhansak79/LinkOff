@@ -5,24 +5,12 @@ Each item is its own branch and PR, tackled in order.
 
 ---
 
-## 1. Replace `setInterval` with `MutationObserver` in `feed.js`
+## ~~1. Replace `setInterval` with `MutationObserver` in `feed.js`~~ ✅ Done
 
-**Branch**: `perf/mutation-observer-feed`
+**Branch**: `perf/mutation-observer-feed` — merged 2026-06-13
 
-**Problem**: `feed.js` runs `querySelectorAll` + `outerHTML.indexOf` on every post every 350ms,
-even when nothing has changed on the page. This burns CPU continuously.
-
-**Change**:
-- Attach a `MutationObserver` to the feed container (`[data-testid="mainFeed"]` or the legacy
-  `[componentkey]` equivalent) that watches for `childList` mutations on subtree nodes.
-- On each mutation batch, extract only the newly added post nodes and run `applyKeywordToPost`
-  on those — skip already-processed nodes entirely.
-- Track processed state per-node using a class (e.g. `linkoff-processed`) instead of
-  `data-hidden`, so re-querying the whole DOM is never needed.
-- Disconnect the observer when `handleToggledOff` or `handleHideWholeFeed` fires; reconnect
-  when `handleFilterFeed` fires.
-
-**Files**: `src/features/feed.js`, `src/utils.js`, `tests/features/feed.dom.test.js`
+**Result**: Noticeable real-world performance improvement confirmed by manual testing. Posts are
+processed reactively as LinkedIn appends them; zero CPU usage when the feed is idle.
 
 ---
 
@@ -64,7 +52,7 @@ nodes automatically.
 
 **Files**: `src/features/feed.js`, `src/features/jobs.js`
 
-**Depends on**: Item 1 (MutationObserver in feed.js)
+**Depends on**: ~~Item 1~~ ✅ complete
 
 ---
 
@@ -128,17 +116,17 @@ jank on every feed visit.
 
 **Files**: `src/features/feed.js`
 
-**Depends on**: Item 1 (MutationObserver in feed.js)
+**Depends on**: ~~Item 1~~ ✅ complete
 
 ---
 
 ## Order of execution
 
 ```
-1 → MutationObserver feed          (foundational — unlocks 3 and 6)
+1 ✅ MutationObserver feed          (foundational — unlocks 3 and 6)
 2 → textContent keyword match      (independent, can go any time)
-3 → remove reset timer             (after 1)
+3 → remove reset timer             (after 1 ✅)
 4 → waitForSelector observer       (independent)
 5 → Navigation API URL detection   (independent)
-6 → reactive auto-scroll           (after 1)
+6 → reactive auto-scroll           (after 1 ✅)
 ```
