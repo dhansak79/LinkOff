@@ -40,7 +40,7 @@ export const getFeedKeywords = (config) => {
     if (config[flag]) keywords.push(...values)
   }
 
-  console.log('LinkOff: Current feed keywords are', keywords)
+  console.log('FocusedIn: Current feed keywords are', keywords)
 
   return keywords
 }

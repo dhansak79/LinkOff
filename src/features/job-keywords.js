@@ -6,6 +6,6 @@ export const getJobKeywords = (config) => {
     keywords.push('Promoted')
   }
 
-  console.log('LinkOff: Current job keywords are', keywords)
+  console.log('FocusedIn: Current job keywords are', keywords)
   return keywords
 }

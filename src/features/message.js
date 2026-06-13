@@ -32,7 +32,7 @@ const selectMessagesForDeletion = async () => {
 
 // Add message selection button
 export const setupDeleteMessagesButton = async () => {
-  console.log('LinkOff: Waiting for Messages to load')
+  console.log('FocusedIn: Waiting for Messages to load')
 
   const menuContainer = document.querySelector(
     '.msg-conversations-container__dropdown-container > div'
@@ -49,7 +49,7 @@ export const setupDeleteMessagesButton = async () => {
       'artdeco-dropdown__item--is-dropdown',
       'ember-view'
     )
-    selectMenuItem.textContent = 'Select all for deletion (LinkOff)'
+    selectMenuItem.textContent = 'Select all for deletion (FocusedIn)'
 
     selectMenuItem.onclick = function () {
       document
@@ -60,7 +60,7 @@ export const setupDeleteMessagesButton = async () => {
       selectMessagesForDeletion()
     }
 
-    console.log('LinkOff: Adding "Select messages for deletion" button')
+    console.log('FocusedIn: Adding "Select messages for deletion" button')
 
     menu.appendChild(selectMenuItem)
   })

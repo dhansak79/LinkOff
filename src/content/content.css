@@ -64,7 +64,7 @@
    non-zero so LinkedIn's IntersectionObserver sees isIntersecting:true and
    does not reset the "see more" expanded state.
    The [class] attribute selector raises specificity to match .hide[class]. */
-.linkoff-slop-soft-hide[class] {
+.focusedin-slop-soft-hide[class] {
   display: block !important;
   clip-path: inset(50%) !important;
   max-height: 4px !important;
@@ -72,7 +72,7 @@
   pointer-events: none !important;
 }
 
-.linkoff-slop-collapsed {
+.focusedin-slop-collapsed {
   background: rgba(220, 38, 38, 0.88);
   border-left: 4px solid #7f1d1d;
   color: #fff;
@@ -85,11 +85,11 @@
   cursor: pointer;
 }
 
-.linkoff-slop-collapsed:hover {
+.focusedin-slop-collapsed:hover {
   background: rgba(220, 38, 38, 1);
 }
 
-.linkoff-slop-author {
+.focusedin-slop-author {
   font-size: 11px;
   font-weight: 400;
   opacity: 0.85;

@@ -163,17 +163,17 @@ export const hidePost = (post, mode) => {
 }
 
 export const resetShownPosts = () => {
-  console.log('LinkOff: Reset shown posts')
+  console.log('FocusedIn: Reset shown posts')
   resetBySelector(getCustomSelector(POST_SELECTOR, 'shown'))
 }
 
 export const resetBlockedPosts = () => {
-  console.log('LinkOff: Resetting blocked posts')
+  console.log('FocusedIn: Resetting blocked posts')
   resetBySelector(getCustomSelector(POST_SELECTOR, 'blocked'))
 }
 
 export const resetJobs = () => {
-  console.log('LinkOff: Reset shown jobs')
+  console.log('FocusedIn: Reset shown jobs')
   resetBySelector(getCustomSelector(JOB_SELECTORS, 'all'))
 }
 

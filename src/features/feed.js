@@ -80,12 +80,12 @@ const extractAuthorName = (post) => {
 
 
 const addRevealBanner = (post, signals) => {
-  if (post.previousElementSibling?.classList.contains('linkoff-slop-collapsed')) return
+  if (post.previousElementSibling?.classList.contains('focusedin-slop-collapsed')) return
   const author = extractAuthorName(post)
   const banner = document.createElement('div')
-  banner.className = 'linkoff-slop-collapsed'
+  banner.className = 'focusedin-slop-collapsed'
   banner.onclick = () => {
-    post.classList.remove('hide', 'dim', 'linkoff-slop-soft-hide')
+    post.classList.remove('hide', 'dim', 'focusedin-slop-soft-hide')
     post.dataset.slopRevealed = true
     banner.remove()
   }
@@ -97,7 +97,7 @@ const addRevealBanner = (post, signals) => {
 
   if (author) {
     const authorEl = document.createElement('div')
-    authorEl.className = 'linkoff-slop-author'
+    authorEl.className = 'focusedin-slop-author'
     authorEl.textContent = author
     banner.append(authorEl)
   }
@@ -136,13 +136,13 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
       if (hideSlop) {
         hidePost(post, mode)
       } else {
-        post.classList.add('linkoff-slop-soft-hide')
+        post.classList.add('focusedin-slop-soft-hide')
         post.dataset.hidden = true
         addRevealBanner(post, slopSignals)
       }
     } else {
       removeHideClasses(post)
-      post.classList.remove('linkoff-slop-soft-hide')
+      post.classList.remove('focusedin-slop-soft-hide')
       post.dataset.hidden = false
     }
   }
@@ -197,10 +197,10 @@ const toggleFeed = async (shown) => {
   const feed = findElement(FEED_SELECTOR_CANDIDATES)
   if (shown) {
     feed?.classList.remove('hide')
-    console.log(`LinkOff: feed enabled`)
+    console.log(`FocusedIn: feed enabled`)
   } else {
     feed?.classList.add('hide')
-    console.log(`LinkOff: feed disabled`)
+    console.log(`FocusedIn: feed disabled`)
   }
 }
 

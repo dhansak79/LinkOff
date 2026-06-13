@@ -1,7 +1,7 @@
 import { setupDeleteMessagesButton } from './features/message.js'
-import doFeed from './features/feed.js'
-import doMisc, { unfollowAll } from './features/misc.js'
-import doJobs from './features/jobs.js'
+import applyFeed from './features/feed.js'
+import applyMisc, { unfollowAll } from './features/misc.js'
+import applyJobs from './features/jobs.js'
 import { shallowEqual } from './utils.js'
 import { FOLLOW_PAGE_URL } from './constants.js'
 
@@ -9,11 +9,9 @@ let oldConfig = {}
 
 const storage = chrome.storage.local
 
-// Main function
-const doIt = async (config) => {
+const applyConfig = async (config) => {
   if (shallowEqual(oldConfig, config)) return
 
-  // checks if filter needs updating, used below
   const checkNeedUpdate = (field, bool) => {
     const hasChanged =
       config[field] !== oldConfig[field] ||
@@ -21,7 +19,7 @@ const doIt = async (config) => {
       config['main-toggle'] !== oldConfig['main-toggle']
 
     if (hasChanged) {
-      console.log(`LinkOff: Toggling ${field} to ${config[field]}`)
+      console.log(`FocusedIn: Toggling ${field} to ${config[field]}`)
     }
 
     return hasChanged && config[field] === bool
@@ -30,21 +28,20 @@ const doIt = async (config) => {
   const mode = config['gentle-mode'] ? 'dim' : 'hide'
   const enabled = config['main-toggle']
 
-  doFeed(checkNeedUpdate, enabled, mode, config)
-  doJobs(checkNeedUpdate, enabled, mode, config)
-  doMisc(checkNeedUpdate, enabled, mode)
+  applyFeed(checkNeedUpdate, enabled, mode, config)
+  applyJobs(checkNeedUpdate, enabled, mode, config)
+  applyMisc(checkNeedUpdate, enabled, mode)
 
   oldConfig = config
 }
 
-const initialize = async () => {
+const loadAndApply = async () => {
   const config = await storage.get()
-
-  doIt(config)
+  applyConfig(config)
 }
 
 // Storage listener
-chrome.storage.onChanged.addListener(initialize)
+chrome.storage.onChanged.addListener(loadAndApply)
 
 chrome.runtime.onMessage.addListener(async (req) => {
   if (req['unfollow-all']) {
@@ -61,12 +58,12 @@ chrome.runtime.onMessage.addListener(async (req) => {
 
 const AUTHORIZED_URLS = ['/', '/feed/', '/jobs/', '/messaging/']
 
-const handleNavigation = (url) => {
+const onNavigate = (url) => {
   const pathname = new URL(url).pathname
   if (!AUTHORIZED_URLS.includes(pathname)) return
 
   oldConfig = {}
-  initialize()
+  loadAndApply()
 
   if (pathname.startsWith('/messaging/')) {
     setupDeleteMessagesButton()
@@ -74,12 +71,12 @@ const handleNavigation = (url) => {
 }
 
 // Initialize on the current page immediately, then listen for subsequent navigations
-handleNavigation(window.location.href)
+onNavigate(window.location.href)
 
 if (typeof window.navigation !== 'undefined' && window.navigation !== null) {
   window.navigation.addEventListener('navigate', (e) => {
     if (!e.canIntercept || e.hashChange || e.downloadRequest !== null) return
-    handleNavigation(e.destination.url)
+    onNavigate(e.destination.url)
   })
 } else {
   // Fallback for environments where the Navigation API is unavailable
@@ -91,7 +88,7 @@ if (typeof window.navigation !== 'undefined' && window.navigation !== null) {
     urlCheckIntervalId = setInterval(() => {
       if (window.location.href !== lastUrl) {
         lastUrl = window.location.href
-        handleNavigation(window.location.href)
+        onNavigate(window.location.href)
       }
     }, 2000)
   }
