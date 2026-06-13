@@ -1,4 +1,4 @@
-[![CodeScene Average Code Health](https://codescene.io/projects/81232/status-badges/average-code-health)](https://codescene.io/projects/81232) | [![CodeScene Hotspot Code Health](https://codescene.io/projects/81232/status-badges/hotspot-code-health)](https://codescene.io/projects/81232) | [![CodeScene System Mastery](https://codescene.io/projects/81232/status-badges/system-mastery)](https://codescene.io/projects/81232)
+[![CodeScene Average Code Health](https://codescene.io/projects/81232/status-badges/average-code-health)](https://codescene.io/projects/81232)[![CodeScene Hotspot Code Health](https://codescene.io/projects/81232/status-badges/hotspot-code-health)](https://codescene.io/projects/81232)[![CodeScene System Mastery](https://codescene.io/projects/81232/status-badges/system-mastery)](https://codescene.io/projects/81232)[![Mutation Tests](https://github.com/dhansak79/FocusIn/actions/workflows/mutation.yml/badge.svg)](https://github.com/dhansak79/FocusIn/actions/workflows/mutation.yml)
 
 # FocusIn - LinkedIn Attention Filter
 
@@ -80,6 +80,8 @@ To install the extension locally follow the instructions below for your browser.
 - Enable **Developer mode** using the toggle on the right
 - Click **Load Unpacked** on the left side of the window
 - Navigate to the location of the folder you unzipped, and click **Select Folder**
+
+Run `npm test` for the unit tests and `npm run mutate` for mutation testing. The latest [mutation report](https://dhansak79.github.io/FocusIn/) is published to GitHub Pages on each merge to `main`.
 
 ### Commit message format
 
