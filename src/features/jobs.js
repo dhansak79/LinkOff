@@ -1,62 +1,49 @@
 import { JOB_SELECTORS } from '../constants.js'
-import { getCustomSelector, resetJobs } from '../utils.js'
-import { getJobKeywords } from './job-keywords.js'
+import { resetJobs } from '../utils.js'
 
-let jobKeywordInterval
-let jobKeywords = []
-let oldJobKeywords = []
+const JOB_SELECTOR_STRING = JOB_SELECTORS.join(',')
+
+let jobKeywordInterval = null
+
+export const getJobKeywords = (config) => {
+  const keywords =
+    config['job-keywords'] === '' ? [] : config['job-keywords'].split(',')
+
+  if (config['hide-promoted-jobs']) {
+    keywords.push('Promoted')
+  }
+
+  console.log('FocusedIn: Current job keywords are', keywords)
+  return keywords
+}
 
 const blockByJobKeywords = (keywords, mode) => {
   if (!window.location.pathname.startsWith('/jobs/')) return
+  if (!keywords.length) return
 
-  if (oldJobKeywords.some((kw) => !keywords.includes(kw))) {
-    resetJobs()
-  }
-
-  oldJobKeywords = keywords
-
-  let posts
-
-  if (keywords.length)
-    jobKeywordInterval = setInterval(() => {
-      posts = document.querySelectorAll(getCustomSelector(JOB_SELECTORS, 'all'))
-
-      posts.forEach((post) => {
-        const found = keywords.find((keyword) => {
-          return (
-            post.textContent.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-          )
-        })
-
-        if (found) {
-          post.classList.add(mode, 'showIcon')
-        } else {
-          post.classList.remove('hide', 'dim', 'showIcon')
-        }
-      })
-    }, 350)
+  jobKeywordInterval = setInterval(() => {
+    document.querySelectorAll(JOB_SELECTOR_STRING).forEach((post) => {
+      const found = keywords.find(
+        (keyword) => post.textContent.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      )
+      if (found) {
+        post.classList.add(mode, 'showIcon')
+      } else {
+        post.classList.remove('hide', 'dim', 'showIcon')
+      }
+    })
+  }, 350)
 }
 
-const resetAll = () => {
+export default (config) => {
+  const enabled = config['main-toggle']
+  const mode = config['gentle-mode'] ? 'dim' : 'hide'
+
   clearInterval(jobKeywordInterval)
+  jobKeywordInterval = null
   resetJobs()
-}
-
-export default (checkNeedUpdate, enabled, mode, config) => {
-  if (checkNeedUpdate('main-toggle', false)) {
-    resetAll()
-
-    return
-  }
 
   if (!enabled) return
 
-  jobKeywords = getJobKeywords(config)
-
-  // Hide by keywords
-  if (jobKeywords !== oldJobKeywords || jobKeywords.length === 0) {
-    resetAll()
-
-    blockByJobKeywords(jobKeywords, mode)
-  }
+  blockByJobKeywords(getJobKeywords(config), mode)
 }

@@ -22,8 +22,12 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-const neverTrigger = () => false
-const baseConfig = { 'job-keywords': '', 'hide-promoted-jobs': false }
+const baseConfig = {
+  'job-keywords': '',
+  'hide-promoted-jobs': false,
+  'main-toggle': true,
+  'gentle-mode': false,
+}
 
 // ---------------------------------------------------------------------------
 // Keyword matching
@@ -33,7 +37,7 @@ describe('job keyword matching', () => {
   it('hides a job card whose text contains a matched keyword', () => {
     const jobs = buildJobsDOM(['Senior Engineer', 'Marketing Manager', 'Junior Developer'])
 
-    doJobs(neverTrigger, true, 'hide', { ...baseConfig, 'job-keywords': 'Senior' })
+    doJobs({ ...baseConfig, 'job-keywords': 'Senior' })
     vi.advanceTimersByTime(350)
 
     expect(jobs[0].classList.contains('hide')).toBe(true)
@@ -44,7 +48,7 @@ describe('job keyword matching', () => {
   it('matches keywords case-insensitively', () => {
     const [job] = buildJobsDOM(['SENIOR ENGINEER'])
 
-    doJobs(neverTrigger, true, 'hide', { ...baseConfig, 'job-keywords': 'senior' })
+    doJobs({ ...baseConfig, 'job-keywords': 'senior' })
     vi.advanceTimersByTime(350)
 
     expect(job.classList.contains('hide')).toBe(true)
@@ -54,7 +58,7 @@ describe('job keyword matching', () => {
     const jobs = buildJobsDOM(['Marketing Manager', 'Senior Engineer'])
     jobs[0].classList.add('hide', 'showIcon')
 
-    doJobs(neverTrigger, true, 'hide', { ...baseConfig, 'job-keywords': 'Senior' })
+    doJobs({ ...baseConfig, 'job-keywords': 'Senior' })
     vi.advanceTimersByTime(350)
 
     expect(jobs[0].classList.contains('hide')).toBe(false)
@@ -64,7 +68,7 @@ describe('job keyword matching', () => {
   it('does not start the interval when there are no keywords', () => {
     const jobs = buildJobsDOM(['Senior Engineer'])
 
-    doJobs(neverTrigger, true, 'hide', baseConfig)
+    doJobs(baseConfig)
     vi.advanceTimersByTime(350)
 
     expect(jobs[0].classList.contains('hide')).toBe(false)
@@ -74,7 +78,7 @@ describe('job keyword matching', () => {
     vi.stubGlobal('location', { pathname: '/feed/' })
     const jobs = buildJobsDOM(['Senior Engineer'])
 
-    doJobs(neverTrigger, true, 'hide', { ...baseConfig, 'job-keywords': 'Senior' })
+    doJobs({ ...baseConfig, 'job-keywords': 'Senior' })
     vi.advanceTimersByTime(350)
 
     expect(jobs[0].classList.contains('hide')).toBe(false)
@@ -90,12 +94,12 @@ describe('keyword change handling', () => {
     const jobs = buildJobsDOM(['Senior Engineer', 'Marketing Manager'])
 
     // First call: hide Senior jobs
-    doJobs(neverTrigger, true, 'hide', { ...baseConfig, 'job-keywords': 'Senior,Marketing' })
+    doJobs({ ...baseConfig, 'job-keywords': 'Senior,Marketing' })
     vi.advanceTimersByTime(350)
     expect(jobs[0].classList.contains('hide')).toBe(true)
 
     // Second call: remove Senior keyword — resets and re-evaluates
-    doJobs(neverTrigger, true, 'hide', { ...baseConfig, 'job-keywords': 'Marketing' })
+    doJobs({ ...baseConfig, 'job-keywords': 'Marketing' })
     vi.advanceTimersByTime(350)
 
     expect(jobs[0].classList.contains('hide')).toBe(false)
@@ -108,11 +112,10 @@ describe('keyword change handling', () => {
 // ---------------------------------------------------------------------------
 
 describe('main-toggle guard', () => {
-  it('does not process jobs when main-toggle triggers off', () => {
+  it('does not process jobs when main-toggle is off', () => {
     const jobs = buildJobsDOM(['Senior Engineer'])
-    const triggerToggleOff = (field, bool) => field === 'main-toggle' && bool === false
 
-    doJobs(triggerToggleOff, true, 'hide', { ...baseConfig, 'job-keywords': 'Senior' })
+    doJobs({ ...baseConfig, 'main-toggle': false, 'job-keywords': 'Senior' })
     vi.advanceTimersByTime(350)
 
     expect(jobs[0].classList.contains('hide')).toBe(false)

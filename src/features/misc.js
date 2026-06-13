@@ -16,87 +16,63 @@ import {
   hideAncestorIndexBySelector,
 } from '../utils.js'
 
-const showAdvertisement = () => {
-  showParentBySelector(ADVERTISEMENT_CONTAINER_SELECTOR)
-}
-
-const handleAdvertisement = (checkNeedUpdate, mode) => {
-  if (checkNeedUpdate('hide-advertisements', true)) {
+const handleAdvertisement = (config, mode) => {
+  if (config['hide-advertisements']) {
     hideParentBySelector(ADVERTISEMENT_CONTAINER_SELECTOR, mode, false)
-  } else if (checkNeedUpdate('hide-advertisements', false)) {
-    showAdvertisement()
+  } else {
+    showParentBySelector(ADVERTISEMENT_CONTAINER_SELECTOR)
   }
 }
 
-const showNotifications = () => {
-  showBySelector(NOTIFICATION_COUNT_SELECTOR)
-}
-
-const handleNotifications = (checkNeedUpdate) => {
-  if (checkNeedUpdate('hide-notification-count', true)) {
+const handleNotifications = (config) => {
+  if (config['hide-notification-count']) {
     hideBySelector(NOTIFICATION_COUNT_SELECTOR, 'hide', false)
-  } else if (checkNeedUpdate('hide-notification-count', false)) {
-    showNotifications()
+  } else {
+    showBySelector(NOTIFICATION_COUNT_SELECTOR)
   }
 }
 
-const showNews = () => {
-  showBySelector(NEWS_MODULE_SELECTOR)
-}
-
-const handleNews = (checkNeedUpdate, mode) => {
-  if (checkNeedUpdate('hide-news', true)) {
+const handleNews = (config, mode) => {
+  if (config['hide-news']) {
     hideBySelector(NEWS_MODULE_SELECTOR, mode, false)
-  } else if (checkNeedUpdate('hide-news', false)) {
-    showNews()
+  } else {
+    showBySelector(NEWS_MODULE_SELECTOR)
   }
 }
 
-const showPremium = () => {
-  showBySelector(PREMIUM_NAV_UPSELL_SELECTOR)
-  showAncestorIndexBySelector(PREMIUM_IDENTITY_UPSELL_SELECTOR, 2)
-}
-
-const handlePremium = (checkNeedUpdate, mode) => {
-  if (checkNeedUpdate('hide-premium', true)) {
+const handlePremium = (config, mode) => {
+  if (config['hide-premium']) {
     hideBySelector(PREMIUM_NAV_UPSELL_SELECTOR, mode, false)
-    hideAncestorIndexBySelector(
-      PREMIUM_IDENTITY_UPSELL_SELECTOR,
-      2,
-      mode,
-      false
-    )
-  } else if (checkNeedUpdate('hide-premium', false)) {
-    showPremium()
+    hideAncestorIndexBySelector(PREMIUM_IDENTITY_UPSELL_SELECTOR, 2, mode, false)
+  } else {
+    showBySelector(PREMIUM_NAV_UPSELL_SELECTOR)
+    showAncestorIndexBySelector(PREMIUM_IDENTITY_UPSELL_SELECTOR, 2)
   }
 }
 
-const showFollowRecommendations = () => {
-  showAncestorIndexBySelector(FOLLOWS_SELECTOR, 7)
-}
-
-const handleFollowRecommendations = (checkNeedUpdate, mode) => {
-  if (checkNeedUpdate('hide-follow-recommendations', true)) {
+const handleFollowRecommendations = (config, mode) => {
+  if (config['hide-follow-recommendations']) {
     hideAncestorIndexBySelector(FOLLOWS_SELECTOR, 7, mode, false)
-  } else if (checkNeedUpdate('hide-follow-recommendations', false)) {
-    showFollowRecommendations()
+  } else {
+    showAncestorIndexBySelector(FOLLOWS_SELECTOR, 7)
   }
 }
 
 const showAll = () => {
-  showFollowRecommendations()
-  showNews()
-  showNotifications()
-  showPremium()
-  showAdvertisement()
+  showParentBySelector(ADVERTISEMENT_CONTAINER_SELECTOR)
+  showBySelector(NOTIFICATION_COUNT_SELECTOR)
+  showBySelector(NEWS_MODULE_SELECTOR)
+  showBySelector(PREMIUM_NAV_UPSELL_SELECTOR)
+  showAncestorIndexBySelector(PREMIUM_IDENTITY_UPSELL_SELECTOR, 2)
+  showAncestorIndexBySelector(FOLLOWS_SELECTOR, 7)
 }
 
-const handleAll = (checkNeedUpdate, mode) => {
-  handleFollowRecommendations(checkNeedUpdate, mode)
-  handleNews(checkNeedUpdate, mode)
-  handleNotifications(checkNeedUpdate)
-  handlePremium(checkNeedUpdate, mode)
-  handleAdvertisement(checkNeedUpdate, mode)
+const handleAll = (config, mode) => {
+  handleFollowRecommendations(config, mode)
+  handleNews(config, mode)
+  handleNotifications(config)
+  handlePremium(config, mode)
+  handleAdvertisement(config, mode)
 }
 
 export const unfollowAll = async () => {
@@ -117,12 +93,14 @@ export const unfollowAll = async () => {
   }
 }
 
-export default (checkNeedUpdate, enabled, mode) => {
-  if (checkNeedUpdate('main-toggle', false)) {
+export default (config) => {
+  const enabled = config['main-toggle']
+  const mode = config['gentle-mode'] ? 'dim' : 'hide'
+
+  if (!enabled) {
     showAll()
+    return
   }
 
-  if (!enabled) return
-
-  handleAll(checkNeedUpdate, mode)
+  handleAll(config, mode)
 }

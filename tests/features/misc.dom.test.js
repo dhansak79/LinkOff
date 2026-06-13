@@ -22,6 +22,9 @@ vi.mock('../../src/utils.js', () => ({
 
 const UNFOLLOW_BTN = 'button[aria-label^="Click to stop"]'
 
+// Base config: enabled, hide mode, no specific flags
+const baseConfig = { 'main-toggle': true, 'gentle-mode': false }
+
 // ---------------------------------------------------------------------------
 // unfollowAll
 // ---------------------------------------------------------------------------
@@ -86,87 +89,73 @@ describe('unfollowAll', () => {
 // ---------------------------------------------------------------------------
 
 describe('doMisc', () => {
-  let checkNeedUpdate
-
   beforeEach(() => {
-    checkNeedUpdate = vi.fn().mockReturnValue(false)
     vi.clearAllMocks()
   })
 
-  it('calls showAll when main-toggle is toggled off', () => {
-    checkNeedUpdate.mockImplementation((field, bool) => field === 'main-toggle' && bool === false)
-    doMisc(checkNeedUpdate, false, 'hide')
+  it('calls showAll when main-toggle is off', () => {
+    doMisc({ ...baseConfig, 'main-toggle': false })
     expect(showParentBySelector).toHaveBeenCalled()
     expect(showBySelector).toHaveBeenCalled()
     expect(showAncestorIndexBySelector).toHaveBeenCalled()
   })
 
-  it('does not call handlers when not enabled', () => {
-    doMisc(checkNeedUpdate, false, 'hide')
+  it('does not call hide functions when main-toggle is off', () => {
+    doMisc({ ...baseConfig, 'main-toggle': false })
     expect(hideBySelector).not.toHaveBeenCalled()
     expect(hideParentBySelector).not.toHaveBeenCalled()
     expect(hideAncestorIndexBySelector).not.toHaveBeenCalled()
   })
 
-  it('hides advertisements when toggled on', () => {
-    checkNeedUpdate.mockImplementation((f, b) => f === 'hide-advertisements' && b === true)
-    doMisc(checkNeedUpdate, true, 'hide')
+  it('hides advertisements when hide-advertisements is true', () => {
+    doMisc({ ...baseConfig, 'hide-advertisements': true })
     expect(hideParentBySelector).toHaveBeenCalled()
   })
 
-  it('shows advertisement when hide-advertisements toggled off', () => {
-    checkNeedUpdate.mockImplementation((f, b) => f === 'hide-advertisements' && b === false)
-    doMisc(checkNeedUpdate, true, 'hide')
+  it('shows advertisement when hide-advertisements is false', () => {
+    doMisc({ ...baseConfig, 'hide-advertisements': false })
     expect(showParentBySelector).toHaveBeenCalled()
   })
 
-  it('hides notification count when toggled on', () => {
-    checkNeedUpdate.mockImplementation((f, b) => f === 'hide-notification-count' && b === true)
-    doMisc(checkNeedUpdate, true, 'hide')
+  it('hides notification count when hide-notification-count is true', () => {
+    doMisc({ ...baseConfig, 'hide-notification-count': true })
     expect(hideBySelector).toHaveBeenCalled()
   })
 
-  it('shows notification count when hide-notification-count toggled off', () => {
-    checkNeedUpdate.mockImplementation((f, b) => f === 'hide-notification-count' && b === false)
-    doMisc(checkNeedUpdate, true, 'hide')
+  it('shows notification count when hide-notification-count is false', () => {
+    doMisc({ ...baseConfig, 'hide-notification-count': false })
     expect(showBySelector).toHaveBeenCalled()
   })
 
-  it('hides news when toggled on', () => {
-    checkNeedUpdate.mockImplementation((f, b) => f === 'hide-news' && b === true)
-    doMisc(checkNeedUpdate, true, 'dim')
+  it('hides news when hide-news is true', () => {
+    doMisc({ ...baseConfig, 'hide-news': true })
     expect(hideBySelector).toHaveBeenCalled()
   })
 
-  it('shows news when hide-news toggled off', () => {
-    checkNeedUpdate.mockImplementation((f, b) => f === 'hide-news' && b === false)
-    doMisc(checkNeedUpdate, true, 'hide')
+  it('shows news when hide-news is false', () => {
+    doMisc({ ...baseConfig, 'hide-news': false })
     expect(showBySelector).toHaveBeenCalled()
   })
 
-  it('hides premium elements when toggled on', () => {
-    checkNeedUpdate.mockImplementation((f, b) => f === 'hide-premium' && b === true)
-    doMisc(checkNeedUpdate, true, 'hide')
+  it('hides premium elements when hide-premium is true', () => {
+    doMisc({ ...baseConfig, 'hide-premium': true })
     expect(hideBySelector).toHaveBeenCalled()
     expect(hideAncestorIndexBySelector).toHaveBeenCalled()
   })
 
-  it('shows premium when hide-premium toggled off', () => {
-    checkNeedUpdate.mockImplementation((f, b) => f === 'hide-premium' && b === false)
-    doMisc(checkNeedUpdate, true, 'hide')
+  it('shows premium when hide-premium is false', () => {
+    doMisc({ ...baseConfig, 'hide-premium': false })
     expect(showBySelector).toHaveBeenCalled()
     expect(showAncestorIndexBySelector).toHaveBeenCalled()
   })
 
-  it('hides follow recommendations when toggled on', () => {
-    checkNeedUpdate.mockImplementation((f, b) => f === 'hide-follow-recommendations' && b === true)
-    doMisc(checkNeedUpdate, true, 'hide')
+  it('hides follow recommendations when hide-follow-recommendations is true', () => {
+    doMisc({ ...baseConfig, 'hide-follow-recommendations': true })
     expect(hideAncestorIndexBySelector).toHaveBeenCalled()
   })
 
-  it('shows follow recommendations when toggled off', () => {
-    checkNeedUpdate.mockImplementation((f, b) => f === 'hide-follow-recommendations' && b === false)
-    doMisc(checkNeedUpdate, true, 'hide')
+  it('shows follow recommendations when hide-follow-recommendations is false', () => {
+    doMisc({ ...baseConfig, 'hide-follow-recommendations': false })
     expect(showAncestorIndexBySelector).toHaveBeenCalled()
   })
 })

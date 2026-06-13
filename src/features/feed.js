@@ -1,40 +1,85 @@
 import {
   DROPDOWN_TRIGGER_SELECTOR,
   FEED_SELECTOR_CANDIDATES,
+  LIKED_KEYWORDS,
   MIN_POST_COUNT,
   POST_SELECTOR,
   RECENT_OPTION_SELECTOR,
+  SUGGESTED_KEYWORD,
 } from '../constants.js'
 import {
   findElement,
-  getCustomSelector,
   hidePost,
   removeHideClasses,
   resetBlockedPosts,
   resetShownPosts,
   waitForSelector,
 } from '../utils.js'
-import { getFeedKeywords } from './feed-keywords.js'
 import { getSlopSignals, isSlop } from './slop-detector.js'
 
 let feedObserver = null
 let scrollTimerId = null
-let feedKeywords = []
-let oldFeedKeywords = []
 
-const handleSortByRecent = async (checkNeedUpdate) => {
-  if (!checkNeedUpdate('sort-by-recent', true)) return
+const POST_SELECTOR_STRING = POST_SELECTOR.join(',')
 
+// ---------------------------------------------------------------------------
+// Keyword extraction (exported so tests can use it directly)
+// ---------------------------------------------------------------------------
+
+const AGE_UNITS = [
+  { name: 'hour',  suffix: 'h •',  from: 2, to: 24 },
+  { name: 'day',   suffix: 'd •',  from: 2, to: 30 },
+  { name: 'week',  suffix: 'w •',  from: 2, to: 4  },
+  { name: 'month', suffix: 'mo •', from: 2, to: 12 },
+  { name: 'year',  suffix: 'y •',  from: 2, to: 5  },
+]
+
+const KEYWORD_FLAGS = [
+  ['hide-liked',     LIKED_KEYWORDS],
+  ['hide-suggested', [SUGGESTED_KEYWORD]],
+]
+
+export const getFeedKeywords = (config) => {
+  const keywords =
+    config['feed-keywords'] === '' ? [] : config['feed-keywords'].split(',')
+
+  const startIndex = AGE_UNITS.findIndex((u) => u.name === config['hide-by-age'])
+  if (startIndex !== -1) {
+    const { suffix, from, to } = AGE_UNITS[startIndex]
+    for (let x = from; x <= to; x++) {
+      keywords.push(`${x}${suffix}`)
+    }
+    for (let i = startIndex + 1; i < AGE_UNITS.length; i++) {
+      keywords.push(AGE_UNITS[i].suffix)
+    }
+  }
+
+  for (const [flag, values] of KEYWORD_FLAGS) {
+    if (config[flag]) keywords.push(...values)
+  }
+
+  console.log('FocusedIn: Current feed keywords are', keywords)
+  return keywords
+}
+
+// ---------------------------------------------------------------------------
+// Sort by recent
+// ---------------------------------------------------------------------------
+
+const handleSortByRecent = async (config) => {
+  if (!config['sort-by-recent']) return
   if (!window.location.pathname.startsWith('/feed/')) return
 
   const dropdownTrigger = await waitForSelector(DROPDOWN_TRIGGER_SELECTOR)
-
   dropdownTrigger?.click()
 
   const recentOption = await waitForSelector(RECENT_OPTION_SELECTOR)
-
   recentOption?.click()
 }
+
+// ---------------------------------------------------------------------------
+// Post text / author extraction (for slop detection)
+// ---------------------------------------------------------------------------
 
 const extractPostText = (el) => {
   const textEl =
@@ -52,7 +97,6 @@ const SOCIAL_PROOF_RE = /likes this|celebrates this|commented on|reposted/i
 
 const extractAuthorName = (post) => {
   // Actor card aria-label: "Name [Premium] Profile Degree" (premium) or "Name  Degree" (non-premium)
-  // Degree is always 1st/2nd/3rd with optional +
   const actorDiv = post.querySelector(
     '[aria-label*=" Profile"],[aria-label*="st+"],[aria-label*="nd+"],[aria-label*="rd+"]'
   )
@@ -63,10 +107,8 @@ const extractAuthorName = (post) => {
       .trim()
     if (name) return name
   }
-  // Fallback: Follow button always names the post author
   const followBtn = post.querySelector('button[aria-label^="Follow "]')
   if (followBtn) return followBtn.getAttribute('aria-label').replace(/^Follow /, '').trim()
-  // Fallback: <strong> in /in/ link (older LinkedIn HTML and tests)
   for (const strong of post.querySelectorAll('a[href*="/in/"] strong')) {
     const parent = strong.closest('a')?.parentElement
     const directText = [...(parent?.childNodes ?? [])]
@@ -77,7 +119,6 @@ const extractAuthorName = (post) => {
   }
   return null
 }
-
 
 const addRevealBanner = (post, signals) => {
   if (post.previousElementSibling?.classList.contains('focusedin-slop-collapsed')) return
@@ -92,7 +133,6 @@ const addRevealBanner = (post, signals) => {
 
   const label = document.createElement('div')
   label.textContent = `🤖 AI slop hidden (${signals.join(', ')})`
-
   banner.append(label)
 
   if (author) {
@@ -104,6 +144,10 @@ const addRevealBanner = (post, signals) => {
 
   post.before(banner)
 }
+
+// ---------------------------------------------------------------------------
+// Feed observation and post filtering
+// ---------------------------------------------------------------------------
 
 // Returns true if a DOM node is a feed post (not an intermediate container or non-element)
 const isPostNode = (node) => {
@@ -117,7 +161,6 @@ const isPostNode = (node) => {
 }
 
 const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
-  oldFeedKeywords = keywords
   let postsProcessed = 0
 
   const applyKeywordToPost = (post) => {
@@ -153,7 +196,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
       applyKeywordToPost(node)
     } else {
       // Intermediate container — check descendants for posts
-      node.querySelectorAll(getCustomSelector(POST_SELECTOR, 'all')).forEach(applyKeywordToPost)
+      node.querySelectorAll(POST_SELECTOR_STRING).forEach(applyKeywordToPost)
     }
   }
 
@@ -167,7 +210,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
     postsProcessed = 0
 
     // Process posts already in the DOM (handles initial load and keyword changes)
-    document.querySelectorAll(getCustomSelector(POST_SELECTOR, 'all')).forEach(applyKeywordToPost)
+    document.querySelectorAll(POST_SELECTOR_STRING).forEach(applyKeywordToPost)
 
     // Scroll only if LinkedIn hasn't loaded enough posts yet — up to 2 nudges, 1s apart
     const scheduleScroll = (attempt) => {
@@ -192,15 +235,15 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
   if (keywords.length || detectSlop || hideSlop) connectObserver()
 }
 
-const toggleFeed = async (shown) => {
+const toggleFeed = (shown) => {
   if (!window.location.pathname.startsWith('/feed/')) return
   const feed = findElement(FEED_SELECTOR_CANDIDATES)
   if (shown) {
     feed?.classList.remove('hide')
-    console.log(`FocusedIn: feed enabled`)
+    console.log('FocusedIn: feed enabled')
   } else {
     feed?.classList.add('hide')
-    console.log(`FocusedIn: feed disabled`)
+    console.log('FocusedIn: feed disabled')
   }
 }
 
@@ -230,28 +273,28 @@ const handleFilterFeed = (mode, config) => {
   toggleFeed(true)
   disconnectObserver()
   resetBlockedPosts()
-  blockPostsByKeywords(feedKeywords, mode, !!config['detect-slop'], !!config['hide-slop'])
+  blockPostsByKeywords(
+    getFeedKeywords(config),
+    mode,
+    !!config['detect-slop'],
+    !!config['hide-slop']
+  )
 }
 
-export default (checkNeedUpdate, enabled, mode, config) => {
-  if (checkNeedUpdate('main-toggle', false)) {
-    handleToggledOff()
+export default (config) => {
+  const enabled = config['main-toggle']
+  const mode = config['gentle-mode'] ? 'dim' : 'hide'
 
+  if (!enabled) {
+    handleToggledOff()
     return
   }
 
-  if (checkNeedUpdate('hide-whole-feed', true)) {
+  if (config['hide-whole-feed']) {
     handleHideWholeFeed()
     return
   }
 
-  if (!enabled) return
-
-  handleSortByRecent(checkNeedUpdate)
-
-  feedKeywords = getFeedKeywords(config)
-
-  if (feedKeywords !== oldFeedKeywords) {
-    handleFilterFeed(mode, config)
-  }
+  handleSortByRecent(config)
+  handleFilterFeed(mode, config)
 }
