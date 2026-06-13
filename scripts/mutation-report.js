@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-env node */
 // Reads reports/mutation/mutation.json and writes a compact markdown summary
 // that can be read directly by Claude for test-gap analysis.
 
