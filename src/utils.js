@@ -6,16 +6,10 @@ import {
   VISIBLE_SELECTOR,
 } from './constants.js'
 
-const checkElementAndPlaceholderBySelector = (selector, scope = undefined) => {
-  const found = (scope ?? document).querySelectorAll(selector)
-
-  if (found.length > 0) {
-    return Array.from(found).some((element) =>
-      element.innerHTML.includes('skeleton')
-    )
-  }
-
-  return true
+// Returns true when the selector matches at least one element with no skeleton placeholder
+const isReady = (selector) => {
+  const found = document.querySelectorAll(selector)
+  return found.length > 0 && !Array.from(found).some((el) => el.innerHTML.includes('skeleton'))
 }
 
 export const findElement = (candidates) => {
@@ -46,25 +40,51 @@ const resetBySelector = (selector) => {
   })
 }
 
-export const waitForSelector = async (selector) => {
-  while (checkElementAndPlaceholderBySelector(selector)) {
-    await new Promise((resolve) => {
-      requestAnimationFrame(resolve)
+export const waitForSelector = (selector, timeout = 5000) =>
+  new Promise((resolve) => {
+    if (isReady(selector)) {
+      resolve(document.querySelector(selector))
+      return
+    }
+
+    const observer = new MutationObserver(() => {
+      if (isReady(selector)) {
+        observer.disconnect()
+        clearTimeout(timer)
+        resolve(document.querySelector(selector))
+      }
     })
-  }
 
-  return document.querySelector(selector)
-}
+    observer.observe(document.body, { childList: true, subtree: true })
 
-export const waitForSelectorAll = async (selector) => {
-  while (checkElementAndPlaceholderBySelector(selector)) {
-    await new Promise((resolve) => {
-      requestAnimationFrame(resolve)
+    const timer = setTimeout(() => {
+      observer.disconnect()
+      resolve(null)
+    }, timeout)
+  })
+
+export const waitForSelectorAll = (selector, timeout = 5000) =>
+  new Promise((resolve) => {
+    if (isReady(selector)) {
+      resolve(document.querySelectorAll(selector))
+      return
+    }
+
+    const observer = new MutationObserver(() => {
+      if (isReady(selector)) {
+        observer.disconnect()
+        clearTimeout(timer)
+        resolve(document.querySelectorAll(selector))
+      }
     })
-  }
 
-  return document.querySelectorAll(selector)
-}
+    observer.observe(document.body, { childList: true, subtree: true })
+
+    const timer = setTimeout(() => {
+      observer.disconnect()
+      resolve(document.querySelectorAll(selector))
+    }, timeout)
+  })
 
 export const hideBySelector = async (selectors, mode, showIcon = true) => {
   const elements = await waitForSelectorAll(resolveSelector(selectors))

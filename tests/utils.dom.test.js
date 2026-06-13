@@ -4,6 +4,7 @@ import {
   findElement,
   removeHideClasses,
   waitForSelector,
+  waitForSelectorAll,
   hideBySelector,
   showBySelector,
   hideParentBySelector,
@@ -428,10 +429,78 @@ describe('findElement', () => {
 // ---------------------------------------------------------------------------
 
 describe('waitForSelector', () => {
-  it('returns the element when it exists with non-skeleton content', async () => {
+  it('returns the element immediately when it already exists', async () => {
     document.body.innerHTML = '<div class="target">content</div>'
     const el = await waitForSelector('.target')
     expect(el).toBe(document.querySelector('.target'))
+  })
+
+  it('resolves when the element is added to the DOM after the call', async () => {
+    document.body.innerHTML = ''
+    const promise = waitForSelector('.target')
+
+    const el = document.createElement('div')
+    el.className = 'target'
+    el.textContent = 'content'
+    document.body.appendChild(el)
+
+    expect(await promise).toBe(el)
+  })
+
+  it('waits for skeleton content to be replaced before resolving', async () => {
+    document.body.innerHTML = '<div class="target"><div class="skeleton"></div></div>'
+    const promise = waitForSelector('.target')
+
+    // Replace skeleton with real content — triggers a childList mutation
+    document.querySelector('.target').innerHTML = 'real content'
+
+    expect(await promise).toBe(document.querySelector('.target'))
+  })
+
+  it('resolves with null when the element never appears within the timeout', async () => {
+    document.body.innerHTML = ''
+    const result = await waitForSelector('.target', 10)
+    expect(result).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// waitForSelectorAll
+// ---------------------------------------------------------------------------
+
+describe('waitForSelectorAll', () => {
+  it('resolves immediately when elements already exist', async () => {
+    document.body.innerHTML = '<div class="item">a</div><div class="item">b</div>'
+    const result = await waitForSelectorAll('.item')
+    expect(result.length).toBe(2)
+  })
+
+  it('resolves when elements are added to the DOM after the call', async () => {
+    document.body.innerHTML = ''
+    const promise = waitForSelectorAll('.item')
+
+    const el = document.createElement('div')
+    el.className = 'item'
+    document.body.appendChild(el)
+
+    const result = await promise
+    expect(result.length).toBe(1)
+  })
+
+  it('waits for skeleton content to be replaced before resolving', async () => {
+    document.body.innerHTML = '<div class="item"><div class="skeleton"></div></div>'
+    const promise = waitForSelectorAll('.item')
+
+    document.querySelector('.item').innerHTML = 'real content'
+
+    const result = await promise
+    expect(result.length).toBe(1)
+  })
+
+  it('resolves via timeout when no elements appear', async () => {
+    document.body.innerHTML = ''
+    const result = await waitForSelectorAll('.item', 10)
+    expect(result.length).toBe(0)
   })
 })
 
