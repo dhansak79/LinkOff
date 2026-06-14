@@ -524,6 +524,60 @@ describe('getSlopScore - Dustin Andrews AI buzzwords', () => {
   })
 })
 
+describe('getSlopScore - deserve motivational posts', () => {
+  it('detects "you deserve"', () => {
+    expect(getSlopScore('You deserve a manager who actually invests in your growth.')).toBeGreaterThan(0)
+  })
+
+  it('detects "seat at the table"', () => {
+    expect(getSlopScore('Stop waiting to be invited. Pull up your own seat at the table.')).toBeGreaterThan(0)
+  })
+
+  it('detects "take up space"', () => {
+    expect(getSlopScore('You were not born to shrink. Take up space. Own the room.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - LLM output tells', () => {
+  it('detects "rest assured"', () => {
+    expect(getSlopScore('Rest assured, the team is working around the clock to resolve this.')).toBeGreaterThan(0)
+  })
+
+  it('detects "thought-provoking"', () => {
+    expect(getSlopScore('A thought-provoking read on the future of distributed teams.')).toBeGreaterThan(0)
+  })
+
+  it('detects "nuanced"', () => {
+    expect(getSlopScore('The reality is far more nuanced than most people realise.')).toBeGreaterThan(0)
+  })
+
+  it('detects "multifaceted"', () => {
+    expect(getSlopScore('Leadership is a multifaceted skill that takes years to develop.')).toBeGreaterThan(0)
+  })
+
+  it('detects "feel free to reach out"', () => {
+    expect(getSlopScore('If you have questions about this, feel free to reach out anytime.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - extended corporate jargon', () => {
+  it('detects "learnings"', () => {
+    expect(getSlopScore('Sharing my top learnings from six months of building in stealth.')).toBeGreaterThan(0)
+  })
+
+  it('detects "ideation"', () => {
+    expect(getSlopScore('We kicked off with a full day of ideation and cross-functional collaboration.')).toBeGreaterThan(0)
+  })
+
+  it('detects "low-hanging fruit"', () => {
+    expect(getSlopScore('Most teams ignore the low-hanging fruit and go straight to complex solutions.')).toBeGreaterThan(0)
+  })
+
+  it('detects "best practices"', () => {
+    expect(getSlopScore('Here are the best practices every engineering manager should know.')).toBeGreaterThan(0)
+  })
+})
+
 describe('getSlopScore - two types of people', () => {
   it('detects "there are two types of people"', () => {
     expect(getSlopScore('There are two types of people in any organisation. Those who wait and those who act.')).toBeGreaterThan(0)

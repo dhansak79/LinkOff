@@ -210,6 +210,36 @@ export const SLOP_PHRASES = [
   'the next 12 months',
   'in 6 months ai will',
 
+  // "Deserve" motivational posts
+  'you deserve',
+  'you deserve better',
+  'you deserve a seat',
+  'seat at the table',
+  'you belong here',
+  'take up space',
+
+  // LLM output tells — pasted directly from a chat window
+  'rest assured',
+  'please note that',
+  'it is important to note',
+  'hope this helps',
+  'feel free to reach out',
+  'do not hesitate to',
+  'thought-provoking',
+  'nuanced',
+  'multifaceted',
+
+  // More corporate jargon
+  'stakeholders',
+  'cross-functional',
+  'bandwidth',
+  'alignment',
+  'ideation',
+  'learnings',
+  'low-hanging fruit',
+  'best practices',
+  'moving the needle',
+
   // "Two types of people" binary framing — very specific LinkedIn pattern
   'there are two types of people',
   'two types of people',
