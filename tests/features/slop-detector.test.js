@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { getSlopScore, getSlopSignals, isSlop, SLOP_THRESHOLD } from '../../src/features/slop-detector.js'
 
 // ---------------------------------------------------------------------------
-// Phrase signal — binary: any matching phrase scores SLOP_THRESHOLD (triggers alone)
+// Phrase signal — weighted: 1–2 phrases score 1, 3+ score 2, threshold is 2
+// A single common phrase in an otherwise clean post should not trigger alone.
 // ---------------------------------------------------------------------------
 
 describe('getSlopScore - slop phrases', () => {
@@ -10,34 +11,30 @@ describe('getSlopScore - slop phrases', () => {
     expect(getSlopScore('Had a great meeting today. Really enjoyed the discussion about our roadmap.')).toBe(0)
   })
 
-  it('scores SLOP_THRESHOLD when a known slop phrase is present', () => {
-    expect(getSlopScore("In today's fast-paced world, we need to adapt.")).toBeGreaterThanOrEqual(SLOP_THRESHOLD)
+  it('scores 1 for a single matching phrase (below the threshold)', () => {
+    expect(getSlopScore("In today's fast-paced world, we need to adapt.")).toBe(1)
   })
 
-  it('triggers for "let that sink in"', () => {
-    expect(isSlop('Let that sink in.')).toBe(true)
+  it('a single phrase match alone does not reach the slop threshold', () => {
+    expect(isSlop("In today's fast-paced world, we need to adapt.")).toBe(false)
   })
 
-  it('triggers for "game-changer"', () => {
-    expect(isSlop('This tool is a game-changer for productivity.')).toBe(true)
+  it('scores 1 for two phrase matches (still below the threshold)', () => {
+    expect(getSlopScore("In today's fast-paced world, let that sink in.")).toBe(1)
   })
 
-  it('triggers for "thought leadership"', () => {
-    expect(isSlop('Real thought leadership is rare these days.')).toBe(true)
+  it('scores 2 for three or more phrase matches (reaches the threshold)', () => {
+    expect(getSlopScore("In today's fast-paced world, let that sink in. This is a game-changer.")).toBe(2)
   })
 
-  it('triggers for "key takeaways"', () => {
-    expect(isSlop('Key takeaways from the conference:')).toBe(true)
+  it('three or more phrase matches triggers isSlop', () => {
+    expect(isSlop("In today's fast-paced world, let that sink in. Leverage this game-changer.")).toBe(true)
   })
 
-  it('a single phrase match alone crosses the slop threshold', () => {
-    expect(isSlop("In today's fast-paced world, we need to adapt.")).toBe(true)
-  })
-
-  it('phrase score is the same regardless of how many phrases match', () => {
+  it('more phrases score higher than fewer phrases', () => {
     const one = getSlopScore("In today's fast-paced world, adapting is key.")
-    const five = getSlopScore("In today's fast-paced world, let that sink in. Game-changer! Leverage thought leadership. Key takeaways.")
-    expect(one).toBe(five)
+    const many = getSlopScore("In today's fast-paced world, let that sink in. Game-changer! Leverage thought leadership. Key takeaways.")
+    expect(many).toBeGreaterThan(one)
   })
 })
 
@@ -231,7 +228,7 @@ describe('getSlopScore - multiple signals accumulate', () => {
 })
 
 // ---------------------------------------------------------------------------
-// isSlop — threshold gate (2+ signals required)
+// isSlop — threshold gate: requires 2+ signal points to flag
 // ---------------------------------------------------------------------------
 
 describe('isSlop', () => {
@@ -239,8 +236,8 @@ describe('isSlop', () => {
     expect(isSlop('Just shipped a new feature today. The team worked really hard on it and I am proud of what we built.')).toBe(false)
   })
 
-  it('returns true when a single slop phrase is present', () => {
-    expect(isSlop("In today's fast-paced world, we need to adapt.")).toBe(true)
+  it('returns false for a single slop phrase with no other signals', () => {
+    expect(isSlop("In today's fast-paced world, we need to adapt.")).toBe(false)
   })
 
   it('returns false when no signals are present', () => {
@@ -340,6 +337,10 @@ describe('getSlopScore - em dash', () => {
 
   it('does not flag a post with only a regular hyphen', () => {
     expect(getSlopScore('We shipped the feature - and it went great.')).toBe(0)
+  })
+
+  it('reports "language patterns" in signals for an em dash', () => {
+    expect(getSlopSignals('We shipped the feature — and it went great.')).toContain('language patterns')
   })
 })
 

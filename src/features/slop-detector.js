@@ -6,14 +6,11 @@ const LINE_PATTERN_RATIO = 0.6
 const HEAVY_LINE_COUNT = 15
 const HEAVY_LINE_RATIO = 0.8
 
-export const SLOP_THRESHOLD = 1
+export const SLOP_THRESHOLD = 2
 
-const countSlopPhrases = (text) => {
+const countMatchingPhrases = (text) => {
   const lower = text.toLowerCase()
-  return (
-    SLOP_PHRASES.filter((phrase) => lower.includes(phrase)).length +
-    SLOP_PATTERNS.filter((pattern) => pattern.test(text)).length
-  )
+  return SLOP_PHRASES.filter((phrase) => lower.includes(phrase)).length
 }
 
 const hasHighEmojiDensity = (text) => {
@@ -45,16 +42,30 @@ const linePatternScore = (text) => {
   return 1
 }
 
+// 1–2 phrase matches score 1; 3+ score 2. A single common phrase in an
+// otherwise clean post should not be enough to flag it.
+const phraseScore = (text) => {
+  const count = countMatchingPhrases(text)
+  if (count >= 3) return 2
+  return count > 0 ? 1 : 0
+}
+
+// Regex patterns are high-confidence signals — a single match is enough.
+const patternScore = (text) =>
+  SLOP_PATTERNS.some((pattern) => pattern.test(text)) ? 2 : 0
+
 export const getSlopScore = (text) =>
-  (countSlopPhrases(text) > 0 ? SLOP_THRESHOLD : 0) +
+  phraseScore(text) +
   (hasHighEmojiDensity(text) ? 1 : 0) +
-  (hasMarkdownFormatting(text) ? 1 : 0) +
-  linePatternScore(text)
+  (hasMarkdownFormatting(text) ? 2 : 0) +
+  linePatternScore(text) +
+  patternScore(text)
 
 export const getSlopSignals = (text) => {
   const signals = []
-  const phraseCount = countSlopPhrases(text)
+  const phraseCount = countMatchingPhrases(text)
   if (phraseCount > 0) signals.push(`buzzword phrases (${phraseCount})`)
+  if (SLOP_PATTERNS.some((p) => p.test(text))) signals.push('language patterns')
   if (hasHighEmojiDensity(text)) signals.push('emoji overload')
   if (hasMarkdownFormatting(text)) signals.push('raw markdown')
   const lps = linePatternScore(text)
