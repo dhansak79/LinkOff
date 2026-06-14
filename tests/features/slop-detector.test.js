@@ -524,6 +524,62 @@ describe('getSlopScore - Dustin Andrews AI buzzwords', () => {
   })
 })
 
+describe('getSlopScore - anecdote and storytime hooks', () => {
+  it('detects "story time:"', () => {
+    expect(getSlopScore('Story time: I once lost a client because of one email.')).toBeGreaterThan(0)
+  })
+
+  it('detects "true story:"', () => {
+    expect(getSlopScore('True story: I was rejected by every investor in the room.')).toBeGreaterThan(0)
+  })
+
+  it('detects "i remember the day"', () => {
+    expect(getSlopScore('I remember the day I decided to leave my corporate job.')).toBeGreaterThan(0)
+  })
+
+  it('detects "plot twist:"', () => {
+    expect(getSlopScore('Plot twist: the hardest part was not the work.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - engagement solicitation', () => {
+  it('detects "agree or disagree?"', () => {
+    expect(getSlopScore('Managers are the number one reason people quit. Agree or disagree?')).toBeGreaterThan(0)
+  })
+
+  it('detects "can anyone relate?"', () => {
+    expect(getSlopScore('Some days you just feel like giving up. Can anyone relate?')).toBeGreaterThan(0)
+  })
+
+  it('detects "am i the only one"', () => {
+    expect(getSlopScore('Am I the only one who finds open plan offices unbearable?')).toBeGreaterThan(0)
+  })
+
+  it('detects "what would you add?"', () => {
+    expect(getSlopScore('These are my top five lessons. What would you add?')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - self-promotion patterns', () => {
+  it('detects "link in comments"', () => {
+    expect(getSlopScore('I wrote a full breakdown of this. Link in comments.')).toBeGreaterThan(0)
+  })
+
+  it('detects "dm me for"', () => {
+    expect(getSlopScore('DM me for the free template I built for this.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - false wisdom', () => {
+  it('detects "done is better than perfect"', () => {
+    expect(getSlopScore('Done is better than perfect. Ship it and iterate.')).toBeGreaterThan(0)
+  })
+
+  it('detects "embrace the journey"', () => {
+    expect(getSlopScore('Stop rushing toward the destination. Embrace the journey.')).toBeGreaterThan(0)
+  })
+})
+
 describe('getSlopScore - career and hustle culture', () => {
   it('detects "6-figure"', () => {
     expect(getSlopScore('How I built a 6-figure business from my spare bedroom.')).toBeGreaterThan(0)

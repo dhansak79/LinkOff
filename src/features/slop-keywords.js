@@ -210,6 +210,33 @@ export const SLOP_PHRASES = [
   'the next 12 months',
   'in 6 months ai will',
 
+  // Anecdote / storytime hooks
+  'story time:',
+  'storytime:',
+  'true story:',
+  'i remember the day',
+  'plot twist:',
+
+  // Engagement solicitation
+  'agree or disagree?',
+  'can anyone relate?',
+  'am i the only one',
+  'would you agree?',
+  'what would you add?',
+
+  // Self-promotion patterns
+  'link in comments',
+  'link in bio',
+  'dm me for',
+  'dm me if',
+
+  // False wisdom and tautologies
+  'done is better than perfect',
+  'embrace the journey',
+  'enjoy the ride',
+  'fall in love with the journey',
+  'one day at a time',
+
   // Career and hustle culture porn
   '6-figure',
   'quit my 9-5',
