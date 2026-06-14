@@ -210,6 +210,60 @@ export const SLOP_PHRASES = [
   'the next 12 months',
   'in 6 months ai will',
 
+  // Mindset genre — LinkedIn's most reliable content category
+  'growth mindset',
+  'mindset shift',
+  'mindset is everything',
+  'abundance mindset',
+  'winning mindset',
+
+  // "High performer" hustle culture
+  'high performers',
+  'top performers',
+  'top 1%',
+  'high achievers',
+  'elite performers',
+
+  // Non-negotiables posts — a whole LinkedIn genre
+  'non-negotiable',
+  'my non-negotiables',
+
+  // Morning routine genre
+  'morning routine',
+  '5am club',
+  'wake up at 5',
+  'wake up at 4',
+
+  // Manifestation and abundance posts
+  'manifestation',
+  'law of attraction',
+  'abundance',
+
+  // "Surround yourself" advice posts
+  'surround yourself with',
+  'find your tribe',
+  'build your tribe',
+  'your tribe',
+
+  // "The truth about" hook
+  'the truth about',
+
+  // "Fail forward" resilience genre
+  'fail forward',
+  'failure is feedback',
+  'embrace failure',
+  'failure is not the opposite',
+
+  // Celebrate the wins
+  'celebrate the small wins',
+  'celebrate your wins',
+  'small wins',
+
+  // Workplace culture buzzwords
+  'quiet quitting',
+  'quiet firing',
+  'bare minimum',
+
   // "Level up" gaming language imported into professional slop
   'level up',
   'next level thinking',

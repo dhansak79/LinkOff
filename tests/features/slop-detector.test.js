@@ -524,6 +524,92 @@ describe('getSlopScore - Dustin Andrews AI buzzwords', () => {
   })
 })
 
+describe('getSlopScore - mindset genre', () => {
+  it('detects "growth mindset"', () => {
+    expect(getSlopScore('The one thing that separates top performers is a growth mindset.')).toBeGreaterThan(0)
+  })
+
+  it('detects "mindset shift"', () => {
+    expect(getSlopScore('This one mindset shift changed how I approach every challenge.')).toBeGreaterThan(0)
+  })
+
+  it('detects "abundance mindset"', () => {
+    expect(getSlopScore('Switch from a scarcity mindset to an abundance mindset and watch everything change.')).toBeGreaterThan(0)
+  })
+
+  it('detects "mindset is everything"', () => {
+    expect(getSlopScore('Mindset is everything. Skills can be learned. Mindset has to be earned.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - high performer culture', () => {
+  it('detects "high performers"', () => {
+    expect(getSlopScore('High performers do not wait for motivation. They build systems.')).toBeGreaterThan(0)
+  })
+
+  it('detects "top 1%"', () => {
+    expect(getSlopScore('The habits that put you in the top 1% are not complicated.')).toBeGreaterThan(0)
+  })
+
+  it('detects "non-negotiable"', () => {
+    expect(getSlopScore('My morning walk is non-negotiable. It sets the tone for everything.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - morning routine genre', () => {
+  it('detects "morning routine"', () => {
+    expect(getSlopScore('My morning routine is the reason I outperform most people.')).toBeGreaterThan(0)
+  })
+
+  it('detects "5am club"', () => {
+    expect(getSlopScore('Joining the 5am club was the best decision I ever made.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - manifestation and abundance', () => {
+  it('detects "manifestation"', () => {
+    expect(getSlopScore('Manifestation is not magic. It is clarity plus action.')).toBeGreaterThan(0)
+  })
+
+  it('detects "law of attraction"', () => {
+    expect(getSlopScore('The law of attraction works. Here is the science behind it.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - surround yourself posts', () => {
+  it('detects "surround yourself with"', () => {
+    expect(getSlopScore('Surround yourself with people who challenge you to grow.')).toBeGreaterThan(0)
+  })
+
+  it('detects "find your tribe"', () => {
+    expect(getSlopScore('Find your tribe. The right community changes everything.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - fail forward resilience genre', () => {
+  it('detects "fail forward"', () => {
+    expect(getSlopScore('The best leaders I know have all learned to fail forward.')).toBeGreaterThan(0)
+  })
+
+  it('detects "failure is feedback"', () => {
+    expect(getSlopScore('Stop calling it failure. Failure is feedback. Reframe it.')).toBeGreaterThan(0)
+  })
+
+  it('detects "celebrate the small wins"', () => {
+    expect(getSlopScore('Celebrate the small wins. They are the foundation of big results.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - workplace culture buzzwords', () => {
+  it('detects "quiet quitting"', () => {
+    expect(getSlopScore('Quiet quitting is not laziness. It is a rational response to broken management.')).toBeGreaterThan(0)
+  })
+
+  it('detects "the truth about"', () => {
+    expect(getSlopScore('The truth about remote work that nobody wants to admit.')).toBeGreaterThan(0)
+  })
+})
+
 describe('getSlopScore - level up language', () => {
   it('detects "level up"', () => {
     expect(getSlopScore('Here are five books that will level up your thinking.')).toBeGreaterThan(0)
