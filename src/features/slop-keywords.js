@@ -210,6 +210,41 @@ export const SLOP_PHRASES = [
   'the next 12 months',
   'in 6 months ai will',
 
+  // "Two types of people" binary framing — very specific LinkedIn pattern
+  'there are two types of people',
+  'two types of people',
+  'two kinds of people',
+
+  // Hustle effort culture
+  'put in the work',
+  'do the work',
+  'no shortcuts',
+  'there are no shortcuts',
+  'outwork everyone',
+  'work ethic',
+
+  // Authenticity performance — being authentic as a brand strategy
+  'authentic self',
+  'showing up authentically',
+  'showing up as',
+  'raw and honest',
+  'being vulnerable',
+  'radical transparency',
+  'bring your whole self',
+
+  // Disruption vocabulary
+  'disrupt',
+  'disruption',
+  'impactful',
+  'move fast',
+
+  // "Year in review" / recap format posts
+  'year in review',
+  'weekly recap',
+  'monthly recap',
+  'wrap-up',
+  'looking back on',
+
   // Chapter and season metaphors — life reframed as a Netflix series
   'new chapter',
   'next chapter',

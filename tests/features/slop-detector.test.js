@@ -524,6 +524,72 @@ describe('getSlopScore - Dustin Andrews AI buzzwords', () => {
   })
 })
 
+describe('getSlopScore - two types of people', () => {
+  it('detects "there are two types of people"', () => {
+    expect(getSlopScore('There are two types of people in any organisation. Those who wait and those who act.')).toBeGreaterThan(0)
+  })
+
+  it('detects "two kinds of people"', () => {
+    expect(getSlopScore('Two kinds of people exist in every team. Which one are you?')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - hustle effort culture', () => {
+  it('detects "put in the work"', () => {
+    expect(getSlopScore('There is no secret. You just have to put in the work every single day.')).toBeGreaterThan(0)
+  })
+
+  it('detects "no shortcuts"', () => {
+    expect(getSlopScore('No shortcuts. No hacks. Just consistency over a long period of time.')).toBeGreaterThan(0)
+  })
+
+  it('detects "outwork everyone"', () => {
+    expect(getSlopScore('The strategy is simple. Outwork everyone and stay humble.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - authenticity performance', () => {
+  it('detects "authentic self"', () => {
+    expect(getSlopScore('The bravest thing you can do at work is show up as your authentic self.')).toBeGreaterThan(0)
+  })
+
+  it('detects "raw and honest"', () => {
+    expect(getSlopScore('I want to be raw and honest with you today about what this year has been like.')).toBeGreaterThan(0)
+  })
+
+  it('detects "bring your whole self"', () => {
+    expect(getSlopScore('The best companies let you bring your whole self to work every day.')).toBeGreaterThan(0)
+  })
+
+  it('detects "radical transparency"', () => {
+    expect(getSlopScore('We practice radical transparency at every level of the organisation.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - disruption vocabulary', () => {
+  it('detects "disrupt"', () => {
+    expect(getSlopScore('We are here to disrupt how the world thinks about talent acquisition.')).toBeGreaterThan(0)
+  })
+
+  it('detects "impactful"', () => {
+    expect(getSlopScore('This was the most impactful decision I made in my entire career.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - year in review format', () => {
+  it('detects "year in review"', () => {
+    expect(getSlopScore('My year in review. Twelve months. Twelve lessons. Here we go.')).toBeGreaterThan(0)
+  })
+
+  it('detects "looking back on"', () => {
+    expect(getSlopScore('Looking back on 2024, I am proud of how far we have come as a team.')).toBeGreaterThan(0)
+  })
+
+  it('detects "weekly recap"', () => {
+    expect(getSlopScore('Weekly recap: three wins, two lessons, one thing I am proud of.')).toBeGreaterThan(0)
+  })
+})
+
 describe('getSlopScore - quote attribution pattern', () => {
   it('flags "As [person] once said:"', () => {
     expect(isSlop('As Steve Jobs once said: stay hungry, stay foolish.')).toBe(true)
