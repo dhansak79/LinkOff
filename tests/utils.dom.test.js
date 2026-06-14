@@ -11,8 +11,6 @@ import {
   showParentBySelector,
   hideAncestorIndexBySelector,
   showAncestorIndexBySelector,
-  hideAncestorByChildSelector,
-  showAncestorByChildSelector,
   hidePost,
   resetShownPosts,
   resetBlockedPosts,
@@ -27,11 +25,6 @@ const expectHideClassesRemoved = (el) => {
   expect(el.classList.contains('hide')).toBe(false)
   expect(el.classList.contains('dim')).toBe(false)
   expect(el.classList.contains('showIcon')).toBe(false)
-}
-
-const makeAncestor = (classes = '') => {
-  document.body.innerHTML = `<div class="ancestor ${classes}"><span class="child">x</span></div>`
-  return document.querySelector('.ancestor')
 }
 
 // ---------------------------------------------------------------------------
@@ -504,77 +497,3 @@ describe('waitForSelectorAll', () => {
   })
 })
 
-// ---------------------------------------------------------------------------
-// hideAncestorByChildSelector
-// ---------------------------------------------------------------------------
-
-describe('hideAncestorByChildSelector', () => {
-  it('adds the mode class to the matched ancestor', async () => {
-    const ancestor = makeAncestor()
-    await hideAncestorByChildSelector('.child', '.ancestor', 'hide')
-    expect(ancestor.classList.contains('hide')).toBe(true)
-  })
-
-  it('sets dataset.hidden on the ancestor', async () => {
-    const ancestor = makeAncestor()
-    await hideAncestorByChildSelector('.child', '.ancestor', 'hide')
-    expect(ancestor.dataset.hidden).toBe('true')
-  })
-
-  it('adds showIcon by default', async () => {
-    const ancestor = makeAncestor()
-    await hideAncestorByChildSelector('.child', '.ancestor', 'hide')
-    expect(ancestor.classList.contains('showIcon')).toBe(true)
-  })
-
-  it('does not add showIcon when showIcon is false', async () => {
-    const ancestor = makeAncestor()
-    await hideAncestorByChildSelector('.child', '.ancestor', 'hide', false)
-    expect(ancestor.classList.contains('showIcon')).toBe(false)
-  })
-
-  it('clears existing hide classes before applying mode', async () => {
-    const ancestor = makeAncestor('dim')
-    await hideAncestorByChildSelector('.child', '.ancestor', 'hide')
-    expect(ancestor.classList.contains('dim')).toBe(false)
-    expect(ancestor.classList.contains('hide')).toBe(true)
-  })
-
-  it('accepts an array of child selectors', async () => {
-    document.body.innerHTML = '<div class="ancestor"><span class="a">a</span><span class="b">b</span></div>'
-    await hideAncestorByChildSelector(['.a', '.b'], '.ancestor', 'dim')
-    expect(document.querySelector('.ancestor').classList.contains('dim')).toBe(true)
-  })
-
-  it('does nothing when the ancestor selector does not match', async () => {
-    document.body.innerHTML = '<span class="child">x</span>'
-    await expect(
-      hideAncestorByChildSelector('.child', '.ancestor', 'hide')
-    ).resolves.not.toThrow()
-  })
-})
-
-// ---------------------------------------------------------------------------
-// showAncestorByChildSelector
-// ---------------------------------------------------------------------------
-
-describe('showAncestorByChildSelector', () => {
-  it('removes hide classes from the matched ancestor', async () => {
-    const ancestor = makeAncestor('hide dim showIcon')
-    await showAncestorByChildSelector('.child', '.ancestor')
-    expectHideClassesRemoved(ancestor)
-  })
-
-  it('sets dataset.hidden to false on the ancestor', async () => {
-    const ancestor = makeAncestor()
-    await showAncestorByChildSelector('.child', '.ancestor')
-    expect(ancestor.dataset.hidden).toBe('false')
-  })
-
-  it('does nothing when the ancestor selector does not match', async () => {
-    document.body.innerHTML = '<span class="child">x</span>'
-    await expect(
-      showAncestorByChildSelector('.child', '.ancestor')
-    ).resolves.not.toThrow()
-  })
-})

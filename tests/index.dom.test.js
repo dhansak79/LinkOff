@@ -118,27 +118,13 @@ describe('Navigation API — when navigation is in window', () => {
     expect(setupDeleteMessagesButton).toHaveBeenCalled()
   })
 
-  it('calls doFeed when config differs from previous state', async () => {
+  it('calls doFeed on each navigation when config is loaded', async () => {
     const doFeed = (await import('../src/features/feed.js')).default
     mockGet.mockResolvedValue({ 'main-toggle': true })
     navigateHandlers[0]({ canIntercept: true, hashChange: false, downloadRequest: null, destination: { url: 'https://www.linkedin.com/feed/' } })
     await Promise.resolve() // handleNavigation → initialize()
     await Promise.resolve() // storage.get() resolves
     await Promise.resolve() // doIt runs
-    expect(doFeed).toHaveBeenCalled()
-  })
-
-  it('invokes checkNeedUpdate when a config field has changed', async () => {
-    const doFeed = (await import('../src/features/feed.js')).default
-    // Make the mock call checkNeedUpdate so its body (lines 19-27) is covered
-    doFeed.mockImplementation((checkNeedUpdate) => {
-      checkNeedUpdate('main-toggle', true)
-    })
-    mockGet.mockResolvedValue({ 'main-toggle': true })
-    navigateHandlers[0]({ canIntercept: true, hashChange: false, downloadRequest: null, destination: { url: 'https://www.linkedin.com/feed/' } })
-    await Promise.resolve()
-    await Promise.resolve()
-    await Promise.resolve()
     expect(doFeed).toHaveBeenCalled()
   })
 })

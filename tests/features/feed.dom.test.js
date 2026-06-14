@@ -42,9 +42,13 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-// checkNeedUpdate that never triggers any special-case path
-const neverTrigger = () => false
-const baseConfig = { 'feed-keywords': '', 'hide-by-age': 'disabled' }
+// Base config: enabled, hide mode, no keywords — feeds straight into handleFilterFeed
+const baseConfig = {
+  'feed-keywords': '',
+  'hide-by-age': 'disabled',
+  'main-toggle': true,
+  'gentle-mode': false,
+}
 
 // ---------------------------------------------------------------------------
 // Post processing — keyword matching (initial scan is synchronous)
@@ -54,7 +58,7 @@ describe('post processing - keyword matching', () => {
   it('hides a post whose text content contains a matched keyword', () => {
     const posts = buildFeedDOM(['Post 1', 'Post 2', 'Post 3', 'Alice likes this post', 'Post 5', 'Post 6'])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     const liked = Array.from(posts).find((p) => p.textContent.includes('likes this'))
     expect(liked.classList.contains('hide')).toBe(true)
@@ -63,17 +67,17 @@ describe('post processing - keyword matching', () => {
   it('sets data-hidden=false on posts that do not match any keyword', () => {
     const posts = buildFeedDOM(['Post 1', 'Post 2', 'Post 3', 'Alice likes this post', 'Post 5', 'Post 6'])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     Array.from(posts)
       .filter((p) => !p.textContent.includes('likes this'))
       .forEach((p) => expect(p.dataset.hidden).toBe('false'))
   })
 
-  it('applies dim class instead of hide when mode is dim', () => {
+  it('applies dim class instead of hide when gentle-mode is on', () => {
     const [post] = buildFeedDOM(['Alice likes this post'])
 
-    doFeed(neverTrigger, true, 'dim', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'gentle-mode': true, 'hide-liked': true })
 
     expect(post.classList.contains('dim')).toBe(true)
     expect(post.classList.contains('hide')).toBe(false)
@@ -83,7 +87,7 @@ describe('post processing - keyword matching', () => {
     const posts = buildFeedDOM(['Post 1', 'Post 2', 'Post 3', 'Post 4', 'Post 5', 'Post 6'])
     posts[0].classList.add('hide', 'showIcon')
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     expect(posts[0].classList.contains('hide')).toBe(false)
     expect(posts[0].classList.contains('showIcon')).toBe(false)
@@ -99,11 +103,7 @@ describe('post processing - keyword matching', () => {
       'Suggested post',        // matches 'Suggested' but not 'likes this'
     ])
 
-    doFeed(neverTrigger, true, 'hide', {
-      ...baseConfig,
-      'hide-liked': true,
-      'hide-suggested': true,
-    })
+    doFeed({ ...baseConfig, 'hide-liked': true, 'hide-suggested': true })
 
     const liked     = Array.from(posts).find((p) => p.textContent.includes('likes this'))
     const suggested = Array.from(posts).find((p) => p.textContent.includes('Suggested'))
@@ -114,21 +114,7 @@ describe('post processing - keyword matching', () => {
   it('does not process any posts when there are no keywords', () => {
     const posts = buildFeedDOM(['P1', 'P2', 'P3', 'P4', 'P5', 'P6'])
 
-    doFeed(neverTrigger, true, 'hide', baseConfig)
-
-    posts.forEach((p) => expect(p.dataset.hidden).toBeUndefined())
-  })
-})
-
-// ---------------------------------------------------------------------------
-// enabled flag
-// ---------------------------------------------------------------------------
-
-describe('enabled flag', () => {
-  it('does not process any posts when enabled is false', () => {
-    const posts = buildFeedDOM(['P1', 'P2', 'P3', 'P4', 'P5', 'P6'])
-
-    doFeed(neverTrigger, false, 'hide', { ...baseConfig, 'hide-promoted': true })
+    doFeed(baseConfig)
 
     posts.forEach((p) => expect(p.dataset.hidden).toBeUndefined())
   })
@@ -139,22 +125,20 @@ describe('enabled flag', () => {
 // ---------------------------------------------------------------------------
 
 describe('main-toggle and hide-whole-feed', () => {
-  it('does not process any posts when main-toggle triggers handleToggledOff', () => {
+  it('does not process any posts when main-toggle is off', () => {
     const posts = buildFeedDOM(['P1', 'P2', 'P3'])
-    const triggerToggleOff = (field, bool) => field === 'main-toggle' && bool === false
 
-    doFeed(triggerToggleOff, true, 'hide', { ...baseConfig, 'hide-promoted': true })
+    doFeed({ ...baseConfig, 'main-toggle': false })
 
     posts.forEach((p) => expect(p.dataset.hidden).toBeUndefined())
   })
 
-  it('hides the feed element on /feed/ when hide-whole-feed is triggered', () => {
+  it('hides the feed element on /feed/ when hide-whole-feed is true', () => {
     document.body.innerHTML = `
       <div data-testid="mainFeed"></div>`
     vi.stubGlobal('location', { pathname: '/feed/' })
-    const triggerHideWholeFeed = (field, bool) => field === 'hide-whole-feed' && bool === true
 
-    doFeed(triggerHideWholeFeed, true, 'hide', baseConfig)
+    doFeed({ ...baseConfig, 'hide-whole-feed': true })
 
     const feed = document.querySelector('[data-testid="mainFeed"]')
     expect(feed.classList.contains('hide')).toBe(true)
@@ -167,7 +151,7 @@ describe('main-toggle and hide-whole-feed', () => {
       </div>`
     vi.stubGlobal('location', { pathname: '/feed/' })
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-promoted': true })
+    doFeed(baseConfig)
 
     const feed = document.querySelector('[data-testid="mainFeed"]')
     expect(feed.classList.contains('hide')).toBe(false)
@@ -184,7 +168,7 @@ describe('keyword change handling', () => {
     const posts = buildFeedDOM(['P1', 'P2', 'P3'])
     posts.forEach((p) => p.setAttribute('data-hidden', 'false'))
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     posts.forEach((p) => expect(p.dataset.hidden).toBe('false'))
   })
@@ -193,13 +177,13 @@ describe('keyword change handling', () => {
     const posts = buildFeedDOM(['P1', 'P2', 'P3', 'Alice likes this post', 'P5', 'P6'])
 
     // First call: both flags active — liked post is blocked
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true, 'hide-suggested': true })
+    doFeed({ ...baseConfig, 'hide-liked': true, 'hide-suggested': true })
 
     const liked = Array.from(posts).find((p) => p.textContent.includes('likes this'))
     expect(liked.classList.contains('hide')).toBe(true)
 
     // Second call: remove hide-liked but keep hide-suggested — rescan un-hides the liked post
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-suggested': true })
+    doFeed({ ...baseConfig, 'hide-suggested': true })
 
     expect(liked.classList.contains('hide')).toBe(false)
     expect(liked.dataset.hidden).toBe('false')
@@ -209,13 +193,13 @@ describe('keyword change handling', () => {
     const posts = buildFeedDOM(['P1', 'P2', 'P3', 'Alice likes this post', 'P5', 'P6'])
 
     // First call: no keyword filters — post is shown
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig })
+    doFeed(baseConfig)
 
     const liked = Array.from(posts).find((p) => p.textContent.includes('likes this'))
     expect(liked.classList.contains('hide')).toBe(false)
 
     // Second call: add hide-liked — post should now be hidden on rescan
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     expect(liked.classList.contains('hide')).toBe(true)
   })
@@ -226,36 +210,34 @@ describe('keyword change handling', () => {
 // ---------------------------------------------------------------------------
 
 describe('handleSortByRecent', () => {
-  it('clicks the dropdown trigger and recent option when sort-by-recent is triggered on /feed/', async () => {
+  it('clicks the dropdown trigger and recent option when sort-by-recent is true on /feed/', async () => {
     vi.stubGlobal('location', { pathname: '/feed/' })
     document.body.innerHTML = `
       <div data-view-name="feed-nav-feed-sort-toggle"></div>
       <div data-view-name="feed-sort-view-set-recent"></div>`
 
-    const triggerSort = (field, bool) => field === 'sort-by-recent' && bool === true
     const dropdown = document.querySelector('[data-view-name="feed-nav-feed-sort-toggle"]')
     const recent   = document.querySelector('[data-view-name="feed-sort-view-set-recent"]')
     const clickDropdown = vi.spyOn(dropdown, 'click')
     const clickRecent   = vi.spyOn(recent,   'click')
 
-    doFeed(triggerSort, true, 'hide', baseConfig)
+    doFeed({ ...baseConfig, 'sort-by-recent': true })
     await vi.advanceTimersByTimeAsync(0)
 
     expect(clickDropdown).toHaveBeenCalled()
     expect(clickRecent).toHaveBeenCalled()
   })
 
-  it('does not click anything when sort-by-recent is triggered but not on /feed/', async () => {
+  it('does not click anything when sort-by-recent is true but not on /feed/', async () => {
     // pathname defaults to '/' in jsdom — not /feed/
     document.body.innerHTML = `
       <div data-view-name="feed-nav-feed-sort-toggle"></div>
       <div data-view-name="feed-sort-view-set-recent"></div>`
 
-    const triggerSort = (field, bool) => field === 'sort-by-recent' && bool === true
     const dropdown = document.querySelector('[data-view-name="feed-nav-feed-sort-toggle"]')
     const clickDropdown = vi.spyOn(dropdown, 'click')
 
-    doFeed(triggerSort, true, 'hide', baseConfig)
+    doFeed({ ...baseConfig, 'sort-by-recent': true })
     await vi.advanceTimersByTimeAsync(0)
 
     expect(clickDropdown).not.toHaveBeenCalled()
@@ -273,7 +255,7 @@ describe('MutationObserver — nodes added after initial scan', () => {
         <div data-lazy-mount-id="b1" style="display:contents"></div>
       </div>`
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     const post = document.createElement('div')
     post.textContent = 'Alice likes this post'
@@ -287,7 +269,7 @@ describe('MutationObserver — nodes added after initial scan', () => {
   it('hides posts inside an intermediate container added to the feed', async () => {
     document.body.innerHTML = `<div data-testid="mainFeed"></div>`
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     const wrapper = document.createElement('div')
     wrapper.setAttribute('data-lazy-mount-id', 'b2')
@@ -304,7 +286,7 @@ describe('MutationObserver — nodes added after initial scan', () => {
   it('ignores text nodes added to the feed without throwing', async () => {
     document.body.innerHTML = `<div data-testid="mainFeed"></div>`
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     document.querySelector('[data-testid="mainFeed"]').appendChild(document.createTextNode('  '))
 
@@ -316,7 +298,7 @@ describe('MutationObserver — nodes added after initial scan', () => {
   it('retries connecting the observer when the feed container is not yet in the DOM', async () => {
     document.body.innerHTML = ''
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     document.body.innerHTML = `
       <div data-testid="mainFeed">
@@ -340,7 +322,7 @@ describe('legacy DOM fallback', () => {
   it('hides a post via keyword match on the legacy componentkey + data-display-contents DOM', () => {
     const posts = buildLegacyFeedDOM(['Post 1', 'Post 2', 'Post 3', 'Alice likes this post', 'Post 5', 'Post 6'])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     const liked = Array.from(posts).find((p) => p.textContent.includes('likes this'))
     expect(liked.classList.contains('hide')).toBe(true)
@@ -349,7 +331,7 @@ describe('legacy DOM fallback', () => {
   it('does not match posts when neither current nor legacy feed container is present', () => {
     document.body.innerHTML = '<div id="not-a-feed"><div><div>Promoted post</div></div></div>'
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-promoted': true })
+    doFeed(baseConfig)
 
     // No known container — no posts should be processed
     expect(window.alert).not.toHaveBeenCalled()
@@ -367,7 +349,7 @@ describe('reactive auto-scroll', () => {
     buildFeedDOM(['Post 1', 'Post 2'])
     const spy = scrollBySpy()
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     await vi.advanceTimersByTimeAsync(1000)
     expect(spy).not.toHaveBeenCalled()
@@ -377,7 +359,7 @@ describe('reactive auto-scroll', () => {
     document.body.innerHTML = '<div data-testid="mainFeed"></div>'
     const spy = scrollBySpy()
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     await vi.advanceTimersByTimeAsync(1000)
     expect(spy).toHaveBeenCalledTimes(1)
@@ -388,7 +370,7 @@ describe('reactive auto-scroll', () => {
     document.body.innerHTML = '<div data-testid="mainFeed"></div>'
     const spy = scrollBySpy()
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     await vi.advanceTimersByTimeAsync(2000)
     expect(spy).toHaveBeenCalledTimes(2)
@@ -398,7 +380,7 @@ describe('reactive auto-scroll', () => {
     document.body.innerHTML = '<div data-testid="mainFeed"></div>'
     const spy = scrollBySpy()
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     await vi.advanceTimersByTimeAsync(5000)
     expect(spy).toHaveBeenCalledTimes(2)
@@ -408,10 +390,10 @@ describe('reactive auto-scroll', () => {
     document.body.innerHTML = '<div data-testid="mainFeed"></div>'
     const spy = scrollBySpy()
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-liked': true })
+    doFeed({ ...baseConfig, 'hide-liked': true })
 
     // Toggle off before the 1s timer fires — should cancel the scroll
-    doFeed(() => true, false, 'hide', { ...baseConfig })
+    doFeed({ ...baseConfig, 'main-toggle': false })
 
     await vi.advanceTimersByTimeAsync(1000)
     expect(spy).not.toHaveBeenCalled()

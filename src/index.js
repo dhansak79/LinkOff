@@ -2,37 +2,14 @@ import { setupDeleteMessagesButton } from './features/message.js'
 import applyFeed from './features/feed.js'
 import applyMisc, { unfollowAll } from './features/misc.js'
 import applyJobs from './features/jobs.js'
-import { shallowEqual } from './utils.js'
 import { FOLLOW_PAGE_URL } from './constants.js'
-
-let oldConfig = {}
 
 const storage = chrome.storage.local
 
-const applyConfig = async (config) => {
-  if (shallowEqual(oldConfig, config)) return
-
-  const checkNeedUpdate = (field, bool) => {
-    const hasChanged =
-      config[field] !== oldConfig[field] ||
-      config['gentle-mode'] !== oldConfig['gentle-mode'] ||
-      config['main-toggle'] !== oldConfig['main-toggle']
-
-    if (hasChanged) {
-      console.log(`FocusedIn: Toggling ${field} to ${config[field]}`)
-    }
-
-    return hasChanged && config[field] === bool
-  }
-
-  const mode = config['gentle-mode'] ? 'dim' : 'hide'
-  const enabled = config['main-toggle']
-
-  applyFeed(checkNeedUpdate, enabled, mode, config)
-  applyJobs(checkNeedUpdate, enabled, mode, config)
-  applyMisc(checkNeedUpdate, enabled, mode)
-
-  oldConfig = config
+const applyConfig = (config) => {
+  applyFeed(config)
+  applyJobs(config)
+  applyMisc(config)
 }
 
 const loadAndApply = async () => {
@@ -62,7 +39,6 @@ const onNavigate = (url) => {
   const pathname = new URL(url).pathname
   if (!AUTHORIZED_URLS.includes(pathname)) return
 
-  oldConfig = {}
   loadAndApply()
 
   if (pathname.startsWith('/messaging/')) {

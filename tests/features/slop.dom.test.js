@@ -50,8 +50,12 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-const neverTrigger = () => false
-const baseConfig = { 'feed-keywords': '', 'hide-by-age': 'disabled' }
+const baseConfig = {
+  'feed-keywords': '',
+  'hide-by-age': 'disabled',
+  'main-toggle': true,
+  'gentle-mode': false,
+}
 
 // ---------------------------------------------------------------------------
 // detect-slop: collapse post with a reveal banner (soft mode)
@@ -62,7 +66,7 @@ describe('detect-slop - collapse with reveal banner', () => {
   it('collapses a sloppy post when detect-slop is enabled', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(true)
@@ -71,7 +75,7 @@ describe('detect-slop - collapse with reveal banner', () => {
   it('injects a sibling reveal banner for the collapsed post', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
@@ -80,7 +84,7 @@ describe('detect-slop - collapse with reveal banner', () => {
   it('reveal banner is clickable (has the collapsed class)', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
@@ -89,7 +93,7 @@ describe('detect-slop - collapse with reveal banner', () => {
   it('clicking the banner removes soft-hide class and removes the banner', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     posts[0].previousElementSibling.click()
@@ -102,7 +106,7 @@ describe('detect-slop - collapse with reveal banner', () => {
   it('does not re-collapse the post after the user reveals it', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
     posts[0].previousElementSibling.click()
 
@@ -116,7 +120,7 @@ describe('detect-slop - collapse with reveal banner', () => {
   it('does not collapse a clean post', () => {
     const posts = buildFeedDOM([CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     posts.forEach((post) => {
@@ -128,7 +132,7 @@ describe('detect-slop - collapse with reveal banner', () => {
   it('does not collapse posts when detect-slop is disabled', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': false })
+    doFeed({ ...baseConfig, 'detect-slop': false })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
@@ -138,7 +142,7 @@ describe('detect-slop - collapse with reveal banner', () => {
   it('injects exactly one reveal banner even when the interval fires multiple times', () => {
     buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
     vi.advanceTimersByTime(350)
     vi.advanceTimersByTime(350)
@@ -149,7 +153,7 @@ describe('detect-slop - collapse with reveal banner', () => {
   it('runs without any keyword filters active', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(true)
@@ -159,7 +163,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     const slopWithAuthor = `<a href="/in/test-user"><strong>Test Author</strong></a><br>${SLOP_POST}`
     const posts = buildFeedDOM([slopWithAuthor, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].previousElementSibling?.textContent).toContain('Test Author')
@@ -169,7 +173,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     const likedPost = `<span><a href="/in/liker"><strong>Some Liker</strong></a> likes this</span><a href="/in/real-author"><strong>Real Author</strong></a><br>${SLOP_POST}`
     const posts = buildFeedDOM([likedPost, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     const bannerText = posts[0].previousElementSibling?.textContent ?? ''
@@ -183,7 +187,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     `
     const posts = buildFeedDOM([realLinkedInPost, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].previousElementSibling?.textContent).toContain('Jane Smith')
@@ -193,7 +197,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     const post = `<div aria-label="Alex Jones Profile 3rd+">${SLOP_POST}</div>`
     const posts = buildFeedDOM([post, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].previousElementSibling?.textContent).toContain('Alex Jones')
@@ -204,7 +208,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     const post = `<div aria-label="Naveen Kumar  3rd+">${SLOP_POST}</div>`
     const posts = buildFeedDOM([post, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].previousElementSibling?.textContent).toContain('Naveen Kumar')
@@ -213,7 +217,7 @@ describe('detect-slop - collapse with reveal banner', () => {
   it('shows the banner without author info when no author link is present', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
@@ -223,7 +227,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     vi.spyOn(window, 'alert').mockImplementation(() => {})
     buildFeedDOM([SLOP_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(window.alert).not.toHaveBeenCalled()
@@ -232,7 +236,7 @@ describe('detect-slop - collapse with reveal banner', () => {
   it('collapses a sloppy post whose line breaks are <div> elements rather than <br>', () => {
     const posts = buildFeedDOM([SLOP_POST_DIVS, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(true)
@@ -256,7 +260,7 @@ describe('detect-slop - collapse with reveal banner', () => {
     `
     const posts = buildFeedDOM([postWithReplySuggestions, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
@@ -271,7 +275,7 @@ describe('hide-slop - completely hidden', () => {
   it('hides a sloppy post when hide-slop is enabled', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-slop': true })
+    doFeed({ ...baseConfig, 'hide-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('hide')).toBe(true)
@@ -280,7 +284,7 @@ describe('hide-slop - completely hidden', () => {
   it('does not inject a reveal banner — post is completely gone', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-slop': true })
+    doFeed({ ...baseConfig, 'hide-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBeFalsy()
@@ -289,7 +293,7 @@ describe('hide-slop - completely hidden', () => {
   it('does not hide a clean post', () => {
     const posts = buildFeedDOM([CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-slop': true })
+    doFeed({ ...baseConfig, 'hide-slop': true })
     vi.advanceTimersByTime(350)
 
     posts.forEach((post) => expect(post.classList.contains('hide')).toBe(false))
@@ -298,16 +302,16 @@ describe('hide-slop - completely hidden', () => {
   it('does not hide posts when hide-slop is disabled', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-slop': false })
+    doFeed({ ...baseConfig, 'hide-slop': false })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('hide')).toBe(false)
   })
 
-  it('dims a sloppy post when mode is dim', () => {
+  it('dims a sloppy post when gentle-mode is on', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'dim', { ...baseConfig, 'hide-slop': true })
+    doFeed({ ...baseConfig, 'gentle-mode': true, 'hide-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('dim')).toBe(true)
@@ -317,7 +321,7 @@ describe('hide-slop - completely hidden', () => {
   it('runs without any keyword filters active', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-slop': true })
+    doFeed({ ...baseConfig, 'hide-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('hide')).toBe(true)
@@ -327,7 +331,7 @@ describe('hide-slop - completely hidden', () => {
     vi.spyOn(window, 'alert').mockImplementation(() => {})
     buildFeedDOM([SLOP_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-slop': true })
+    doFeed({ ...baseConfig, 'hide-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(window.alert).not.toHaveBeenCalled()
@@ -336,7 +340,7 @@ describe('hide-slop - completely hidden', () => {
   it('when both toggles active, hide-slop wins — post hidden with no reveal banner', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
-    doFeed(neverTrigger, true, 'hide', { ...baseConfig, 'hide-slop': true, 'detect-slop': true })
+    doFeed({ ...baseConfig, 'hide-slop': true, 'detect-slop': true })
     vi.advanceTimersByTime(350)
 
     expect(posts[0].classList.contains('hide')).toBe(true)

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getFeedKeywords } from '../../src/features/feed-keywords.js'
+import { getFeedKeywords } from '../../src/features/feed.js'
 
 // Baseline config: no flags, no custom keywords, age filtering off
 const base = { 'feed-keywords': '', 'hide-by-age': 'disabled' }

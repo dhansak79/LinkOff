@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getJobKeywords } from '../../src/features/job-keywords.js'
+import { getJobKeywords } from '../../src/features/jobs.js'
 
 describe('getJobKeywords', () => {
   it('returns an empty array when job-keywords is empty', () => {
