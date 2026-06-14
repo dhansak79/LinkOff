@@ -524,6 +524,68 @@ describe('getSlopScore - Dustin Andrews AI buzzwords', () => {
   })
 })
 
+describe('getSlopScore - level up language', () => {
+  it('detects "level up"', () => {
+    expect(getSlopScore('Here are five books that will level up your thinking.')).toBeGreaterThan(0)
+  })
+
+  it('detects "next level thinking"', () => {
+    expect(getSlopScore('Next level thinking is what separates good leaders from great ones.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - comfort zone posts', () => {
+  it('detects "comfort zone"', () => {
+    expect(getSlopScore('Everything you want is on the other side of your comfort zone.')).toBeGreaterThan(0)
+  })
+
+  it('detects "get comfortable being uncomfortable"', () => {
+    expect(getSlopScore('The fastest way to grow? Get comfortable being uncomfortable.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - gratitude overload', () => {
+  it('detects "forever grateful"', () => {
+    expect(getSlopScore('Forever grateful to everyone who believed in me when I did not believe in myself.')).toBeGreaterThan(0)
+  })
+
+  it('detects "grateful for the journey"', () => {
+    expect(getSlopScore('Whatever happens next, I am grateful for the journey.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - LLM transition phrases', () => {
+  it('detects "first and foremost"', () => {
+    expect(getSlopScore('First and foremost, we need to align on what success looks like.')).toBeGreaterThan(0)
+  })
+
+  it('detects "last but not least"', () => {
+    expect(getSlopScore('Last but not least, remember to celebrate your small wins.')).toBeGreaterThan(0)
+  })
+
+  it('detects "it goes without saying"', () => {
+    expect(getSlopScore('It goes without saying that culture eats strategy for breakfast.')).toBeGreaterThan(0)
+  })
+
+  it('detects "with that being said"', () => {
+    expect(getSlopScore('With that being said, here are the three things I would do differently.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - legacy and impact language', () => {
+  it('detects "leave a legacy"', () => {
+    expect(getSlopScore('Build something worth remembering. Leave a legacy, not just a salary.')).toBeGreaterThan(0)
+  })
+
+  it('detects "be the change"', () => {
+    expect(getSlopScore('Be the change you want to see in your organisation.')).toBeGreaterThan(0)
+  })
+
+  it('detects "ai-powered"', () => {
+    expect(getSlopScore('We built an ai-powered solution that transforms how teams collaborate.')).toBeGreaterThan(0)
+  })
+})
+
 describe('getSlopScore - "The Noun" framing', () => {
   it('detects "the playbook"', () => {
     expect(getSlopScore('Here is the playbook I used to grow from zero to one million.')).toBeGreaterThan(0)

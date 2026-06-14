@@ -210,6 +210,47 @@ export const SLOP_PHRASES = [
   'the next 12 months',
   'in 6 months ai will',
 
+  // "Level up" gaming language imported into professional slop
+  'level up',
+  'next level thinking',
+  'unlock the next level',
+  'level of thinking',
+
+  // Comfort zone genre
+  'comfort zone',
+  'get comfortable being uncomfortable',
+  'outside your comfort zone',
+  'lean into discomfort',
+
+  // Gratitude overload
+  'forever grateful',
+  'beyond grateful',
+  'so grateful for this',
+  'grateful for the opportunity',
+  'grateful for the journey',
+
+  // LLM transition phrases — almost never appear in natural writing
+  'first and foremost',
+  'last but not least',
+  'it goes without saying',
+  'it is worth noting',
+  "it's worth noting",
+  'with that being said',
+  'in today\'s world',
+
+  // Legacy and impact language
+  'leave a legacy',
+  'make an impact',
+  'be the change',
+  'dent in the universe',
+  'change the world',
+
+  // AI product slop
+  'ai-powered',
+  'powered by ai',
+  'with the help of ai',
+  'using ai to',
+
   // "The [Noun]" framing — presenting ordinary advice as a proprietary system
   'the playbook',
   'the blueprint',
