@@ -19,16 +19,12 @@ describe('getSlopScore - slop phrases', () => {
     expect(isSlop("In today's fast-paced world, we need to adapt.")).toBe(false)
   })
 
-  it('scores 1 for two phrase matches (still below the threshold)', () => {
-    expect(getSlopScore("In today's fast-paced world, let that sink in.")).toBe(1)
+  it('scores 2 for two or more phrase matches (reaches the threshold)', () => {
+    expect(getSlopScore("In today's fast-paced world, let that sink in.")).toBe(2)
   })
 
-  it('scores 2 for three or more phrase matches (reaches the threshold)', () => {
-    expect(getSlopScore("In today's fast-paced world, let that sink in. This is a game-changer.")).toBe(2)
-  })
-
-  it('three or more phrase matches triggers isSlop', () => {
-    expect(isSlop("In today's fast-paced world, let that sink in. Leverage this game-changer.")).toBe(true)
+  it('two phrase matches triggers isSlop', () => {
+    expect(isSlop("In today's fast-paced world, let that sink in.")).toBe(true)
   })
 
   it('more phrases score higher than fewer phrases', () => {
@@ -391,6 +387,160 @@ describe('getSlopScore - raw markdown', () => {
 
   it('does not flag a clean post with a single asterisk used naturally', () => {
     expect(getSlopScore('Revenue grew 3x - it was a great quarter*.')).toBe(0)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Dustin Andrews dead giveaways — filler hooks, cliché phrases, AI buzzwords
+// ---------------------------------------------------------------------------
+
+describe('getSlopScore - Dustin Andrews filler hooks', () => {
+  it('detects "the fix:" hook', () => {
+    expect(getSlopScore('The fix: stop trying to do everything at once.')).toBeGreaterThan(0)
+  })
+
+  it('detects "the key insight:" hook', () => {
+    expect(getSlopScore('The key insight: most people skip this step entirely.')).toBeGreaterThan(0)
+  })
+
+  it('detects "the bottom line:" hook', () => {
+    expect(getSlopScore('The bottom line: it comes down to consistency.')).toBeGreaterThan(0)
+  })
+
+  it('detects "here\'s how:" hook', () => {
+    expect(getSlopScore("Here's how: start with the smallest possible action.")).toBeGreaterThan(0)
+  })
+
+  it('two filler hooks together reach the slop threshold', () => {
+    expect(isSlop("The key insight: you are overthinking it. The fix: start small.")).toBe(true)
+  })
+})
+
+describe('getSlopScore - Dustin Andrews cliché phrases', () => {
+  it('detects "here\'s the thing"', () => {
+    expect(getSlopScore("Here's the thing about modern leadership.")).toBeGreaterThan(0)
+  })
+
+  it('detects "let\'s be real"', () => {
+    expect(getSlopScore("Let's be real — most people won't do this.")).toBeGreaterThan(0)
+  })
+
+  it('detects "the brutal truth"', () => {
+    expect(getSlopScore('The brutal truth is that consistency beats talent.')).toBeGreaterThan(0)
+  })
+
+  it('detects "long story short"', () => {
+    expect(getSlopScore('Long story short, we pivoted the entire product.')).toBeGreaterThan(0)
+  })
+
+  it('detects "make no mistake"', () => {
+    expect(getSlopScore('Make no mistake, this will change how teams operate.')).toBeGreaterThan(0)
+  })
+
+  it('detects "you cannot unsee it"', () => {
+    expect(getSlopScore('Once you notice this pattern, you cannot unsee it.')).toBeGreaterThan(0)
+  })
+
+  it('detects "the uncomfortable truth"', () => {
+    expect(getSlopScore('The uncomfortable truth about remote work.')).toBeGreaterThan(0)
+  })
+
+  it('detects "what it comes down to"', () => {
+    expect(getSlopScore("What it comes down to is how you handle pressure.")).toBeGreaterThan(0)
+  })
+
+  it('two cliché phrases together reach the slop threshold', () => {
+    expect(isSlop("Here's the thing. Let's be real about what matters.")).toBe(true)
+  })
+})
+
+describe('getSlopScore - Dustin Andrews AI buzzwords', () => {
+  it('detects "agentic"', () => {
+    expect(getSlopScore('We are building an agentic workflow for our team.')).toBeGreaterThan(0)
+  })
+
+  it('detects "game-changing"', () => {
+    expect(getSlopScore('This is a game-changing approach to productivity.')).toBeGreaterThan(0)
+  })
+})
+
+describe('getSlopScore - new contrasting clause patterns', () => {
+  it('flags "This isn\'t X. This is Y." structure', () => {
+    expect(isSlop("This isn't about the money. This is about the mission.")).toBe(true)
+  })
+
+  it('flags "That\'s not X. That\'s Y." structure', () => {
+    expect(isSlop("That's not failure. That's feedback.")).toBe(true)
+  })
+
+  it('flags when clauses are separated by a newline', () => {
+    expect(isSlop("This isn't burnout.\nThis is a signal.")).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Real-world post tests — catches obvious slop, spares genuine posts
+// ---------------------------------------------------------------------------
+
+describe('isSlop - real-world slop posts', () => {
+  it('flags a classic AI ghostwritten LinkedIn post', () => {
+    const post = [
+      "Here's the thing about building a career in tech.",
+      '',
+      "Most people think it's about the tools.",
+      "This isn't about the tools.",
+      "This is about the mindset.",
+      '',
+      "The brutal truth? Let's be real.",
+      "What it comes down to is showing up every single day.",
+      '',
+      'Make no mistake. The game is changing.',
+      'Agentic workflows are game-changing.',
+      '',
+      'Long story short: start before you are ready.',
+    ].join('\n')
+    expect(isSlop(post)).toBe(true)
+  })
+
+  it('flags a post with heavy em dash usage', () => {
+    const post = 'Leadership — real leadership — is rare. Consistency — not talent — is the differentiator. Results — not effort — is what matters.'
+    expect(isSlop(post)).toBe(true)
+  })
+
+  it('flags a post pasted directly from an AI chat window', () => {
+    const post = [
+      '**Key Takeaways from My Leadership Journey**',
+      '',
+      '* Consistency beats talent every time',
+      '* Systems matter more than goals',
+      '* Your network is your net worth',
+      '',
+      '### What I Learned',
+      'Leverage these insights to holistic approach your career.',
+    ].join('\n')
+    expect(isSlop(post)).toBe(true)
+  })
+})
+
+describe('isSlop - real-world clean posts', () => {
+  it('does not flag a genuine product update', () => {
+    const post = 'We shipped dark mode today. Six weeks of work, three rewrites of the colour system, and one very patient design team. Worth it.'
+    expect(isSlop(post)).toBe(false)
+  })
+
+  it('does not flag a genuine personal story', () => {
+    const post = 'My first job paid £18k. I turned it down because the commute was two hours each way. My manager at the time told me I was making a mistake. He was wrong.'
+    expect(isSlop(post)).toBe(false)
+  })
+
+  it('does not flag a technical post with no slop signals', () => {
+    const post = 'If you are debugging a React re-render issue, check whether your useEffect dependencies include object references. Object identity in JavaScript means two objects with the same shape are not equal. This catches people out constantly.'
+    expect(isSlop(post)).toBe(false)
+  })
+
+  it('does not flag a post that uses one common phrase naturally', () => {
+    const post = 'Long story short, the migration took three days instead of one. We underestimated the schema differences. Lessons learned.'
+    expect(isSlop(post)).toBe(false)
   })
 })
 

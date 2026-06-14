@@ -42,11 +42,12 @@ const linePatternScore = (text) => {
   return 1
 }
 
-// 1–2 phrase matches score 1; 3+ score 2. A single common phrase in an
-// otherwise clean post should not be enough to flag it.
+// 1 phrase scores 1; 2+ score 2. A single phrase in an otherwise clean
+// post should not flag it, but two dead giveaways together almost certainly
+// means AI-generated content.
 const phraseScore = (text) => {
   const count = countMatchingPhrases(text)
-  if (count >= 3) return 2
+  if (count >= 2) return 2
   return count > 0 ? 1 : 0
 }
 
