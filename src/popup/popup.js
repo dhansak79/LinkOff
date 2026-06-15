@@ -1,3 +1,6 @@
+import { readStats } from '../stats.js'
+import { renderDamageReport } from '../stats-renderer.js'
+
 // Tab functionality
 
 const openTab = (tabName) => (event) => {
@@ -169,28 +172,11 @@ window.onload = function () {
     jobTagify.addTags(res['job-keywords'])
   })
 
-  const statsDate = new Date().toISOString().slice(0, 10)
-  chrome.storage.local.get(['focusin-stats', 'focusin-stats-date'], function (res) {
-    if (res['focusin-stats-date'] !== statsDate) return
-    const stats = res['focusin-stats']
-    if (!stats) return
-
-    const slopTotal = (stats.slopCollapsed || 0) + (stats.slopHidden || 0)
-    document.getElementById('stat-slop').textContent = slopTotal
-    document.getElementById('stat-filtered').textContent = stats.postsFiltered || 0
-
-    const topSignals = Object.entries(stats.signals || {})
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 3)
-
-    if (topSignals.length) {
-      const container = document.getElementById('top-signals')
-      container.innerHTML = topSignals
-        .map(
-          ([signal, count]) =>
-            `<div class="signal-item"><span class="signal-name">${signal}</span><span class="signal-count">${count}&times;</span></div>`
-        )
-        .join('')
-    }
-  })
+  readStats((stats) =>
+    renderDamageReport(stats, {
+      slopEl: document.getElementById('stat-slop'),
+      filteredEl: document.getElementById('stat-filtered'),
+      signalsEl: document.getElementById('top-signals'),
+    })
+  )
 }

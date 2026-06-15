@@ -19,6 +19,7 @@ export default defineConfig({
         'src/features/message.js',
         'src/utils.js',
         'src/stats.js',
+        'src/stats-renderer.js',
       ],
       thresholds: {
         lines: 90,
