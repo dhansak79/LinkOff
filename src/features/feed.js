@@ -121,6 +121,10 @@ const extractAuthorName = (post) => {
   return null
 }
 
+// Tracks post text prefixes the user has explicitly revealed, persists for the page lifetime.
+// Prevents re-collapsing when LinkedIn replaces the DOM element for an already-revealed post.
+const revealedTexts = new Set()
+
 const collapseToTag = (banner, author) => {
   banner.className = 'focusedin-slop-tag'
   while (banner.firstChild) banner.removeChild(banner.firstChild)
@@ -132,6 +136,8 @@ const collapseToTag = (banner, author) => {
 const addRevealBanner = (post, signals) => {
   if (post.dataset.focusinBanner) return
   if (post.dataset.slopRevealed) return
+  const postText = extractPostText(post).trim().slice(0, 150)
+  if (revealedTexts.has(postText)) return
   post.dataset.focusinBanner = '1'
   const author = extractAuthorName(post)
   const banner = document.createElement('div')
@@ -166,6 +172,7 @@ const addRevealBanner = (post, signals) => {
     e.stopPropagation()
     post.classList.remove('hide', 'focusedin-slop-soft-hide')
     post.dataset.slopRevealed = true
+    revealedTexts.add(postText)
     collapseToTag(banner, author)
   })
   banner.append(btn)
@@ -202,6 +209,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
     if (!(detectSlop || hideSlop)) return null
     if (post.dataset.slopRevealed || post.querySelector('[data-slop-revealed]')) return null
     const text = extractPostText(post)
+    if (revealedTexts.has(text.trim().slice(0, 150))) return null
     return isSlop(text) ? getSlopSignals(text) : null
   }
 
@@ -218,6 +226,10 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
   }
 
   const applyKeywordToPost = (post) => {
+    // LinkedIn nests an outer wrapper (> data-lazy-mount-id > div) AND an inner
+    // div[role="listitem"] — both match POST_SELECTOR. Skip if an ancestor has
+    // already been processed so we don't double-banner the same post.
+    if (post.parentElement?.closest('[data-hidden="true"],[data-focusin-banner]')) return
     postsProcessed++
     const isKeywordMatch = keywords.some((keyword) => post.textContent.indexOf(keyword) !== -1)
     const slopSignals = checkSlop(post)

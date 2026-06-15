@@ -190,6 +190,83 @@ describe('detect-slop - collapse with reveal banner', () => {
     expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
   })
 
+  it('does not add a banner to a fresh element with the same content as a revealed post', () => {
+    // Simulates LinkedIn replacing the post element with a fresh DOM node (its common
+    // lazy-load behaviour after the post becomes visible). The new element has no
+    // slopRevealed attribute, but its text prefix matches the revealedTexts Set, so
+    // checkSlop returns null and no second banner is added.
+    const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+    posts[0].previousElementSibling.querySelector('button').click()
+
+    // LinkedIn removes the old element and inserts a fresh one with identical content
+    const feedMount = document.querySelector('[data-lazy-mount-id]')
+    const freshPost = document.createElement('div')
+    freshPost.innerHTML = SLOP_POST
+    feedMount.insertBefore(freshPost, posts[0])
+    posts[0].remove()
+    vi.advanceTimersByTime(50)
+
+    expect(document.querySelectorAll('.focusedin-slop-collapsed').length).toBe(0)
+  })
+
+  it('adds exactly one banner when outer wrapper and inner listitem both match POST_SELECTOR', () => {
+    // Matches the real LinkedIn DOM: div[data-display-contents] (outer) is matched by
+    // "> data-lazy-mount-id > div", and the nested div[role="listitem"] is matched by
+    // "FEED_SELECTOR div[role="listitem"]". Without the ancestor guard, both get banners.
+    document.body.innerHTML = `
+      <div data-testid="mainFeed" componentkey="container-update-list_mainFeed-lazy-container">
+        <div data-lazy-mount-id="test-mount" style="display:contents">
+          <div data-display-contents="true"><div><div role="listitem">${SLOP_POST}</div></div></div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+        </div>
+      </div>`
+
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    expect(document.querySelectorAll('.focusedin-slop-collapsed').length).toBe(1)
+  })
+
+  it('adds exactly one banner on re-scan after LinkedIn lazily fills the outer wrapper with a listitem', () => {
+    // Outer container is in DOM at initial scan (empty content), processed as clean.
+    // LinkedIn then injects div[role="listitem"] with slop content. A settings change
+    // (second doFeed) re-scans — outer now has content and gets a banner; the inner
+    // listitem finds the outer's data-focusin-banner ancestor and is skipped.
+    document.body.innerHTML = `
+      <div data-testid="mainFeed" componentkey="container-update-list_mainFeed-lazy-container">
+        <div data-lazy-mount-id="test-mount" style="display:contents">
+          <div data-display-contents="true"><div id="inner-mount"></div></div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+        </div>
+      </div>`
+
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    // LinkedIn lazily injects the actual post content
+    const listitem = document.createElement('div')
+    listitem.setAttribute('role', 'listitem')
+    listitem.innerHTML = SLOP_POST
+    document.getElementById('inner-mount').appendChild(listitem)
+
+    // Settings change triggers a re-scan
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    expect(document.querySelectorAll('.focusedin-slop-collapsed').length).toBe(1)
+  })
+
   it('injects exactly one reveal banner even when the interval fires multiple times', () => {
     buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
