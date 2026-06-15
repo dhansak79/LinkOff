@@ -99,4 +99,9 @@ describe('popup', () => {
     document.getElementById('hide-by-job-keywords').dispatchEvent(new Event('change'))
     expect(mockSet).toHaveBeenCalledWith({ 'job-keywords': '' }, expect.any(Function))
   })
+
+  it('saves semantic filter to storage on each keystroke', () => {
+    document.getElementById('semantic-filter').dispatchEvent(new Event('input'))
+    expect(mockSet).toHaveBeenCalledWith({ 'semantic-filter': '' }, expect.any(Function))
+  })
 })

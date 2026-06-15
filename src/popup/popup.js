@@ -165,7 +165,7 @@ function onJobChange(e) {
 jobKeywords.addEventListener('change', onJobChange)
 
 const semanticFilterInput = document.getElementById('semantic-filter')
-semanticFilterInput.addEventListener('change', (e) => {
+semanticFilterInput.addEventListener('input', (e) => {
   chrome.storage.local.set({ 'semantic-filter': e.target.value.trim() }, () => {})
 })
 
