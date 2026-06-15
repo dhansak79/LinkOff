@@ -40,6 +40,9 @@
       "all_frames": false
     }
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
   "web_accessible_resources": [
     {
       "resources": [
@@ -52,7 +55,7 @@
         "src/features/slop-detector.js",
         "src/features/slop-keywords.js",
         "src/stats.js",
-"src/features/jobs.js",
+        "src/features/jobs.js",
         "src/features/job-keywords.js",
         "src/features/misc.js",
         "src/features/message.js"
