@@ -26,28 +26,30 @@ afterEach(() => {
 const makeEmbedding = (vec) => ({ data: vec })
 
 describe('semanticCheck', () => {
-  it('returns 1.0 for identical normalized embeddings', async () => {
+  it('returns score 1.0 and the matched topic for identical embeddings', async () => {
     const vec = [1, 0, 0]
     mockEmbedFn.mockResolvedValue(makeEmbedding(vec))
-    const score = await semanticCheck(['hustle culture'], 'rise and grind')
-    expect(score).toBeCloseTo(1.0)
+    const result = await semanticCheck(['hustle culture'], 'rise and grind')
+    expect(result.score).toBeCloseTo(1.0)
+    expect(result.topic).toBe('hustle culture')
   })
 
-  it('returns 0.0 for orthogonal embeddings', async () => {
+  it('returns score 0.0 for orthogonal embeddings', async () => {
     mockEmbedFn
       .mockResolvedValueOnce(makeEmbedding([1, 0, 0]))
       .mockResolvedValueOnce(makeEmbedding([0, 1, 0]))
-    const score = await semanticCheck(['hustle culture'], 'strawberry jam recipe')
-    expect(score).toBeCloseTo(0.0)
+    const result = await semanticCheck(['hustle culture'], 'strawberry jam recipe')
+    expect(result.score).toBeCloseTo(0.0)
   })
 
-  it('returns the maximum score across multiple queries', async () => {
+  it('returns the best score and its topic across multiple queries', async () => {
     mockEmbedFn
       .mockResolvedValueOnce(makeEmbedding([1, 0, 0]))
       .mockResolvedValueOnce(makeEmbedding([0, 1, 0]))
       .mockResolvedValueOnce(makeEmbedding([0, 1, 0]))
-    const score = await semanticCheck(['query one', 'query two'], 'post text')
-    expect(score).toBeCloseTo(1.0)
+    const result = await semanticCheck(['query one', 'query two'], 'post text')
+    expect(result.score).toBeCloseTo(1.0)
+    expect(result.topic).toBe('query two')
   })
 
   it('calls pipeline with the feature-extraction model', async () => {

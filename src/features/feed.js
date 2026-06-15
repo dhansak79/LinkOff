@@ -268,7 +268,7 @@ const isPostNode = (node) => {
   )
 }
 
-const SEMANTIC_THRESHOLD = 0.5
+const SEMANTIC_THRESHOLD = 0.35
 
 const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, classifyPosts, semanticQuery) => {
   let postsProcessed = 0
@@ -297,11 +297,12 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, classifyPost
     post.dataset.hidden = true
     countOnce(post, trackPostFiltered)
     const pct = Math.round(response.score * 100)
+    const topic = response.topic ?? 'topic match'
     const prev = post.previousElementSibling
     if (prev?.classList.contains('focusedin-slop-collapsed')) {
       const row = document.createElement('div')
       row.className = 'focusedin-slop-signals'
-      row.textContent = `🎯 semantic match · ${pct}%`
+      row.textContent = `🎯 ${topic} · ${pct}%`
       const revealBtn = prev.querySelector('.focusedin-slop-reveal-btn')
       prev.insertBefore(row, revealBtn ?? null)
       return
@@ -316,7 +317,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, classifyPost
     banner.append(headline)
     const scoreRow = document.createElement('div')
     scoreRow.className = 'focusedin-slop-signals'
-    scoreRow.textContent = `${pct}% similarity`
+    scoreRow.textContent = `${topic} · ${pct}%`
     banner.append(scoreRow)
     const btn = document.createElement('button')
     btn.type = 'button'

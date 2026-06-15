@@ -176,6 +176,32 @@ const saveSemanticTopics = () => {
 
 semanticTopicCheckboxes.forEach((cb) => cb.addEventListener('change', saveSemanticTopics))
 
+const TEST_POST = 'Grind harder than yesterday. Hustle culture is the only way to build wealth and achieve your crypto dreams. Personal branding is everything.'
+
+document.getElementById('test-semantic-btn').addEventListener('click', () => {
+  const resultEl = document.getElementById('semantic-test-result')
+  const queries = [...semanticTopicCheckboxes].filter((cb) => cb.checked).map((cb) => cb.value)
+  if (!queries.length) {
+    resultEl.textContent = 'No topics selected'
+    return
+  }
+  resultEl.textContent = 'Testing...'
+  chrome.runtime.sendMessage(
+    { 'semantic-check': { queries, post: TEST_POST } },
+    (response) => {
+      if (chrome.runtime.lastError) {
+        resultEl.textContent = `SW error: ${chrome.runtime.lastError.message}`
+        return
+      }
+      if (response?.score == null) {
+        resultEl.textContent = 'No response — model may still be loading'
+        return
+      }
+      resultEl.textContent = `Model loaded · test post scored ${Math.round(response.score * 100)}% — posts above 35% are hidden`
+    }
+  )
+})
+
 window.onload = function () {
   chrome.storage.local.get('feed-keywords', function (res) {
     feedTagify.addTags(res['feed-keywords'])
@@ -184,7 +210,12 @@ window.onload = function () {
     jobTagify.addTags(res['job-keywords'])
   })
   chrome.storage.local.get('semantic-filter', function (res) {
-    const active = new Set((res['semantic-filter'] || '').split(',').map((s) => s.trim()).filter(Boolean))
+    if (res['semantic-filter'] === undefined) {
+      semanticTopicCheckboxes.forEach((cb) => { cb.checked = true })
+      saveSemanticTopics()
+      return
+    }
+    const active = new Set(res['semantic-filter'].split(',').map((s) => s.trim()).filter(Boolean))
     semanticTopicCheckboxes.forEach((cb) => { cb.checked = active.has(cb.value) })
   })
 

@@ -694,7 +694,7 @@ describe('semantic-filter integration', () => {
   let sendMessageSpy
 
   beforeEach(() => {
-    sendMessageSpy = vi.fn((msg, cb) => cb({ score: 0.8 }))
+    sendMessageSpy = vi.fn((msg, cb) => cb({ score: 0.8, topic: 'hustle culture' }))
     vi.stubGlobal('chrome', {
       runtime: { lastError: null, sendMessage: sendMessageSpy },
     })
@@ -735,7 +735,7 @@ describe('semantic-filter integration', () => {
   it('appends semantic signal to existing classification banner when classification responds first', async () => {
     sendMessageSpy = vi.fn((msg, cb) => {
       if (msg['classify-post']) cb({ result: { label: 'self-promotion', score: 0.82 } })
-      else Promise.resolve().then(() => cb({ score: 0.8 }))
+      else Promise.resolve().then(() => cb({ score: 0.8, topic: 'hustle culture' }))
     })
     vi.stubGlobal('chrome', { runtime: { lastError: null, sendMessage: sendMessageSpy } })
     const posts = buildFeedDOM([CLEAN_POST])
@@ -745,7 +745,7 @@ describe('semantic-filter integration', () => {
     const banner = posts[0].previousElementSibling
     expect(banner?.classList.contains('focusedin-slop-collapsed')).toBe(true)
     expect(banner?.textContent).toMatch(/self-promotion/)
-    expect(banner?.textContent).toMatch(/🎯 semantic match/)
+    expect(banner?.textContent).toMatch(/🎯 hustle culture/)
     expect(document.querySelectorAll('.focusedin-slop-collapsed').length).toBe(1)
   })
 

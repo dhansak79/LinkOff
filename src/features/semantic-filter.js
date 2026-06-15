@@ -38,5 +38,7 @@ export const semanticCheck = async (queries, postText) => {
     cachedQueryEmbeddings = await Promise.all(queries.map(embed))
   }
   const postEmbedding = await embed(postText)
-  return Math.max(...cachedQueryEmbeddings.map((qe) => cosineSimilarity(qe, postEmbedding)))
+  const scores = cachedQueryEmbeddings.map((qe) => cosineSimilarity(qe, postEmbedding))
+  const best = scores.indexOf(Math.max(...scores))
+  return { score: scores[best], topic: queries[best] }
 }

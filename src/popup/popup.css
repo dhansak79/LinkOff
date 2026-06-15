@@ -13486,3 +13486,42 @@ body {
   cursor: pointer;
 }
 
+#settings-panel .semantic-field {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.semantic-topic-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.semantic-diag {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  margin-top: 0.6rem;
+}
+
+.semantic-diag button {
+  font-size: 0.78rem;
+  padding: 0.2rem 0.6rem;
+  background: transparent;
+  border: 1px solid #4a5568;
+  border-radius: 4px;
+  color: #bbc4d0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.semantic-diag button:hover {
+  border-color: #718096;
+  color: #e2e8f0;
+}
+
+#semantic-test-result {
+  font-size: 0.78rem;
+  color: #718096;
+}
+

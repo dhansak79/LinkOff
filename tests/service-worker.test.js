@@ -122,7 +122,7 @@ describe('onMessage — classify-post', () => {
 describe('onMessage — semantic-check', () => {
   it('returns true to signal an async response', async () => {
     const { semanticCheck } = await import('../src/features/semantic-filter.js')
-    semanticCheck.mockResolvedValue(0.75)
+    semanticCheck.mockResolvedValue({ score: 0.75, topic: 'hustle culture' })
     const result = capturedMessageListener(
       { 'semantic-check': { queries: ['hustle culture'], post: 'rise and grind' } },
       {},
@@ -131,9 +131,9 @@ describe('onMessage — semantic-check', () => {
     expect(result).toBe(true)
   })
 
-  it('sends the similarity score', async () => {
+  it('sends the similarity score and matched topic', async () => {
     const { semanticCheck } = await import('../src/features/semantic-filter.js')
-    semanticCheck.mockResolvedValue(0.72)
+    semanticCheck.mockResolvedValue({ score: 0.72, topic: 'hustle culture' })
     const sendResponse = vi.fn()
     capturedMessageListener(
       { 'semantic-check': { queries: ['hustle culture'], post: 'rise and grind' } },
@@ -142,7 +142,7 @@ describe('onMessage — semantic-check', () => {
     )
     await flushPromises()
     expect(semanticCheck).toHaveBeenCalledWith(['hustle culture'], 'rise and grind')
-    expect(sendResponse).toHaveBeenCalledWith({ score: 0.72 })
+    expect(sendResponse).toHaveBeenCalledWith({ score: 0.72, topic: 'hustle culture' })
   })
 
   it('sends score 0 when semanticCheck rejects', async () => {
