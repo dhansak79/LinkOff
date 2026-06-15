@@ -96,20 +96,22 @@ const extractPostText = (el) => {
 
 const SOCIAL_PROOF_RE = /likes this|celebrates this|commented on|reposted/i
 
-const extractAuthorName = (post) => {
-  // Actor card aria-label: "Name [Premium] Profile Degree" (premium) or "Name  Degree" (non-premium)
-  const actorDiv = post.querySelector(
+// Actor card aria-label: "Name [Premium] Profile Degree" (premium) or "Name  Degree" (non-premium)
+const getAuthorFromActorDiv = (post) => {
+  const el = post.querySelector(
     '[aria-label*=" Profile"],[aria-label*="st+"],[aria-label*="nd+"],[aria-label*="rd+"]'
   )
-  if (actorDiv) {
-    const name = actorDiv
-      .getAttribute('aria-label')
-      .replace(/\s+(?:Premium\s+)?(?:Profile\s+)?\d(?:st|nd|rd)\+?\s*$/i, '')
-      .trim()
-    if (name) return name
-  }
-  const followBtn = post.querySelector('button[aria-label^="Follow "]')
-  if (followBtn) return followBtn.getAttribute('aria-label').replace(/^Follow /, '').trim()
+  if (!el) return null
+  return el.getAttribute('aria-label')
+    .replace(/\s+(?:Premium\s+)?(?:Profile\s+)?\d(?:st|nd|rd)\+?\s*$/i, '').trim() || null
+}
+
+const getAuthorFromFollowBtn = (post) => {
+  const btn = post.querySelector('button[aria-label^="Follow "]')
+  return btn ? btn.getAttribute('aria-label').replace(/^Follow /, '').trim() : null
+}
+
+const getAuthorFromStrongLinks = (post) => {
   for (const strong of post.querySelectorAll('a[href*="/in/"] strong')) {
     const parent = strong.closest('a')?.parentElement
     const directText = [...(parent?.childNodes ?? [])]
@@ -120,6 +122,9 @@ const extractAuthorName = (post) => {
   }
   return null
 }
+
+const extractAuthorName = (post) =>
+  getAuthorFromActorDiv(post) ?? getAuthorFromFollowBtn(post) ?? getAuthorFromStrongLinks(post)
 
 // Tracks post text prefixes the user has explicitly revealed, persists for the page lifetime.
 // Prevents re-collapsing when LinkedIn replaces the DOM element for an already-revealed post.
