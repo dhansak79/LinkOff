@@ -126,7 +126,7 @@ const addRevealBanner = (post, signals) => {
   const banner = document.createElement('div')
   banner.className = 'focusedin-slop-collapsed'
   banner.onclick = () => {
-    post.classList.remove('hide', 'dim', 'focusedin-slop-soft-hide')
+    post.classList.remove('hide', 'focusedin-slop-soft-hide')
     post.dataset.slopRevealed = true
     banner.remove()
   }
@@ -283,7 +283,7 @@ const handleFilterFeed = (mode, config) => {
 
 export default (config) => {
   const enabled = config['main-toggle']
-  const mode = config['gentle-mode'] ? 'dim' : 'hide'
+  const mode = 'hide'
 
   if (!enabled) {
     handleToggledOff()

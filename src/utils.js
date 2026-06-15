@@ -17,7 +17,7 @@ export const findElement = (candidates) => {
 }
 
 export const removeHideClasses = (element) => {
-  element.classList.remove('hide', 'dim', 'showIcon')
+  element.classList.remove('hide', 'showIcon')
 }
 
 const resolveSelector = (selectors) =>

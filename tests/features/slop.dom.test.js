@@ -54,7 +54,6 @@ const baseConfig = {
   'feed-keywords': '',
   'hide-by-age': 'disabled',
   'main-toggle': true,
-  'gentle-mode': false,
 }
 
 // ---------------------------------------------------------------------------
@@ -305,16 +304,6 @@ describe('hide-slop - completely hidden', () => {
     doFeed({ ...baseConfig, 'hide-slop': false })
     vi.advanceTimersByTime(350)
 
-    expect(posts[0].classList.contains('hide')).toBe(false)
-  })
-
-  it('dims a sloppy post when gentle-mode is on', () => {
-    const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
-
-    doFeed({ ...baseConfig, 'gentle-mode': true, 'hide-slop': true })
-    vi.advanceTimersByTime(350)
-
-    expect(posts[0].classList.contains('dim')).toBe(true)
     expect(posts[0].classList.contains('hide')).toBe(false)
   })
 

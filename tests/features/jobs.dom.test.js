@@ -26,7 +26,6 @@ const baseConfig = {
   'job-keywords': '',
   'hide-promoted-jobs': false,
   'main-toggle': true,
-  'gentle-mode': false,
 }
 
 // ---------------------------------------------------------------------------

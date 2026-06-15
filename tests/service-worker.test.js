@@ -46,7 +46,6 @@ describe('onInstalled', () => {
     expect(mockSet).toHaveBeenCalledWith(
       expect.objectContaining({
         initialized: 'v0.5',
-        'gentle-mode': true,
         'main-toggle': true,
         'hide-whole-feed': false,
         'hide-by-age': 'week',
@@ -54,7 +53,7 @@ describe('onInstalled', () => {
         'hide-liked': true,
         'hide-suggested': true,
         'sort-by-recent': true,
-        'detect-slop': false,
+        'detect-slop': true,
         'hide-slop': false,
         'hide-premium': true,
         'hide-advertisements': true,
