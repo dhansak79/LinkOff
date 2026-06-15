@@ -169,8 +169,9 @@ window.onload = function () {
     jobTagify.addTags(res['job-keywords'])
   })
 
-  if (!chrome.storage.session) return
-  chrome.storage.session.get(['focusin-stats'], function (res) {
+  const statsDate = new Date().toISOString().slice(0, 10)
+  chrome.storage.local.get(['focusin-stats', 'focusin-stats-date'], function (res) {
+    if (res['focusin-stats-date'] !== statsDate) return
     const stats = res['focusin-stats']
     if (!stats) return
 

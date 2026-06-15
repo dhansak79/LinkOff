@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'focusin-stats'
+const DATE_KEY = 'focusin-stats-date'
 const FLUSH_DELAY = 500
 
 const zero = () => ({ postsFiltered: 0, slopCollapsed: 0, slopHidden: 0, signals: {} })
@@ -6,25 +7,34 @@ const zero = () => ({ postsFiltered: 0, slopCollapsed: 0, slopHidden: 0, signals
 let pending = zero()
 let flushTimer = null
 
-const session = () =>
-  typeof chrome !== 'undefined' ? chrome.storage?.session : undefined
+const today = () => new Date().toISOString().slice(0, 10)
+
+const local = () =>
+  typeof chrome !== 'undefined' ? chrome.storage?.local : undefined
+
+const applyDelta = (res, delta) => {
+  const stats = res[DATE_KEY] === today() ? (res[STORAGE_KEY] || zero()) : zero()
+  stats.postsFiltered += delta.postsFiltered
+  stats.slopCollapsed += delta.slopCollapsed
+  stats.slopHidden += delta.slopHidden
+  for (const [signal, count] of Object.entries(delta.signals)) {
+    stats.signals[signal] = (stats.signals[signal] || 0) + count
+  }
+  return stats
+}
 
 const flush = () => {
   flushTimer = null
-  const s = session()
+  const s = local()
   if (!s) { pending = zero(); return }
   const delta = pending
   pending = zero()
-  s.get([STORAGE_KEY], (res) => {
-    const stats = res[STORAGE_KEY] || zero()
-    stats.postsFiltered += delta.postsFiltered
-    stats.slopCollapsed += delta.slopCollapsed
-    stats.slopHidden += delta.slopHidden
-    for (const [signal, count] of Object.entries(delta.signals)) {
-      stats.signals[signal] = (stats.signals[signal] || 0) + count
-    }
-    s.set({ [STORAGE_KEY]: stats })
-  })
+  try {
+    s.get([STORAGE_KEY, DATE_KEY], (res) => {
+      if (chrome.runtime?.lastError) return
+      try { s.set({ [STORAGE_KEY]: applyDelta(res, delta), [DATE_KEY]: today() }) } catch (_) { /* context invalidated */ }
+    })
+  } catch (_) { /* context invalidated */ }
 }
 
 const schedule = () => {
@@ -53,7 +63,13 @@ export const trackSlopHidden = (signals) => {
 }
 
 export const readStats = (callback) => {
-  const s = session()
+  const s = local()
   if (!s) { callback(zero()); return }
-  s.get([STORAGE_KEY], (res) => callback(res[STORAGE_KEY] || zero()))
+  try {
+    s.get([STORAGE_KEY, DATE_KEY], (res) => {
+      if (chrome.runtime?.lastError) { callback(zero()); return }
+      const stats = res[DATE_KEY] === today() ? (res[STORAGE_KEY] || zero()) : zero()
+      callback(stats)
+    })
+  } catch (_) { callback(zero()) }
 }

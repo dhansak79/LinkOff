@@ -3,12 +3,15 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 const mockGet = vi.fn()
 const mockSet = vi.fn()
 
+const TODAY = '2026-06-15'
+
 beforeEach(async () => {
   vi.resetModules()
   vi.useFakeTimers()
+  vi.setSystemTime(new Date(`${TODAY}T10:00:00Z`))
   mockGet.mockReset()
   mockSet.mockReset()
-  vi.stubGlobal('chrome', { storage: { session: { get: mockGet, set: mockSet } } })
+  vi.stubGlobal('chrome', { storage: { local: { get: mockGet, set: mockSet } } })
 })
 
 afterEach(() => {
@@ -18,43 +21,63 @@ afterEach(() => {
 
 const importStats = () => import('../src/stats.js')
 
+const withStorage = (stored) => mockGet.mockImplementation((_, cb) => cb(stored))
+const storedToday = (stats) => ({ 'focusin-stats': stats, 'focusin-stats-date': TODAY })
+const emptyStorage = () => withStorage({})
+const storedYesterday = (stats) => ({ 'focusin-stats': stats, 'focusin-stats-date': '2026-06-14' })
+
+const flush = async (mod, fn) => {
+  fn(mod)
+  vi.advanceTimersByTime(500)
+  await Promise.resolve()
+}
+
+const awaitStats = (readStats) =>
+  new Promise((resolve) => readStats((stats) => resolve(stats)))
+
+const ZERO = { postsFiltered: 0, slopCollapsed: 0, slopHidden: 0, signals: {} }
+
 // ---------------------------------------------------------------------------
 // trackPostFiltered
 // ---------------------------------------------------------------------------
 
 describe('trackPostFiltered', () => {
-  it('flushes postsFiltered delta to session storage after debounce', async () => {
-    mockGet.mockImplementation((_, cb) => cb({}))
-    const { trackPostFiltered } = await importStats()
+  it('flushes postsFiltered delta to local storage after debounce', async () => {
+    withStorage({ 'focusin-stats-date': TODAY })
+    const mod = await importStats()
 
-    trackPostFiltered()
-    trackPostFiltered()
+    await flush(mod, ({ trackPostFiltered }) => { trackPostFiltered(); trackPostFiltered() })
 
-    vi.advanceTimersByTime(500)
-    await Promise.resolve()
-
-    expect(mockSet).toHaveBeenCalledWith({
+    expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({
       'focusin-stats': expect.objectContaining({ postsFiltered: 2 }),
-    })
+      'focusin-stats-date': TODAY,
+    }))
   })
 
-  it('accumulates onto existing storage value', async () => {
-    mockGet.mockImplementation((_, cb) =>
-      cb({ 'focusin-stats': { postsFiltered: 10, slopCollapsed: 0, slopHidden: 0, signals: {} } })
-    )
-    const { trackPostFiltered } = await importStats()
+  it('accumulates onto existing storage value when date matches', async () => {
+    withStorage(storedToday({ ...ZERO, postsFiltered: 10 }))
+    const mod = await importStats()
 
-    trackPostFiltered()
-    vi.advanceTimersByTime(500)
-    await Promise.resolve()
+    await flush(mod, ({ trackPostFiltered }) => trackPostFiltered())
 
-    expect(mockSet).toHaveBeenCalledWith({
+    expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({
       'focusin-stats': expect.objectContaining({ postsFiltered: 11 }),
-    })
+    }))
+  })
+
+  it('resets stats when stored date is yesterday', async () => {
+    withStorage(storedYesterday({ ...ZERO, postsFiltered: 50 }))
+    const mod = await importStats()
+
+    await flush(mod, ({ trackPostFiltered }) => trackPostFiltered())
+
+    expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({
+      'focusin-stats': expect.objectContaining({ postsFiltered: 1 }),
+    }))
   })
 
   it('does not flush before the debounce delay', async () => {
-    mockGet.mockImplementation((_, cb) => cb({}))
+    emptyStorage()
     const { trackPostFiltered } = await importStats()
 
     trackPostFiltered()
@@ -70,36 +93,34 @@ describe('trackPostFiltered', () => {
 
 describe('trackSlopCollapsed', () => {
   it('increments slopCollapsed and records signals', async () => {
-    mockGet.mockImplementation((_, cb) => cb({}))
-    const { trackSlopCollapsed } = await importStats()
+    withStorage({ 'focusin-stats-date': TODAY })
+    const mod = await importStats()
 
-    trackSlopCollapsed(['"game-changer"', 'em dash'])
-    vi.advanceTimersByTime(500)
-    await Promise.resolve()
+    await flush(mod, ({ trackSlopCollapsed }) => trackSlopCollapsed(['"game-changer"', 'em dash']))
 
-    expect(mockSet).toHaveBeenCalledWith({
+    expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({
       'focusin-stats': expect.objectContaining({
         slopCollapsed: 1,
         signals: { '"game-changer"': 1, 'em dash': 1 },
       }),
-    })
+    }))
   })
 
   it('accumulates signal counts across multiple posts', async () => {
-    mockGet.mockImplementation((_, cb) => cb({}))
-    const { trackSlopCollapsed } = await importStats()
+    withStorage({ 'focusin-stats-date': TODAY })
+    const mod = await importStats()
 
-    trackSlopCollapsed(['"game-changer"', 'em dash'])
-    trackSlopCollapsed(['"game-changer"', 'line stacking'])
-    vi.advanceTimersByTime(500)
-    await Promise.resolve()
+    await flush(mod, ({ trackSlopCollapsed }) => {
+      trackSlopCollapsed(['"game-changer"', 'em dash'])
+      trackSlopCollapsed(['"game-changer"', 'line stacking'])
+    })
 
-    expect(mockSet).toHaveBeenCalledWith({
+    expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({
       'focusin-stats': expect.objectContaining({
         slopCollapsed: 2,
         signals: { '"game-changer"': 2, 'em dash': 1, 'line stacking': 1 },
       }),
-    })
+    }))
   })
 })
 
@@ -109,19 +130,17 @@ describe('trackSlopCollapsed', () => {
 
 describe('trackSlopHidden', () => {
   it('increments slopHidden and records signals', async () => {
-    mockGet.mockImplementation((_, cb) => cb({}))
-    const { trackSlopHidden } = await importStats()
+    withStorage({ 'focusin-stats-date': TODAY })
+    const mod = await importStats()
 
-    trackSlopHidden(['"here\'s the thing"', 'line stacking'])
-    vi.advanceTimersByTime(500)
-    await Promise.resolve()
+    await flush(mod, ({ trackSlopHidden }) => trackSlopHidden(['"here\'s the thing"', 'line stacking']))
 
-    expect(mockSet).toHaveBeenCalledWith({
+    expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({
       'focusin-stats': expect.objectContaining({
         slopHidden: 1,
         signals: { '"here\'s the thing"': 1, 'line stacking': 1 },
       }),
-    })
+    }))
   })
 })
 
@@ -130,29 +149,47 @@ describe('trackSlopHidden', () => {
 // ---------------------------------------------------------------------------
 
 describe('readStats', () => {
-  it('returns stored stats via callback', async () => {
+  it('returns stored stats when date matches today', async () => {
     const stored = { postsFiltered: 5, slopCollapsed: 3, slopHidden: 1, signals: { 'em dash': 2 } }
-    mockGet.mockImplementation((_, cb) => cb({ 'focusin-stats': stored }))
+    withStorage(storedToday(stored))
     const { readStats } = await importStats()
 
-    await new Promise((resolve) => {
-      readStats((stats) => {
-        expect(stats).toEqual(stored)
-        resolve()
-      })
-    })
+    expect(await awaitStats(readStats)).toEqual(stored)
+  })
+
+  it('returns zero stats when stored date is yesterday', async () => {
+    withStorage(storedYesterday({ postsFiltered: 99, slopCollapsed: 10, slopHidden: 5, signals: {} }))
+    const { readStats } = await importStats()
+
+    expect(await awaitStats(readStats)).toEqual(ZERO)
   })
 
   it('returns zero stats when storage is empty', async () => {
-    mockGet.mockImplementation((_, cb) => cb({}))
+    emptyStorage()
     const { readStats } = await importStats()
 
-    await new Promise((resolve) => {
-      readStats((stats) => {
-        expect(stats).toEqual({ postsFiltered: 0, slopCollapsed: 0, slopHidden: 0, signals: {} })
-        resolve()
-      })
-    })
+    expect(await awaitStats(readStats)).toEqual(ZERO)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// extension context invalidated (storage.get throws synchronously)
+// ---------------------------------------------------------------------------
+
+describe('extension context invalidated', () => {
+  it('readStats calls back with zeros when s.get throws', async () => {
+    mockGet.mockImplementation(() => { throw new Error('Extension context invalidated.') })
+    const { readStats } = await importStats()
+
+    expect(await awaitStats(readStats)).toEqual(ZERO)
+  })
+
+  it('track functions do not throw when s.get throws', async () => {
+    mockGet.mockImplementation(() => { throw new Error('Extension context invalidated.') })
+    const mod = await importStats()
+
+    await expect(flush(mod, ({ trackPostFiltered }) => trackPostFiltered())).resolves.not.toThrow()
+    expect(mockSet).not.toHaveBeenCalled()
   })
 })
 
@@ -177,11 +214,6 @@ describe('without chrome', () => {
     vi.unstubAllGlobals()
     const { readStats } = await importStats()
 
-    await new Promise((resolve) => {
-      readStats((stats) => {
-        expect(stats).toEqual({ postsFiltered: 0, slopCollapsed: 0, slopHidden: 0, signals: {} })
-        resolve()
-      })
-    })
+    expect(await awaitStats(readStats)).toEqual(ZERO)
   })
 })
