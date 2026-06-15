@@ -19,8 +19,13 @@ const loadAndApply = async () => {
   } catch (_) { /* context invalidated */ }
 }
 
-// Storage listener
-chrome.storage.onChanged.addListener(loadAndApply)
+const STATS_KEYS = new Set(['focusin-stats', 'focusin-stats-date'])
+
+// Storage listener — skip if only stats keys changed to avoid re-applying on every stat flush
+chrome.storage.onChanged.addListener((changes) => {
+  if (Object.keys(changes).every((k) => STATS_KEYS.has(k))) return
+  loadAndApply()
+})
 
 chrome.runtime.onMessage.addListener(async (req) => {
   if (req['unfollow-all']) {

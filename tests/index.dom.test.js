@@ -9,12 +9,13 @@ vi.mock('../src/features/message.js', () => ({ setupDeleteMessagesButton: vi.fn(
 
 const mockGet = vi.fn().mockResolvedValue({})
 let capturedOnMessage = null
+let capturedOnChanged = null
 
 const stubChrome = () =>
   vi.stubGlobal('chrome', {
     storage: {
       local: { get: mockGet },
-      onChanged: { addListener: vi.fn() },
+      onChanged: { addListener: vi.fn((fn) => { capturedOnChanged = fn }) },
     },
     runtime: {
       onMessage: {
@@ -31,6 +32,7 @@ beforeEach(() => {
   mockGet.mockClear()
   mockGet.mockResolvedValue({})
   capturedOnMessage = null
+  capturedOnChanged = null
   stubChrome()
 })
 
@@ -126,6 +128,50 @@ describe('Navigation API — when navigation is in window', () => {
     await Promise.resolve() // storage.get() resolves
     await Promise.resolve() // doIt runs
     expect(doFeed).toHaveBeenCalled()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// chrome.storage.onChanged — stats key filter
+// ---------------------------------------------------------------------------
+
+describe('chrome.storage.onChanged — stats key filter', () => {
+  beforeEach(async () => {
+    vi.stubGlobal('navigation', { addEventListener: vi.fn() })
+    await import('../src/index.js')
+    await Promise.resolve()
+    await Promise.resolve()
+    mockGet.mockClear()
+  })
+
+  it('calls loadAndApply when a non-stats key changes', async () => {
+    capturedOnChanged({ 'main-toggle': { newValue: true } })
+    await Promise.resolve()
+    expect(mockGet).toHaveBeenCalled()
+  })
+
+  it('does not call loadAndApply when only focusin-stats changes', async () => {
+    capturedOnChanged({ 'focusin-stats': { newValue: {} } })
+    await Promise.resolve()
+    expect(mockGet).not.toHaveBeenCalled()
+  })
+
+  it('does not call loadAndApply when only focusin-stats-date changes', async () => {
+    capturedOnChanged({ 'focusin-stats-date': { newValue: '2026-06-15' } })
+    await Promise.resolve()
+    expect(mockGet).not.toHaveBeenCalled()
+  })
+
+  it('does not call loadAndApply when both stats keys change together', async () => {
+    capturedOnChanged({ 'focusin-stats': { newValue: {} }, 'focusin-stats-date': { newValue: '2026-06-15' } })
+    await Promise.resolve()
+    expect(mockGet).not.toHaveBeenCalled()
+  })
+
+  it('calls loadAndApply when stats and a settings key change together', async () => {
+    capturedOnChanged({ 'focusin-stats': { newValue: {} }, 'detect-slop': { newValue: true } })
+    await Promise.resolve()
+    expect(mockGet).toHaveBeenCalled()
   })
 })
 
