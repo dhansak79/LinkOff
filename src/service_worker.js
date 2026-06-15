@@ -1,3 +1,13 @@
+import { classifyPost } from './features/classifier.js'
+
+chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
+  if (!req['classify-post']) return
+  classifyPost(req['classify-post'])
+    .then((result) => sendResponse({ result }))
+    .catch(() => sendResponse({ result: null }))
+  return true
+})
+
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason !== 'install') return
   const res = await chrome.storage.local.get('initialized')
@@ -13,6 +23,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     'sort-by-recent': true,
     'detect-slop': true,
     'hide-slop': false,
+    'classify-posts': false,
     'hide-premium': true,
     'hide-advertisements': true,
     'hide-follow-recommendations': true,

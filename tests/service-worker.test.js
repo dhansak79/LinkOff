@@ -1,6 +1,11 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
-let capturedListener = null
+vi.mock('../src/features/classifier.js', () => ({
+  classifyPost: vi.fn(),
+}))
+
+let capturedInstallListener = null
+let capturedMessageListener = null
 const mockGet = vi.fn()
 const mockSet = vi.fn()
 
@@ -9,7 +14,12 @@ const stubChrome = () =>
     runtime: {
       onInstalled: {
         addListener: vi.fn((fn) => {
-          capturedListener = fn
+          capturedInstallListener = fn
+        }),
+      },
+      onMessage: {
+        addListener: vi.fn((fn) => {
+          capturedMessageListener = fn
         }),
       },
     },
@@ -20,29 +30,32 @@ const stubChrome = () =>
 
 beforeEach(async () => {
   vi.resetModules()
-  capturedListener = null
+  capturedInstallListener = null
+  capturedMessageListener = null
   mockGet.mockReset()
   mockSet.mockReset()
   stubChrome()
   await import('../src/service_worker.js')
 })
 
+const flushPromises = () => new Promise((resolve) => setTimeout(resolve, 0))
+
 describe('onInstalled', () => {
   it('does nothing when reason is not install', async () => {
-    await capturedListener({ reason: 'update' })
+    await capturedInstallListener({ reason: 'update' })
     expect(mockGet).not.toHaveBeenCalled()
     expect(mockSet).not.toHaveBeenCalled()
   })
 
   it('does not set defaults when already initialized', async () => {
     mockGet.mockResolvedValue({ initialized: 'v0.5' })
-    await capturedListener({ reason: 'install' })
+    await capturedInstallListener({ reason: 'install' })
     expect(mockSet).not.toHaveBeenCalled()
   })
 
   it('sets all defaults on a fresh install', async () => {
     mockGet.mockResolvedValue({})
-    await capturedListener({ reason: 'install' })
+    await capturedInstallListener({ reason: 'install' })
     expect(mockSet).toHaveBeenCalledWith(
       expect.objectContaining({
         initialized: 'v0.5',
@@ -55,6 +68,7 @@ describe('onInstalled', () => {
         'sort-by-recent': true,
         'detect-slop': true,
         'hide-slop': false,
+        'classify-posts': false,
         'hide-premium': true,
         'hide-advertisements': true,
         'hide-follow-recommendations': true,
@@ -64,5 +78,38 @@ describe('onInstalled', () => {
         'hide-promoted-jobs': false,
       })
     )
+  })
+})
+
+describe('onMessage — classify-post', () => {
+  it('returns true to signal an async response', async () => {
+    const { classifyPost } = await import('../src/features/classifier.js')
+    classifyPost.mockResolvedValue(null)
+    const result = capturedMessageListener({ 'classify-post': 'some text' }, {}, vi.fn())
+    expect(result).toBe(true)
+  })
+
+  it('calls classifyPost with the post text and sends result', async () => {
+    const { classifyPost } = await import('../src/features/classifier.js')
+    classifyPost.mockResolvedValue({ label: 'self-promotion', score: 0.82 })
+    const sendResponse = vi.fn()
+    capturedMessageListener({ 'classify-post': 'some text' }, {}, sendResponse)
+    await flushPromises()
+    expect(classifyPost).toHaveBeenCalledWith('some text')
+    expect(sendResponse).toHaveBeenCalledWith({ result: { label: 'self-promotion', score: 0.82 } })
+  })
+
+  it('sends null result when classifyPost rejects', async () => {
+    const { classifyPost } = await import('../src/features/classifier.js')
+    classifyPost.mockRejectedValue(new Error('model failed'))
+    const sendResponse = vi.fn()
+    capturedMessageListener({ 'classify-post': 'text' }, {}, sendResponse)
+    await flushPromises()
+    expect(sendResponse).toHaveBeenCalledWith({ result: null })
+  })
+
+  it('does nothing for unrelated messages', () => {
+    const result = capturedMessageListener({ other: true }, {}, vi.fn())
+    expect(result).toBeUndefined()
   })
 })

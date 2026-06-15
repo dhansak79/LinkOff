@@ -1,4 +1,6 @@
 /.DS_Store
+/src/lib/transformers.min.js
+/src/lib/ort-wasm-simd.wasm
 /.vscode
 node_modules
 /.claude/settings.local.json

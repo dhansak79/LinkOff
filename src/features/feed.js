@@ -181,6 +181,38 @@ const addRevealBanner = (post, signals) => {
 }
 
 // ---------------------------------------------------------------------------
+// Classification badge
+// ---------------------------------------------------------------------------
+
+const CATEGORY_EMOJI = {
+  'self-promotion': '📣',
+  'hustle culture': '💼',
+  'humble brag': '🙈',
+  'thought leadership': '💡',
+  'inspirational cliché': '✨',
+}
+
+export const addClassificationBadge = (post, { label, score }) => {
+  if (post.dataset.classificationBadge) return
+  post.dataset.classificationBadge = label
+  const badge = document.createElement('div')
+  badge.className = 'focusedin-classify-badge'
+  badge.dataset.focusinInjected = '1'
+  badge.dataset.category = label.replace(/\s+/g, '-')
+  const pct = Math.round(score * 100)
+  const emoji = CATEGORY_EMOJI[label] ?? '🏷️'
+  badge.textContent = `${emoji} ${label} · ${pct}%`
+  post.before(badge)
+}
+
+const sendClassifyRequest = (post, text) => {
+  chrome.runtime.sendMessage({ 'classify-post': text }, (response) => {
+    if (chrome.runtime.lastError || !response?.result) return
+    addClassificationBadge(post, response.result)
+  })
+}
+
+// ---------------------------------------------------------------------------
 // Feed observation and post filtering
 // ---------------------------------------------------------------------------
 
@@ -196,13 +228,20 @@ const isPostNode = (node) => {
   )
 }
 
-const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
+const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, classifyPosts) => {
   let postsProcessed = 0
 
   const countOnce = (post, fn, signals) => {
     if (post.dataset.focusinCounted) return
     signals ? fn(signals) : fn()
     post.dataset.focusinCounted = '1'
+  }
+
+  const requestClassification = (post) => {
+    if (!classifyPosts || post.dataset.classifiedPost) return
+    if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return
+    post.dataset.classifiedPost = '1'
+    sendClassifyRequest(post, extractPostText(post))
   }
 
   const checkSlop = (post) => {
@@ -226,6 +265,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
   }
 
   const applyKeywordToPost = (post) => {
+    if (post.dataset.focusinInjected) return
     // LinkedIn nests an outer wrapper (> data-lazy-mount-id > div) AND an inner
     // div[role="listitem"] — both match POST_SELECTOR. Skip if an ancestor has
     // already been processed so we don't double-banner the same post.
@@ -242,6 +282,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
       removeHideClasses(post)
       post.classList.remove('focusedin-slop-soft-hide')
       post.dataset.hidden = false
+      requestClassification(post)
     }
   }
 
@@ -287,7 +328,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
     feedObserver.observe(feedContainer, { childList: true, subtree: true })
   }
 
-  if (keywords.length || detectSlop || hideSlop) connectObserver()
+  if (keywords.length || detectSlop || hideSlop || classifyPosts) connectObserver()
 }
 
 const toggleFeed = (shown) => {
@@ -332,7 +373,8 @@ const handleFilterFeed = (mode, config) => {
     getFeedKeywords(config),
     mode,
     !!config['detect-slop'],
-    !!config['hide-slop']
+    !!config['hide-slop'],
+    !!config['classify-posts']
   )
 }
 

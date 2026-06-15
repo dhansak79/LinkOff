@@ -2,6 +2,7 @@
   "type": "module",
   "scripts": {
     "prepare": "git config core.hooksPath .githooks",
+    "postinstall": "cp node_modules/@xenova/transformers/dist/transformers.min.js src/lib/ && cp node_modules/@xenova/transformers/dist/ort-wasm-simd.wasm src/lib/",
     "css-build": "sass --no-source-map src/popup/popup.scss src/popup/popup.css",
     "css-watch": "npm run css-build -- --watch",
     "start": "npm run css-watch",
@@ -34,5 +35,8 @@
     "branches": [
       "main"
     ]
+  },
+  "dependencies": {
+    "@xenova/transformers": "^2.17.2"
   }
 }
