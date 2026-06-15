@@ -4,6 +4,10 @@ vi.mock('../src/features/classifier.js', () => ({
   classifyPost: vi.fn(),
 }))
 
+vi.mock('../src/features/semantic-filter.js', () => ({
+  semanticCheck: vi.fn(),
+}))
+
 let capturedInstallListener = null
 let capturedMessageListener = null
 const mockGet = vi.fn()
@@ -111,5 +115,45 @@ describe('onMessage — classify-post', () => {
   it('does nothing for unrelated messages', () => {
     const result = capturedMessageListener({ other: true }, {}, vi.fn())
     expect(result).toBeUndefined()
+  })
+})
+
+describe('onMessage — semantic-check', () => {
+  it('returns true to signal an async response', async () => {
+    const { semanticCheck } = await import('../src/features/semantic-filter.js')
+    semanticCheck.mockResolvedValue(0.75)
+    const result = capturedMessageListener(
+      { 'semantic-check': { query: 'hustle culture', post: 'rise and grind' } },
+      {},
+      vi.fn()
+    )
+    expect(result).toBe(true)
+  })
+
+  it('sends the similarity score', async () => {
+    const { semanticCheck } = await import('../src/features/semantic-filter.js')
+    semanticCheck.mockResolvedValue(0.72)
+    const sendResponse = vi.fn()
+    capturedMessageListener(
+      { 'semantic-check': { query: 'hustle culture', post: 'rise and grind' } },
+      {},
+      sendResponse
+    )
+    await flushPromises()
+    expect(semanticCheck).toHaveBeenCalledWith('hustle culture', 'rise and grind')
+    expect(sendResponse).toHaveBeenCalledWith({ score: 0.72 })
+  })
+
+  it('sends score 0 when semanticCheck rejects', async () => {
+    const { semanticCheck } = await import('../src/features/semantic-filter.js')
+    semanticCheck.mockRejectedValue(new Error('model failed'))
+    const sendResponse = vi.fn()
+    capturedMessageListener(
+      { 'semantic-check': { query: 'hustle culture', post: 'text' } },
+      {},
+      sendResponse
+    )
+    await flushPromises()
+    expect(sendResponse).toHaveBeenCalledWith({ score: 0 })
   })
 })

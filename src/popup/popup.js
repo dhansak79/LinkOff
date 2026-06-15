@@ -164,12 +164,20 @@ function onJobChange(e) {
 }
 jobKeywords.addEventListener('change', onJobChange)
 
+const semanticFilterInput = document.getElementById('semantic-filter')
+semanticFilterInput.addEventListener('change', (e) => {
+  chrome.storage.local.set({ 'semantic-filter': e.target.value.trim() }, () => {})
+})
+
 window.onload = function () {
   chrome.storage.local.get('feed-keywords', function (res) {
     feedTagify.addTags(res['feed-keywords'])
   })
   chrome.storage.local.get('job-keywords', function (res) {
     jobTagify.addTags(res['job-keywords'])
+  })
+  chrome.storage.local.get('semantic-filter', function (res) {
+    semanticFilterInput.value = res['semantic-filter'] ?? ''
   })
 
   readStats((stats) =>

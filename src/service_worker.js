@@ -1,11 +1,20 @@
 import { classifyPost } from './features/classifier.js'
+import { semanticCheck } from './features/semantic-filter.js'
 
 chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
-  if (!req['classify-post']) return
-  classifyPost(req['classify-post'])
-    .then((result) => sendResponse({ result }))
-    .catch(() => sendResponse({ result: null }))
-  return true
+  if (req['classify-post']) {
+    classifyPost(req['classify-post'])
+      .then((result) => sendResponse({ result }))
+      .catch(() => sendResponse({ result: null }))
+    return true
+  }
+  if (req['semantic-check']) {
+    const { query, post } = req['semantic-check']
+    semanticCheck(query, post)
+      .then((score) => sendResponse({ score }))
+      .catch(() => sendResponse({ score: 0 }))
+    return true
+  }
 })
 
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -24,6 +33,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     'detect-slop': true,
     'hide-slop': false,
     'classify-posts': false,
+    'semantic-filter': '',
     'hide-premium': true,
     'hide-advertisements': true,
     'hide-follow-recommendations': true,

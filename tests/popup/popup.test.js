@@ -36,6 +36,7 @@ beforeEach(async () => {
     <div id="settings-panel"></div>
     <select id="hide-by-age"></select>
     <input id="hide-by-keywords" />
+    <input id="semantic-filter" type="text" />
     <input id="hide-by-job-keywords" />
     <button id="reset-btn" title="reset-blocked-posts">Reset</button>
     <div id="stat-slop">-</div>

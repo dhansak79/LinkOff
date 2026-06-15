@@ -199,6 +199,7 @@ const CATEGORY_EMOJI = {
 
 export const applyClassificationDecision = (post, { label, score }) => {
   if (post.dataset.classificationBadge) return
+  if (post.dataset.semanticHidden) return
   post.dataset.classificationBadge = label
   const emoji = CATEGORY_EMOJI[label] ?? '🏷️'
   const pct = Math.round(score * 100)
@@ -267,7 +268,9 @@ const isPostNode = (node) => {
   )
 }
 
-const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, classifyPosts) => {
+const SEMANTIC_THRESHOLD = 0.5
+
+const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, classifyPosts, semanticQuery) => {
   let postsProcessed = 0
 
   const countOnce = (post, fn, signals) => {
@@ -281,6 +284,31 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, classifyPost
     if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) return
     post.dataset.classifiedPost = '1'
     sendClassifyRequest(post, extractPostText(post))
+  }
+
+  const applySemanticResult = (post, response) => {
+    if (chrome.runtime.lastError || response?.score == null) return
+    if (response.score >= SEMANTIC_THRESHOLD) {
+      hidePost(post, mode)
+      post.dataset.semanticHidden = '1'
+    }
+  }
+
+  const semanticCheckEnabled = (post) =>
+    !!semanticQuery && !post.dataset.semanticChecked &&
+    typeof chrome !== 'undefined' && !!chrome.runtime?.sendMessage
+
+  const requestSemanticCheck = (post) => {
+    if (!semanticCheckEnabled(post)) return
+    post.dataset.semanticChecked = '1'
+    try {
+      chrome.runtime.sendMessage(
+        { 'semantic-check': { query: semanticQuery, post: extractPostText(post).slice(0, 256) } },
+        (response) => applySemanticResult(post, response)
+      )
+    } catch {
+      // Extension context invalidated after reload
+    }
   }
 
   const checkSlop = (post) => {
@@ -308,7 +336,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, classifyPost
     // LinkedIn nests an outer wrapper (> data-lazy-mount-id > div) AND an inner
     // div[role="listitem"] — both match POST_SELECTOR. Skip if an ancestor has
     // already been processed so we don't double-banner the same post.
-    if (post.parentElement?.closest('[data-hidden="true"],[data-focusin-banner],[data-classified-post]')) return
+    if (post.parentElement?.closest('[data-hidden="true"],[data-focusin-banner],[data-classified-post],[data-semantic-checked]')) return
     postsProcessed++
     const isKeywordMatch = keywords.some((keyword) => post.textContent.indexOf(keyword) !== -1)
     const slopSignals = checkSlop(post)
@@ -323,6 +351,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, classifyPost
         post.classList.remove('focusedin-slop-soft-hide')
         post.dataset.hidden = false
       }
+      requestSemanticCheck(post)
       requestClassification(post)
     }
   }
@@ -369,7 +398,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, classifyPost
     feedObserver.observe(feedContainer, { childList: true, subtree: true })
   }
 
-  if (keywords.length || detectSlop || hideSlop || classifyPosts) connectObserver()
+  if (keywords.length || detectSlop || hideSlop || classifyPosts || semanticQuery) connectObserver()
 }
 
 const toggleFeed = (shown) => {
@@ -415,7 +444,8 @@ const handleFilterFeed = (mode, config) => {
     mode,
     !!config['detect-slop'],
     !!config['hide-slop'],
-    !!config['classify-posts']
+    !!config['classify-posts'],
+    config['semantic-filter'] || ''
   )
 }
 
