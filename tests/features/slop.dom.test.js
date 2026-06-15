@@ -713,11 +713,40 @@ describe('semantic-filter integration', () => {
     )
   })
 
-  it('hides a post when the similarity score meets the threshold', () => {
+  it('hides a post and shows a collapse banner when the similarity score meets the threshold', () => {
     const posts = buildFeedDOM(SIX_CLEAN)
     doFeed({ ...baseConfig, 'semantic-filter': 'hustle culture' })
     vi.advanceTimersByTime(350)
     expect(posts[0].dataset.hidden).toBe('true')
+    expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
+    expect(posts[0].previousElementSibling?.textContent).toMatch(/🎯 Semantic match/)
+  })
+
+  it('clicking Show anyway on semantic banner reveals the post', () => {
+    const posts = buildFeedDOM([CLEAN_POST])
+    doFeed({ ...baseConfig, 'semantic-filter': 'hustle culture' })
+    vi.advanceTimersByTime(350)
+    const banner = posts[0].previousElementSibling
+    banner.querySelector('.focusedin-slop-reveal-btn').click()
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
+    expect(banner.classList.contains('focusedin-slop-tag')).toBe(true)
+  })
+
+  it('appends semantic signal to existing classification banner when classification responds first', async () => {
+    sendMessageSpy = vi.fn((msg, cb) => {
+      if (msg['classify-post']) cb({ result: { label: 'self-promotion', score: 0.82 } })
+      else Promise.resolve().then(() => cb({ score: 0.8 }))
+    })
+    vi.stubGlobal('chrome', { runtime: { lastError: null, sendMessage: sendMessageSpy } })
+    const posts = buildFeedDOM([CLEAN_POST])
+    doFeed({ ...baseConfig, 'semantic-filter': 'hustle culture', 'classify-posts': true })
+    vi.advanceTimersByTime(350)
+    await Promise.resolve()
+    const banner = posts[0].previousElementSibling
+    expect(banner?.classList.contains('focusedin-slop-collapsed')).toBe(true)
+    expect(banner?.textContent).toMatch(/self-promotion/)
+    expect(banner?.textContent).toMatch(/🎯 semantic match/)
+    expect(document.querySelectorAll('.focusedin-slop-collapsed').length).toBe(1)
   })
 
   it('does not hide a post when the similarity score is below the threshold', () => {
@@ -782,7 +811,7 @@ describe('semantic-filter integration', () => {
     expect(sendMessageSpy).toHaveBeenCalledTimes(6)
   })
 
-  it('does not add a classification banner to a semantically hidden post', () => {
+  it('does not add a classification badge to a semantically hidden post', () => {
     // Return distinct responses so both semantic-check and classify-post callbacks fire
     sendMessageSpy = vi.fn((msg, cb) => {
       if (msg['semantic-check']) cb({ score: 0.8 })
@@ -794,6 +823,7 @@ describe('semantic-filter integration', () => {
     vi.advanceTimersByTime(350)
     const hiddenPost = posts[0]
     expect(hiddenPost.dataset.semanticHidden).toBe('1')
-    expect(hiddenPost.previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBeFalsy()
+    expect(hiddenPost.dataset.classificationBadge).toBeUndefined()
+    expect(hiddenPost.previousElementSibling?.textContent).toMatch(/🎯 Semantic match/)
   })
 })

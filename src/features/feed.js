@@ -292,10 +292,44 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, classifyPost
 
   const applySemanticResult = (post, response) => {
     if (chrome.runtime.lastError || response?.score == null) return
-    if (response.score >= SEMANTIC_THRESHOLD) {
-      hidePost(post, mode)
-      post.dataset.semanticHidden = '1'
+    if (response.score < SEMANTIC_THRESHOLD) return
+    post.dataset.semanticHidden = '1'
+    post.dataset.hidden = true
+    countOnce(post, trackPostFiltered)
+    const pct = Math.round(response.score * 100)
+    const prev = post.previousElementSibling
+    if (prev?.classList.contains('focusedin-slop-collapsed')) {
+      const row = document.createElement('div')
+      row.className = 'focusedin-slop-signals'
+      row.textContent = `🎯 semantic match · ${pct}%`
+      const revealBtn = prev.querySelector('.focusedin-slop-reveal-btn')
+      prev.insertBefore(row, revealBtn ?? null)
+      return
     }
+    post.classList.add('focusedin-slop-soft-hide')
+    const banner = document.createElement('div')
+    banner.className = 'focusedin-slop-collapsed'
+    banner.dataset.focusinInjected = '1'
+    const headline = document.createElement('div')
+    headline.className = 'focusedin-slop-headline'
+    headline.textContent = '🎯 Semantic match'
+    banner.append(headline)
+    const scoreRow = document.createElement('div')
+    scoreRow.className = 'focusedin-slop-signals'
+    scoreRow.textContent = `${pct}% similarity`
+    banner.append(scoreRow)
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = 'focusedin-slop-reveal-btn'
+    btn.textContent = 'Show anyway'
+    btn.addEventListener('click', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      post.classList.remove('focusedin-slop-soft-hide')
+      collapseToTag(banner, extractAuthorName(post))
+    })
+    banner.append(btn)
+    post.before(banner)
   }
 
   const semanticCheckEnabled = (post) =>
