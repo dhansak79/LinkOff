@@ -164,17 +164,17 @@ function onJobChange(e) {
 }
 jobKeywords.addEventListener('change', onJobChange)
 
-const semanticFilterEl = document.getElementById('semantic-filter')
-const semanticTagify = new Tagify(semanticFilterEl, {
-  whitelist: [],
-  dropdown: { enabled: 0 },
-  originalInputValueFormat: (valuesArr) => valuesArr.map((item) => item.value).join(', '),
-})
+const semanticTopicCheckboxes = document.querySelectorAll('.semantic-topic')
 
-function onSemanticFilterChange(e) {
-  chrome.storage.local.set({ 'semantic-filter': e.target.value }, () => {})
+const saveSemanticTopics = () => {
+  const topics = [...semanticTopicCheckboxes]
+    .filter((cb) => cb.checked)
+    .map((cb) => cb.value)
+    .join(', ')
+  chrome.storage.local.set({ 'semantic-filter': topics }, () => {})
 }
-semanticFilterEl.addEventListener('change', onSemanticFilterChange)
+
+semanticTopicCheckboxes.forEach((cb) => cb.addEventListener('change', saveSemanticTopics))
 
 window.onload = function () {
   chrome.storage.local.get('feed-keywords', function (res) {
@@ -184,8 +184,8 @@ window.onload = function () {
     jobTagify.addTags(res['job-keywords'])
   })
   chrome.storage.local.get('semantic-filter', function (res) {
-    const topics = (res['semantic-filter'] || '').split(',').map((s) => s.trim()).filter(Boolean)
-    if (topics.length) semanticTagify.addTags(topics)
+    const active = new Set((res['semantic-filter'] || '').split(',').map((s) => s.trim()).filter(Boolean))
+    semanticTopicCheckboxes.forEach((cb) => { cb.checked = active.has(cb.value) })
   })
 
   readStats((stats) =>

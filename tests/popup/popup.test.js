@@ -36,7 +36,8 @@ beforeEach(async () => {
     <div id="settings-panel"></div>
     <select id="hide-by-age"></select>
     <input id="hide-by-keywords" />
-    <input id="semantic-filter" type="text" />
+    <input type="checkbox" class="semantic-topic" value="hustle culture" />
+    <input type="checkbox" class="semantic-topic" value="cryptocurrency" />
     <input id="hide-by-job-keywords" />
     <button id="reset-btn" title="reset-blocked-posts">Reset</button>
     <div id="stat-slop">-</div>
@@ -100,8 +101,10 @@ describe('popup', () => {
     expect(mockSet).toHaveBeenCalledWith({ 'job-keywords': '' }, expect.any(Function))
   })
 
-  it('saves semantic filter to storage when topics change', () => {
-    document.getElementById('semantic-filter').dispatchEvent(new Event('change'))
-    expect(mockSet).toHaveBeenCalledWith({ 'semantic-filter': '' }, expect.any(Function))
+  it('saves checked semantic topics to storage when a topic is toggled', () => {
+    const cb = document.querySelector('.semantic-topic[value="hustle culture"]')
+    cb.checked = true
+    cb.dispatchEvent(new Event('change'))
+    expect(mockSet).toHaveBeenCalledWith({ 'semantic-filter': 'hustle culture' }, expect.any(Function))
   })
 })
