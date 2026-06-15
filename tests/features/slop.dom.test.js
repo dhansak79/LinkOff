@@ -496,36 +496,37 @@ describe('hide-slop - completely hidden', () => {
 })
 
 // ---------------------------------------------------------------------------
-// addClassificationBadge - direct unit tests
+// applyClassificationDecision - direct unit tests
 // ---------------------------------------------------------------------------
 
-describe('addClassificationBadge', () => {
-  let addClassificationBadge
+describe('applyClassificationDecision', () => {
+  let applyClassificationDecision
 
   beforeEach(async () => {
-    ;({ addClassificationBadge } = await import('../../src/features/feed.js'))
+    ;({ applyClassificationDecision } = await import('../../src/features/feed.js'))
   })
 
-  it('injects a badge with emoji, label and confidence before the post', () => {
+  it('collapses the post with a banner containing emoji, label and confidence', () => {
     const posts = buildFeedDOM([CLEAN_POST])
-    addClassificationBadge(posts[0], { label: 'self-promotion', score: 0.82 })
-    const badge = posts[0].previousElementSibling
-    expect(badge?.classList.contains('focusedin-classify-badge')).toBe(true)
-    expect(badge?.textContent).toContain('📣')
-    expect(badge?.textContent).toContain('self-promotion')
-    expect(badge?.textContent).toContain('82%')
+    applyClassificationDecision(posts[0], { label: 'self-promotion', score: 0.82 })
+    const banner = posts[0].previousElementSibling
+    expect(banner?.classList.contains('focusedin-slop-collapsed')).toBe(true)
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(true)
+    expect(banner?.textContent).toContain('📣')
+    expect(banner?.textContent).toContain('self-promotion')
+    expect(banner?.textContent).toContain('82%')
   })
 
-  it('does not inject a second badge when called again on the same post', () => {
+  it('does not inject a second banner when called again on the same post', () => {
     const posts = buildFeedDOM([CLEAN_POST])
-    addClassificationBadge(posts[0], { label: 'self-promotion', score: 0.82 })
-    addClassificationBadge(posts[0], { label: 'hustle culture', score: 0.90 })
-    expect(document.querySelectorAll('.focusedin-classify-badge').length).toBe(1)
+    applyClassificationDecision(posts[0], { label: 'self-promotion', score: 0.82 })
+    applyClassificationDecision(posts[0], { label: 'hustle culture', score: 0.90 })
+    expect(document.querySelectorAll('.focusedin-slop-collapsed').length).toBe(1)
   })
 
   it('uses a fallback emoji for an unrecognised label', () => {
     const posts = buildFeedDOM([CLEAN_POST])
-    addClassificationBadge(posts[0], { label: 'unknown-category', score: 0.75 })
+    applyClassificationDecision(posts[0], { label: 'unknown-category', score: 0.75 })
     expect(posts[0].previousElementSibling?.textContent).toContain('🏷️')
   })
 
@@ -539,9 +540,31 @@ describe('addClassificationBadge', () => {
     for (const [label, emoji] of cases) {
       buildFeedDOM([CLEAN_POST])
       const post = document.querySelector('[data-lazy-mount-id] > div')
-      addClassificationBadge(post, { label, score: 0.80 })
+      applyClassificationDecision(post, { label, score: 0.80 })
       expect(post.previousElementSibling?.textContent).toContain(emoji)
     }
+  })
+
+  it('clicking Show anyway reveals the post and collapses the banner to a tag', () => {
+    const posts = buildFeedDOM([CLEAN_POST])
+    applyClassificationDecision(posts[0], { label: 'self-promotion', score: 0.82 })
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(true)
+
+    posts[0].previousElementSibling.querySelector('button').click()
+
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
+    expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-tag')).toBe(true)
+  })
+
+  it('appends classification info to an existing slop banner instead of adding a second collapse', () => {
+    const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    applyClassificationDecision(posts[0], { label: 'humble brag', score: 0.87 })
+
+    expect(document.querySelectorAll('.focusedin-slop-collapsed').length).toBe(1)
+    expect(posts[0].previousElementSibling?.textContent).toContain('humble brag')
   })
 })
 
@@ -576,11 +599,11 @@ describe('classify-posts integration', () => {
     )
   })
 
-  it('injects a classification badge for a clean post when the response has a result', () => {
+  it('collapses a clean post when the classification response has a result', () => {
     buildFeedDOM([CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
     doFeed({ ...baseConfig, 'classify-posts': true })
     vi.advanceTimersByTime(350)
-    expect(document.querySelector('.focusedin-classify-badge')).not.toBeNull()
+    expect(document.querySelector('.focusedin-slop-collapsed')).not.toBeNull()
   })
 
   it('does not send classification messages when classify-posts is disabled', () => {
@@ -597,7 +620,7 @@ describe('classify-posts integration', () => {
     expect(sendMessageSpy).toHaveBeenCalledTimes(5)
   })
 
-  it('does not inject a badge when the response result is null', () => {
+  it('does not collapse a post when the classification response result is null', () => {
     sendMessageSpy = vi.fn((msg, cb) => cb({ result: null }))
     vi.stubGlobal('chrome', {
       runtime: { lastError: null, sendMessage: sendMessageSpy },
@@ -605,10 +628,10 @@ describe('classify-posts integration', () => {
     buildFeedDOM([CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
     doFeed({ ...baseConfig, 'classify-posts': true })
     vi.advanceTimersByTime(350)
-    expect(document.querySelector('.focusedin-classify-badge')).toBeNull()
+    expect(document.querySelector('[data-classification-badge]')).toBeNull()
   })
 
-  it('does not inject a badge when chrome.runtime.lastError is set', () => {
+  it('does not collapse a post when chrome.runtime.lastError is set', () => {
     sendMessageSpy = vi.fn((msg, cb) => cb(undefined))
     vi.stubGlobal('chrome', {
       runtime: { lastError: new Error('Context invalidated'), sendMessage: sendMessageSpy },
@@ -616,7 +639,7 @@ describe('classify-posts integration', () => {
     buildFeedDOM([CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
     doFeed({ ...baseConfig, 'classify-posts': true })
     vi.advanceTimersByTime(350)
-    expect(document.querySelector('.focusedin-classify-badge')).toBeNull()
+    expect(document.querySelector('[data-classification-badge]')).toBeNull()
   })
 
   it('does not re-classify a post when doFeed re-runs', () => {
@@ -627,5 +650,22 @@ describe('classify-posts integration', () => {
     doFeed({ ...baseConfig, 'classify-posts': true })
     vi.advanceTimersByTime(350)
     expect(sendMessageSpy).not.toHaveBeenCalled()
+  })
+
+  it('sends exactly one classify request when outer wrapper and inner listitem both match POST_SELECTOR', () => {
+    document.body.innerHTML = `
+      <div data-testid="mainFeed" componentkey="container-update-list_mainFeed-lazy-container">
+        <div data-lazy-mount-id="test-mount" style="display:contents">
+          <div data-display-contents="true"><div><div role="listitem">${CLEAN_POST}</div></div></div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+          <div>${CLEAN_POST}</div>
+        </div>
+      </div>`
+    doFeed({ ...baseConfig, 'classify-posts': true })
+    vi.advanceTimersByTime(350)
+    expect(sendMessageSpy).toHaveBeenCalledTimes(6)
   })
 })

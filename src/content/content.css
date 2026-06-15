@@ -79,18 +79,6 @@
   color: #fff;
 }
 
-.focusedin-classify-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  background: rgba(245, 158, 11, 0.07);
-  border: 1px solid rgba(245, 158, 11, 0.22);
-  border-radius: 20px;
-  font-size: 11px;
-  color: rgba(245, 158, 11, 0.7);
-  margin-bottom: 6px;
-}
-
 .focusedin-slop-tag {
   display: inline-flex;
   align-items: center;
