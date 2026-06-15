@@ -150,6 +150,22 @@ describe('detect-slop - collapse with reveal banner', () => {
     expect(document.querySelectorAll('.focusedin-slop-collapsed').length).toBe(1)
   })
 
+  it('does not re-count a post when settings change and blockPostsByKeywords re-runs', () => {
+    const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    expect(posts[0].dataset.focusinCounted).toBe('1')
+
+    // Second doFeed simulates a settings toggle — resets hidden state but not focusinCounted
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    // Still '1' — countOnce guard fired for the second scan
+    expect(posts[0].dataset.focusinCounted).toBe('1')
+  })
+
   it('runs without any keyword filters active', () => {
     const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
 
@@ -221,6 +237,19 @@ describe('detect-slop - collapse with reveal banner', () => {
     vi.advanceTimersByTime(350)
 
     expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
+  })
+
+  it('transforms to tag without author when no author link is present and reveal is clicked', () => {
+    const posts = buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+
+    posts[0].previousElementSibling.querySelector('button').click()
+
+    const tag = posts[0].previousElementSibling
+    expect(tag?.classList.contains('focusedin-slop-tag')).toBe(true)
+    expect(tag?.textContent).toBe('🤖 AI post')
   })
 
   it('does not show the scroll-down alert when only detect-slop is active', () => {
