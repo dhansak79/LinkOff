@@ -164,29 +164,39 @@ const isPostNode = (node) => {
 const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop) => {
   let postsProcessed = 0
 
+  const countOnce = (post, fn, signals) => {
+    if (post.dataset.focusinCounted) return
+    signals ? fn(signals) : fn()
+    post.dataset.focusinCounted = '1'
+  }
+
+  const checkSlop = (post) => {
+    if (!(detectSlop || hideSlop) || post.dataset.slopRevealed) return null
+    const text = extractPostText(post)
+    return isSlop(text) ? getSlopSignals(text) : null
+  }
+
+  const applySlopDecision = (post, slopSignals) => {
+    if (hideSlop) {
+      hidePost(post, mode)
+      countOnce(post, trackSlopHidden, slopSignals)
+    } else {
+      post.classList.add('focusedin-slop-soft-hide')
+      post.dataset.hidden = true
+      addRevealBanner(post, slopSignals)
+      countOnce(post, trackSlopCollapsed, slopSignals)
+    }
+  }
+
   const applyKeywordToPost = (post) => {
     postsProcessed++
-    const postText = post.textContent
-    const isKeywordMatch = keywords.some((keyword) => postText.indexOf(keyword) !== -1)
-    let slopSignals = null
-    const shouldCheckSlop = (detectSlop || hideSlop) && !post.dataset.slopRevealed
-    if (shouldCheckSlop) {
-      const text = extractPostText(post)
-      if (isSlop(text)) slopSignals = getSlopSignals(text)
-    }
+    const isKeywordMatch = keywords.some((keyword) => post.textContent.indexOf(keyword) !== -1)
+    const slopSignals = checkSlop(post)
     if (isKeywordMatch) {
       hidePost(post, mode)
-      trackPostFiltered()
+      countOnce(post, trackPostFiltered)
     } else if (slopSignals) {
-      if (hideSlop) {
-        hidePost(post, mode)
-        trackSlopHidden(slopSignals)
-      } else {
-        post.classList.add('focusedin-slop-soft-hide')
-        post.dataset.hidden = true
-        addRevealBanner(post, slopSignals)
-        trackSlopCollapsed(slopSignals)
-      }
+      applySlopDecision(post, slopSignals)
     } else {
       removeHideClasses(post)
       post.classList.remove('focusedin-slop-soft-hide')
