@@ -130,8 +130,8 @@ const collapseToTag = (banner, author) => {
 }
 
 const addRevealBanner = (post, signals) => {
-  const existing = post.previousElementSibling
-  if (existing?.classList.contains('focusedin-slop-collapsed') || existing?.classList.contains('focusedin-slop-tag')) return
+  if (post.dataset.focusinBanner) return
+  post.dataset.focusinBanner = '1'
   const author = extractAuthorName(post)
   const banner = document.createElement('div')
   banner.className = 'focusedin-slop-collapsed'
