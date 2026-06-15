@@ -23,7 +23,7 @@ vi.mock('../../src/utils.js', () => ({
 const UNFOLLOW_BTN = 'button[aria-label^="Click to stop"]'
 
 // Base config: enabled, hide mode, no specific flags
-const baseConfig = { 'main-toggle': true, 'gentle-mode': false }
+const baseConfig = { 'main-toggle': true }
 
 // ---------------------------------------------------------------------------
 // unfollowAll

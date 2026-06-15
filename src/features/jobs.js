@@ -29,7 +29,7 @@ const blockByJobKeywords = (keywords, mode) => {
       if (found) {
         post.classList.add(mode, 'showIcon')
       } else {
-        post.classList.remove('hide', 'dim', 'showIcon')
+        post.classList.remove('hide', 'showIcon')
       }
     })
   }, 350)
@@ -37,7 +37,7 @@ const blockByJobKeywords = (keywords, mode) => {
 
 export default (config) => {
   const enabled = config['main-toggle']
-  const mode = config['gentle-mode'] ? 'dim' : 'hide'
+  const mode = 'hide'
 
   clearInterval(jobKeywordInterval)
   jobKeywordInterval = null

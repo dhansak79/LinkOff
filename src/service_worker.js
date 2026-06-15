@@ -4,7 +4,6 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   if (res.initialized === 'v0.5') return
   await chrome.storage.local.set({
     initialized: 'v0.5',
-    'gentle-mode': true,
     'main-toggle': true,
     'hide-whole-feed': false,
     'hide-by-age': 'week',

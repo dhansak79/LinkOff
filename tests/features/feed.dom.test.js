@@ -47,7 +47,6 @@ const baseConfig = {
   'feed-keywords': '',
   'hide-by-age': 'disabled',
   'main-toggle': true,
-  'gentle-mode': false,
 }
 
 // ---------------------------------------------------------------------------
@@ -72,15 +71,6 @@ describe('post processing - keyword matching', () => {
     Array.from(posts)
       .filter((p) => !p.textContent.includes('likes this'))
       .forEach((p) => expect(p.dataset.hidden).toBe('false'))
-  })
-
-  it('applies dim class instead of hide when gentle-mode is on', () => {
-    const [post] = buildFeedDOM(['Alice likes this post'])
-
-    doFeed({ ...baseConfig, 'gentle-mode': true, 'hide-liked': true })
-
-    expect(post.classList.contains('dim')).toBe(true)
-    expect(post.classList.contains('hide')).toBe(false)
   })
 
   it('removes existing hide classes from posts that no longer match', () => {

@@ -95,7 +95,7 @@ export const unfollowAll = async () => {
 
 export default (config) => {
   const enabled = config['main-toggle']
-  const mode = config['gentle-mode'] ? 'dim' : 'hide'
+  const mode = 'hide'
 
   if (!enabled) {
     showAll()

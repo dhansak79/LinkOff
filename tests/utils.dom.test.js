@@ -23,7 +23,6 @@ beforeEach(() => {
 
 const expectHideClassesRemoved = (el) => {
   expect(el.classList.contains('hide')).toBe(false)
-  expect(el.classList.contains('dim')).toBe(false)
   expect(el.classList.contains('showIcon')).toBe(false)
 }
 
@@ -39,13 +38,6 @@ describe('removeHideClasses', () => {
     expect(el.classList.contains('hide')).toBe(false)
   })
 
-  it('removes the dim class', () => {
-    const el = document.createElement('div')
-    el.classList.add('dim')
-    removeHideClasses(el)
-    expect(el.classList.contains('dim')).toBe(false)
-  })
-
   it('removes the showIcon class', () => {
     const el = document.createElement('div')
     el.classList.add('showIcon')
@@ -53,9 +45,9 @@ describe('removeHideClasses', () => {
     expect(el.classList.contains('showIcon')).toBe(false)
   })
 
-  it('removes all three at once', () => {
+  it('removes hide and showIcon at once', () => {
     const el = document.createElement('div')
-    el.classList.add('hide', 'dim', 'showIcon')
+    el.classList.add('hide', 'showIcon')
     removeHideClasses(el)
     expect(el.classList.length).toBe(0)
   })
@@ -92,24 +84,17 @@ describe('hideBySelector', () => {
   })
 
   it('clears existing hide classes before applying the new mode', async () => {
-    document.body.innerHTML = '<div class="target dim">content</div>'
+    document.body.innerHTML = '<div class="target showIcon">content</div>'
     await hideBySelector('.target', 'hide')
     const el = document.querySelector('.target')
-    expect(el.classList.contains('dim')).toBe(false)
     expect(el.classList.contains('hide')).toBe(true)
   })
 
   it('applies to every element when given an array of selectors', async () => {
     document.body.innerHTML = '<div class="a">a</div><div class="b">b</div>'
-    await hideBySelector(['.a', '.b'], 'dim')
-    expect(document.querySelector('.a').classList.contains('dim')).toBe(true)
-    expect(document.querySelector('.b').classList.contains('dim')).toBe(true)
-  })
-
-  it('works with the dim mode', async () => {
-    document.body.innerHTML = '<div class="target">content</div>'
-    await hideBySelector('.target', 'dim')
-    expect(document.querySelector('.target').classList.contains('dim')).toBe(true)
+    await hideBySelector(['.a', '.b'], 'hide')
+    expect(document.querySelector('.a').classList.contains('hide')).toBe(true)
+    expect(document.querySelector('.b').classList.contains('hide')).toBe(true)
   })
 })
 
@@ -118,8 +103,8 @@ describe('hideBySelector', () => {
 // ---------------------------------------------------------------------------
 
 describe('showBySelector', () => {
-  it('removes hide, dim, and showIcon from the matching element', async () => {
-    document.body.innerHTML = '<div class="target hide dim showIcon">content</div>'
+  it('removes hide and showIcon from the matching element', async () => {
+    document.body.innerHTML = '<div class="target hide showIcon">content</div>'
     await showBySelector('.target')
     expectHideClassesRemoved(document.querySelector('.target'))
   })
@@ -155,10 +140,9 @@ describe('hideParentBySelector', () => {
   })
 
   it('clears existing hide classes from the parent before applying the new mode', async () => {
-    document.body.innerHTML = '<div class="parent dim"><span class="child">content</span></div>'
+    document.body.innerHTML = '<div class="parent showIcon"><span class="child">content</span></div>'
     await hideParentBySelector('.child', 'hide')
     const parent = document.querySelector('.parent')
-    expect(parent.classList.contains('dim')).toBe(false)
     expect(parent.classList.contains('hide')).toBe(true)
   })
 
@@ -176,7 +160,7 @@ describe('hideParentBySelector', () => {
 describe('showParentBySelector', () => {
   it('removes hide classes from the parent of the matching element', async () => {
     document.body.innerHTML =
-      '<div class="parent hide dim showIcon"><span class="child">content</span></div>'
+      '<div class="parent hide showIcon"><span class="child">content</span></div>'
     await showParentBySelector('.child')
     expectHideClassesRemoved(document.querySelector('.parent'))
   })
@@ -219,8 +203,8 @@ describe('hideAncestorIndexBySelector', () => {
 
   it('hides the direct parent at depth 1', async () => {
     document.body.innerHTML = '<div class="parent"><span class="child">x</span></div>'
-    await hideAncestorIndexBySelector('.child', 1, 'dim')
-    expect(document.querySelector('.parent').classList.contains('dim')).toBe(true)
+    await hideAncestorIndexBySelector('.child', 1, 'hide')
+    expect(document.querySelector('.parent').classList.contains('hide')).toBe(true)
   })
 })
 
@@ -231,7 +215,7 @@ describe('hideAncestorIndexBySelector', () => {
 describe('showAncestorIndexBySelector', () => {
   it('removes hide classes from the ancestor at the given depth', async () => {
     document.body.innerHTML = `
-      <div class="grandparent hide dim showIcon">
+      <div class="grandparent hide showIcon">
         <div class="parent">
           <span class="child">content</span>
         </div>
@@ -264,7 +248,7 @@ describe('hidePost', () => {
     expect(post.dataset.hidden).toBe('true')
   })
 
-  it('onclick removes hide, dim, and showIcon classes', () => {
+  it('onclick removes hide and showIcon classes', () => {
     const post = document.createElement('div')
     hidePost(post, 'hide')
     post.onclick()
@@ -277,13 +261,6 @@ describe('hidePost', () => {
     hidePost(post, 'hide')
     post.onclick()
     expect(post.dataset.hidden).toBe('shown')
-  })
-
-  it('onclick also clears the dim class', () => {
-    const post = document.createElement('div')
-    hidePost(post, 'dim')
-    post.onclick()
-    expect(post.classList.contains('dim')).toBe(false)
   })
 })
 
@@ -381,10 +358,10 @@ describe('resetJobs', () => {
 
   it('removes hide classes from div[data-job-id] elements', () => {
     document.body.innerHTML =
-      '<div data-job-id="123" class="dim showIcon" data-hidden="true">job</div>'
+      '<div data-job-id="123" class="hide showIcon" data-hidden="true">job</div>'
     const card = document.querySelector('[data-job-id]')
     resetJobs()
-    expect(card.classList.contains('dim')).toBe(false)
+    expect(card.classList.contains('hide')).toBe(false)
   })
 
   it('deletes dataset.hidden from div[data-job-id] elements', () => {
