@@ -19,7 +19,7 @@ const staged = execSync('git diff --cached --name-only --diff-filter=ACM')
   .toString()
   .trim()
   .split('\n')
-  .filter((f) => f.endsWith('.js') && f.length > 0)
+  .filter((f) => f.length > 0)
 
 if (!staged.length) process.exit(0)
 
