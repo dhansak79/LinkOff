@@ -4,6 +4,14 @@ import { spawnSync, execSync } from 'child_process'
 
 process.env.PATH = `${process.env.HOME}/.local/bin:${process.env.PATH}`
 
+if (spawnSync('cs', ['version'], { stdio: 'ignore' }).error) {
+  console.error(
+    'CodeScene health gate: cs is not installed.\n' +
+    'Install it from https://codescene.io/docs/cli/index.html and re-try.'
+  )
+  process.exit(1)
+}
+
 const MIN_HEALTH = 10.0
 let failed = false
 
