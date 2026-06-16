@@ -8,37 +8,33 @@ FocusIn gives you back control of your LinkedIn feed — filtering out the garba
 
 > Forked from [njelich/LinkOff](https://github.com/njelich/LinkOff)
 
-<details markdown="1">
-<summary>Click for preview</summary>
-
----
-![Preview FocusIn browser extension](https://addons.mozilla.org/user-media/previews/full/256/256407.png)
-
-[![FocusIn—Clean your feed](https://img.youtube.com/vi/rGQneD68f1w/maxresdefault.jpg)](https://www.youtube.com/watch?v=rGQneD68f1w)
-
----
-</details>
-
 ## Features
 
-- Option to hide the whole feed
-- Post filtering by content (polls, videos, promoted, shared, etc)
-- Hide posts by companies or specific people
+- Option to hide the whole feed, or sort it by recent instead of LinkedIn's algorithm
 - Filter by custom keywords (politics, coronavirus, vaccination, whatever)
+- Semantic topic filter — hide posts about a topic by meaning, not just keyword match (e.g. "hustle culture", "personal branding"), with your own custom topics too
 - Hide posts shown due to interactions (comments, reactions, followed by connections)
 - Hide irrelevant old posts (older than an hour, day, week, month)
+- Filter job postings by keyword, and hide promoted jobs
 - Select messages for mass deletion (clean your inbox)
 - Unfollow all collections
 - Block ads on LinkedIn (banners and sidebar)
-- Hide LinkedIn learning and course recommendations
-- Hide community panel and follow recommendations
-- Stop LinkedIn premium upsell pestering
+- Hide notification counts, LinkedIn News, follow recommendations, and premium upsell prompts
+- A "Today" dashboard in the popup showing how many AI posts and other posts have been filtered
 - Fully configurable to suit your need!
 - Completely FREE and with NO ADS
 
 ### AI Slop Detection
 
 Collapse or completely hide posts that read like AI-generated content — buzzword phrases, filler hooks, emoji overload, raw markdown, contrasting clause structures, and wall-to-wall single-sentence line stacking. Posts that trip enough signals are either collapsed (with a reveal button) or hidden entirely, depending on your settings.
+
+### AI Post Classification
+
+Optionally label each post with its type (e.g. job update, article share, poll) using a small ML model that runs locally in the browser — nothing is sent to a server.
+
+### Semantic Topic Filter
+
+Beyond plain keyword matching, FocusIn can hide posts that are *about* a topic even if they don't use the exact words, using a local sentence-embedding model (runs entirely in-browser, no data leaves your machine). Pick from built-in topics or add your own.
 
 FocusIn will be available in every browser on every device.
 
