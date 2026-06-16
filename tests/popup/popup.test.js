@@ -25,7 +25,10 @@ beforeEach(async () => {
     cb && cb(res)
   })
   mockQuery.mockImplementation((_, cb) => cb([{ id: 1 }]))
-  vi.stubGlobal('Tagify', function MockTagify() { this.addTags = vi.fn() })
+  vi.stubGlobal('Tagify', function MockTagify(el, opts) {
+    this.addTags = vi.fn()
+    if (opts?.originalInputValueFormat) opts.originalInputValueFormat([{ value: 'test' }])
+  })
 
   document.body.innerHTML = `
     <div id="feed-tab" class="content-tab"></div>
@@ -38,6 +41,7 @@ beforeEach(async () => {
     <input id="hide-by-keywords" />
     <input type="checkbox" class="semantic-topic" value="hustle culture" />
     <input type="checkbox" class="semantic-topic" value="cryptocurrency" />
+    <input id="semantic-custom-topics" />
     <input id="hide-by-job-keywords" />
     <button id="reset-btn" title="reset-blocked-posts">Reset</button>
     <button id="test-semantic-btn">Test model</button>
@@ -108,6 +112,14 @@ describe('popup', () => {
     cb.checked = true
     cb.dispatchEvent(new Event('change'))
     expect(mockSet).toHaveBeenCalledWith({ 'semantic-filter': 'hustle culture' }, expect.any(Function))
+  })
+
+  it('includes custom topics alongside preset topics when saving', () => {
+    const cb = document.querySelector('.semantic-topic[value="hustle culture"]')
+    cb.checked = true
+    document.getElementById('semantic-custom-topics').value = 'war, politics'
+    cb.dispatchEvent(new Event('change'))
+    expect(mockSet).toHaveBeenCalledWith({ 'semantic-filter': 'hustle culture, war, politics' }, expect.any(Function))
   })
 
   it('checks all semantic topics and saves defaults when semantic-filter is not in storage', async () => {

@@ -166,15 +166,27 @@ jobKeywords.addEventListener('change', onJobChange)
 
 const semanticTopicCheckboxes = document.querySelectorAll('.semantic-topic')
 
+const getActiveSemanticTopics = () => {
+  const presets = [...semanticTopicCheckboxes].filter((cb) => cb.checked).map((cb) => cb.value)
+  const customEl = document.getElementById('semantic-custom-topics')
+  const customs = (customEl?.value || '').split(',').map((t) => t.trim()).filter(Boolean)
+  return [...presets, ...customs].join(', ')
+}
+
 const saveSemanticTopics = () => {
-  const topics = [...semanticTopicCheckboxes]
-    .filter((cb) => cb.checked)
-    .map((cb) => cb.value)
-    .join(', ')
-  chrome.storage.local.set({ 'semantic-filter': topics }, () => {})
+  chrome.storage.local.set({ 'semantic-filter': getActiveSemanticTopics() }, () => {})
 }
 
 semanticTopicCheckboxes.forEach((cb) => cb.addEventListener('change', saveSemanticTopics))
+
+const semanticCustomInput = document.querySelector('#semantic-custom-topics')
+let customTopicTagify = null
+if (semanticCustomInput) {
+  customTopicTagify = new Tagify(semanticCustomInput, {
+    originalInputValueFormat: (valuesArr) => valuesArr.map((item) => item.value).join(', '),
+  })
+  semanticCustomInput.addEventListener('change', saveSemanticTopics)
+}
 
 const TEST_POST = 'Grind harder than yesterday. Hustle culture is the only way to build wealth and achieve your crypto dreams. Personal branding is everything.'
 
@@ -215,8 +227,12 @@ window.onload = function () {
       saveSemanticTopics()
       return
     }
-    const active = new Set(res['semantic-filter'].split(',').map((s) => s.trim()).filter(Boolean))
-    semanticTopicCheckboxes.forEach((cb) => { cb.checked = active.has(cb.value) })
+    const stored = res['semantic-filter'].split(',').map((s) => s.trim()).filter(Boolean)
+    const presetValues = new Set([...semanticTopicCheckboxes].map((cb) => cb.value))
+    const storedSet = new Set(stored)
+    semanticTopicCheckboxes.forEach((cb) => { cb.checked = storedSet.has(cb.value) })
+    const customTopics = stored.filter((t) => !presetValues.has(t))
+    if (customTopics.length) customTopicTagify?.addTags(customTopics)
   })
 
   readStats((stats) =>
