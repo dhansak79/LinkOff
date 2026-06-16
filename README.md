@@ -61,12 +61,12 @@ FocusIn doesn't hide posts at random — it's looking for specific patterns that
 
 It scans the post text for a handful of tells and adds up points for each one. The post is flagged once the total crosses a threshold:
 
-- **Buzzword phrases** — things like "game-changer," "let that sink in," "thought leadership," "delve," "leverage." One on its own doesn't flag a post; two or more does.
-- **Telltale sentence structures** — patterns like "It's not X. It's Y." contrast pairs, "As [someone] once said:" quote drops, numbered listicle titles ("7 habits that..."), Twitter-style "1/ 2/ 3/" threads, arrow (→) bullet lists, and em dashes (rarely typed by hand, very common in AI writing). Any one of these is treated as a strong signal on its own.
-- **Emoji overload** — more than 4 emoji in the post.
-- **Emoji bullet lists** — two or more lines that each start with an emoji used as a bullet point.
-- **Raw markdown** — `**bold**`, `# headers`, or `* bullets` that never got rendered, suggesting the text was pasted straight from a chatbot.
-- **Line stacking** — lots of short, single-sentence lines in a row, a very AI-typical staccato format. Extreme stacking (15+ lines, mostly single-sentence) is suspicious enough to flag a post on its own.
+- **Buzzword phrases**: things like "game-changer," "let that sink in," "thought leadership," "delve," "leverage." One on its own doesn't flag a post; two or more does.
+- **Telltale sentence structures**: patterns like "It's not X. It's Y." contrast pairs, "As [someone] once said:" quote drops, numbered listicle titles ("7 habits that..."), Twitter-style "1/ 2/ 3/" threads, arrow (→) bullet lists, and em dashes (rarely typed by hand, very common in AI writing). Any one of these is treated as a strong signal on its own.
+- **Emoji overload**: more than 4 emoji in the post.
+- **Emoji bullet lists**: two or more lines that each start with an emoji used as a bullet point.
+- **Raw markdown**: `**bold**`, `# headers`, or `* bullets` that never got rendered, suggesting the text was pasted straight from a chatbot.
+- **Line stacking**: lots of short, single-sentence lines in a row, a very AI-typical staccato format. Extreme stacking (15+ lines, mostly single-sentence) is suspicious enough to flag a post on its own.
 
 Depending on your settings, flagged posts are either **collapsed** (with a reveal button) or **hidden completely**.
 
