@@ -69,6 +69,7 @@ const baseConfig = {
   'feed-keywords': '',
   'hide-by-age': 'disabled',
   'main-toggle': true,
+  'slop-archetype': true,
 }
 
 const runClean = (config) => {
@@ -547,7 +548,8 @@ describe('semantic-filter integration', () => {
 
   it('sends a semantic-check message for each clean post when semantic-filter is set', () => {
     runClean({ 'semantic-filter': 'hustle culture' })
-    expect(sendMessageSpy).toHaveBeenCalledTimes(6)
+    const semanticCalls = sendMessageSpy.mock.calls.filter((c) => c[0]['semantic-check'])
+    expect(semanticCalls.length).toBe(6)
     expect(sendMessageSpy).toHaveBeenCalledWith(
       expect.objectContaining({ 'semantic-check': expect.objectContaining({ queries: ['hustle culture'] }) }),
       expect.any(Function)
@@ -556,7 +558,7 @@ describe('semantic-filter integration', () => {
 
   it('hides a post and shows a collapse banner when the similarity score meets the threshold', () => {
     const posts = buildFeedDOM(SIX_CLEAN)
-    doFeed({ ...baseConfig, 'semantic-filter': 'hustle culture' })
+    doFeed({ ...baseConfig, 'semantic-filter': 'hustle culture', 'slop-archetype': false })
     vi.advanceTimersByTime(350)
     expect(posts[0].dataset.hidden).toBe('true')
     expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
@@ -586,7 +588,8 @@ describe('semantic-filter integration', () => {
     buildFeedDOM(SIX_CLEAN)
     doFeed({ ...baseConfig, 'semantic-filter': '' })
     vi.advanceTimersByTime(350)
-    expect(sendMessageSpy).not.toHaveBeenCalled()
+    const semanticCalls = sendMessageSpy.mock.calls.filter((c) => c[0]['semantic-check'])
+    expect(semanticCalls.length).toBe(0)
   })
 
   it('does not semantic-check slop-detected posts', () => {
@@ -633,7 +636,8 @@ describe('semantic-filter integration', () => {
     buildNestedFeedDOM()
     doFeed({ ...baseConfig, 'semantic-filter': 'hustle culture' })
     vi.advanceTimersByTime(350)
-    expect(sendMessageSpy).toHaveBeenCalledTimes(6)
+    const semanticCalls = sendMessageSpy.mock.calls.filter((c) => c[0]['semantic-check'])
+    expect(semanticCalls.length).toBe(6)
   })
 
   it('does not show a second banner when both archetype and topic checks fire above threshold', () => {
@@ -700,8 +704,8 @@ describe('slop-archetype-check integration', () => {
     expect(posts[0].dataset.semanticHidden).toBeUndefined()
   })
 
-  it('does not send archetype-check when detect-slop is disabled', () => {
-    runClean({ 'detect-slop': false })
+  it('does not send archetype-check when slop-archetype is disabled', () => {
+    runClean({ 'slop-archetype': false })
     const archetypeCall = sendMessageSpy.mock.calls.find((c) => c[0]['slop-archetype-check'])
     expect(archetypeCall).toBeUndefined()
   })

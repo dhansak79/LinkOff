@@ -33,6 +33,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     'sort-by-recent': true,
     'detect-slop': true,
     'hide-slop': false,
+    'slop-archetype': true,
     'semantic-filter': 'hustle culture, personal branding, motivational quotes, cryptocurrency, job interview tips, AI productivity tools, startup success story, sales and lead generation',
     'hide-premium': true,
     'hide-advertisements': true,

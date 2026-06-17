@@ -227,7 +227,7 @@ const isPostNode = (node) => {
 const SEMANTIC_THRESHOLD = 0.35
 const SLOP_ARCHETYPE_THRESHOLD = 0.38
 
-const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, semanticQuery) => {
+const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, semanticQuery, detectSlopArchetype) => {
   let postsProcessed = 0
 
   const countOnce = (post, fn, signals) => {
@@ -302,7 +302,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, semanticQuer
     semanticTopics.length > 0 && !post.dataset.semanticChecked && chromeMessagingAvailable()
 
   const slopArchetypeCheckEnabled = (post) =>
-    detectSlop && !post.dataset.slopArchetypeChecked && chromeMessagingAvailable()
+    detectSlopArchetype && !post.dataset.slopArchetypeChecked && chromeMessagingAvailable()
 
   const sendSemanticMessage = (msg, callback) => {
     try {
@@ -413,7 +413,7 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, semanticQuer
     feedObserver.observe(feedContainer, { childList: true, subtree: true })
   }
 
-  if (keywords.length || detectSlop || hideSlop || semanticTopics.length) connectObserver()
+  if (keywords.length || detectSlop || hideSlop || semanticTopics.length || detectSlopArchetype) connectObserver()
 }
 
 const toggleFeed = (shown) => {
@@ -459,7 +459,8 @@ const handleFilterFeed = (mode, config) => {
     mode,
     !!config['detect-slop'],
     !!config['hide-slop'],
-    config['semantic-filter'] || ''
+    config['semantic-filter'] || '',
+    !!config['slop-archetype']
   )
 }
 
