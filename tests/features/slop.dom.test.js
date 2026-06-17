@@ -593,7 +593,8 @@ describe('semantic-filter integration', () => {
     buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
     doFeed({ ...baseConfig, 'detect-slop': true, 'semantic-filter': 'hustle culture' })
     vi.advanceTimersByTime(350)
-    expect(sendMessageSpy).toHaveBeenCalledTimes(5)
+    const semanticCheckCalls = sendMessageSpy.mock.calls.filter((c) => c[0]['semantic-check'])
+    expect(semanticCheckCalls.length).toBe(5)
   })
 
   it('does not re-check a post when doFeed re-runs', () => {
@@ -633,6 +634,107 @@ describe('semantic-filter integration', () => {
     doFeed({ ...baseConfig, 'semantic-filter': 'hustle culture' })
     vi.advanceTimersByTime(350)
     expect(sendMessageSpy).toHaveBeenCalledTimes(6)
+  })
+
+  it('does not show a second banner when both archetype and topic checks fire above threshold', () => {
+    sendMessageSpy = vi.fn((msg, cb) => cb({ score: 0.8, topic: 'hustle culture' }))
+    vi.stubGlobal('chrome', { runtime: { lastError: null, sendMessage: sendMessageSpy } })
+    buildFeedDOM([CLEAN_POST])
+    doFeed({ ...baseConfig, 'detect-slop': true, 'semantic-filter': 'hustle culture' })
+    vi.advanceTimersByTime(350)
+    expect(document.querySelectorAll('.focusedin-slop-collapsed').length).toBe(1)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// slop-archetype-check integration
+// ---------------------------------------------------------------------------
+
+describe('slop-archetype-check integration', () => {
+  let sendMessageSpy
+
+  beforeEach(() => {
+    sendMessageSpy = vi.fn((msg, cb) => cb({ score: 0.8, topic: 'manufactured courage' }))
+    vi.stubGlobal('chrome', {
+      runtime: { lastError: null, sendMessage: sendMessageSpy },
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('sends a slop-archetype-check message for each clean post when detect-slop is enabled', () => {
+    runClean({ 'detect-slop': true })
+    expect(sendMessageSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ 'slop-archetype-check': expect.objectContaining({ post: expect.any(String) }) }),
+      expect.any(Function)
+    )
+  })
+
+  it('collapses a post and shows a Structural slop banner when score meets the threshold', () => {
+    const posts = buildFeedDOM([CLEAN_POST])
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+    expect(posts[0].dataset.hidden).toBe('true')
+    expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
+    expect(posts[0].previousElementSibling?.textContent).toMatch(/🎯 Structural slop/)
+  })
+
+  it('clicking Show anyway on archetype banner reveals the post and collapses banner to tag', () => {
+    const posts = buildFeedDOM([CLEAN_POST])
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+    const banner = posts[0].previousElementSibling
+    banner.querySelector('.focusedin-slop-reveal-btn').click()
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
+    expect(banner.classList.contains('focusedin-slop-tag')).toBe(true)
+  })
+
+  it('does not collapse a post when the archetype score is below the threshold', () => {
+    sendMessageSpy = vi.fn((msg, cb) => cb({ score: 0.3 }))
+    vi.stubGlobal('chrome', { runtime: { lastError: null, sendMessage: sendMessageSpy } })
+    const posts = buildFeedDOM([CLEAN_POST])
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+    expect(posts[0].dataset.semanticHidden).toBeUndefined()
+  })
+
+  it('does not send archetype-check when detect-slop is disabled', () => {
+    runClean({ 'detect-slop': false })
+    const archetypeCall = sendMessageSpy.mock.calls.find((c) => c[0]['slop-archetype-check'])
+    expect(archetypeCall).toBeUndefined()
+  })
+
+  it('does not archetype-check a keyword-matched or slop-detected post', () => {
+    buildFeedDOM([SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+    const archetypeCalls = sendMessageSpy.mock.calls.filter((c) => c[0]['slop-archetype-check'])
+    expect(archetypeCalls.length).toBe(5)
+  })
+
+  it('does not re-check a post when doFeed re-runs', () => {
+    buildFeedDOM([CLEAN_POST])
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+    sendMessageSpy.mockClear()
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+    expect(sendMessageSpy).not.toHaveBeenCalled()
+  })
+
+  it('does not throw when sendMessage throws Extension context invalidated', () => {
+    expectNoThrowWithContext({ 'detect-slop': true })
+  })
+
+  it('does not throw when chrome is not available', () => {
+    vi.unstubAllGlobals()
+    buildFeedDOM([CLEAN_POST])
+    expect(() => {
+      doFeed({ ...baseConfig, 'detect-slop': true })
+      vi.advanceTimersByTime(350)
+    }).not.toThrow()
   })
 })
 

@@ -1,9 +1,17 @@
 import { semanticCheck } from './features/semantic-filter.js'
+import { SLOP_ARCHETYPES } from './features/slop-keywords.js'
 
 chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
   if (req['semantic-check']) {
     const { queries, post } = req['semantic-check']
     semanticCheck(queries, post)
+      .then(({ score, topic }) => sendResponse({ score, topic }))
+      .catch(() => sendResponse({ score: 0 }))
+    return true
+  }
+  if (req['slop-archetype-check']) {
+    const { post } = req['slop-archetype-check']
+    semanticCheck(SLOP_ARCHETYPES, post)
       .then(({ score, topic }) => sendResponse({ score, topic }))
       .catch(() => sendResponse({ score: 0 }))
     return true
