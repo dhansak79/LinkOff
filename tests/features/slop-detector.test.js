@@ -371,6 +371,20 @@ describe('getSlopScore - new contrasting clause patterns', () => {
 })
 
 // ---------------------------------------------------------------------------
+// "X isn't new. What's new is Y." pseudo-insight reframe pattern
+// ---------------------------------------------------------------------------
+
+describe("getSlopScore - \"isn't new / what's new is\" pattern", () => {
+  it.each([
+    ["Technical debt isn't new. What's new is the speed."],
+    ["Burnout isn't new. What's new is how normalized it's become."],
+    ["Imposter syndrome isn't new.\nWhat's new is that everyone is talking about it."],
+  ])('flags pseudo-insight reframe: %s', (text) => {
+    expect(isSlop(text)).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Real-world post tests — catches obvious slop, spares genuine posts
 // ---------------------------------------------------------------------------
 

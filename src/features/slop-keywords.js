@@ -689,6 +689,8 @@ export const SLOP_PATTERNS = [
   /^Some [^.!?\n]{2,60}[.!?][ \t\n]+Some /ms,
   // "Here's why" hook — close relative of "here's the thing" and "here's how"
   /here[''']s why\b/i,
+  // "X isn't new. What's new is Y." — pseudo-insight reframe, very common in AI-ghostwritten posts
+  /\bisn[''']t new[.!?][\s\n]+what[''']s new\b/i,
 ]
 
 // Human-readable label for each pattern — must stay in the same order as SLOP_PATTERNS
@@ -704,4 +706,5 @@ export const SLOP_PATTERN_LABELS = [
   "anaphora",
   "some X, some Y",
   "here's why hook",
+  "isn't new, what's new is",
 ]
