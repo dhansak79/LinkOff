@@ -4,39 +4,35 @@
 
 In early 2026 a barrier was crossed: the majority of LinkedIn posts were AI-generated. 53.7% to be specific.
 
-AI content has a peculiar flavour. The em dashes, the hook/contrast/punchline structures, the emoji bullets, the wall-to-wall single-sentence lines. Each one is a small signal. Stacked together, they reliably mark a post that was effortless to produce, and for that reason carries less value to read.
+You can feel it when you scroll. The same rhythm, the same phrases, the same staccato lines. A thousand people who learned to write by prompting the same model, all publishing into the same feed.
 
-FocusIn detects those signals and gets them out of your way, so the posts written by actual humans with actual things to say have a chance of being seen.
+FocusIn filters that out. Posts that match enough AI writing patterns get collapsed to a one-line summary with a reveal button. You can still read them. You just don't have to scroll through a wall of them to find the ones worth reading.
 
 > Forked from [njelich/LinkOff](https://github.com/njelich/LinkOff)
 
-## What it does
+## How it works
 
-**AI slop detection:** scans every post for the tell-tale patterns of LLM-generated writing. When enough signals stack up, the post collapses to a one-line summary with a "Show anyway" button. You stay in control; nothing is permanently hidden.
+The detector scans for patterns: em dashes, emoji bullets, hook/contrast structures, buzzword phrases, single-sentence line stacking. Each signal is weighted. Cross the threshold and the post collapses. The summary tells you which signals matched.
 
-**Semantic topic filter:** hides posts about a topic by *meaning*, not just keyword match. Uses a local sentence-embedding model that runs entirely in your browser (no data leaves your machine). Pick from built-in topics (hustle culture, personal branding, motivational quotes...) or add your own.
+A second pass runs a local classifier against structural archetypes of AI writing, for posts that clear the pattern checks but still read like no one wrote them.
 
-**Keyword filter:** exact-match filtering on any word or phrase you choose.
+There is also a semantic topic filter that hides posts by meaning rather than exact words, using an embedding model that runs entirely in your browser. "Hustle culture" catches posts about it even when that phrase never appears. You can use the built-in topics or add your own.
 
-## How AI slop detection works
+And a keyword filter, for when you just want anything mentioning a specific word gone.
 
-Posts are scored against a set of signals. Cross the threshold, and the post collapses:
+## Signal table
 
 | Signal | Notes |
 |---|---|
-| **Buzzword phrases** | "game-changer", "let that sink in", "thought leadership", "delve", "leverage" (two or more is a flag) |
+| **Buzzword phrases** | "game-changer", "let that sink in", "thought leadership", "delve", "leverage" (two or more triggers) |
 | **Contrast structures** | "It's not X. It's Y." hook/punchline pairs |
 | **Listicle titles** | "7 habits that...", numbered thread formats |
 | **Arrow bullet lists** | arrows used as bullets |
-| **Em dash** | Rarely typed by hand; extremely common in AI writing |
+| **Em dash** | Rarely typed by hand; very common in AI output |
 | **Emoji overload** | More than 4 emoji in a post |
 | **Emoji bullets** | Two or more lines each opening with an emoji |
 | **Raw markdown** | `**bold**`, `# headers`, `* bullets` pasted straight from a chatbot |
-| **Line stacking** | Short single-sentence lines throughout, the signature AI staccato rhythm |
-
-Collapsed posts show a brief extractive summary so you can decide whether to expand without reading the full thing.
-
-**Model-based detection** adds a second pass using a local classifier that scores posts against structural archetypes of AI writing, catching posts that pass the pattern checks but still read like a machine wrote them.
+| **Line stacking** | Short single-sentence lines throughout |
 
 ## Install
 
@@ -56,15 +52,15 @@ Collapsed posts show a brief extractive summary so you can decide whether to exp
 
 ### Why was my post collapsed?
 
-FocusIn looks for specific patterns that reliably appear in AI-generated posts. A single signal is not enough; posts are only collapsed when several stack up together. The summary shown on a collapsed post lists which signals matched, so it is never a black box.
+It matched enough signals. One is rarely enough; the detector is looking for patterns that cluster together. The summary on the collapsed post shows exactly which ones fired.
 
 ### Does any of this send my data anywhere?
 
-No. The slop detector, semantic filter, and model-based classifier all run entirely inside your browser.
+No. Everything runs in your browser.
 
-### What is the difference between keyword filtering and the semantic topic filter?
+### What is the difference between the keyword filter and the semantic topic filter?
 
-Keyword filtering hides a post only if it contains the exact word or phrase you typed. The semantic filter understands *meaning*: it can hide a post about "hustle culture" even if that phrase never appears, by comparing the post's content to your chosen topics using a local embedding model. It is slower than keyword matching; use it for themes that are hard to capture with a fixed list of words.
+The keyword filter is exact match. The semantic filter understands meaning, so it catches posts about a topic even when the specific words you typed never appear. It is slower and less precise; use it for themes that are hard to pin down with a word list.
 
 ## Development
 
@@ -79,7 +75,7 @@ The pre-commit hook runs lint, dead code, coverage, patch coverage, and CodeScen
 
 CI enforces two quality gates on every PR:
 
-- **Unit test coverage >= 90%** across lines, functions, branches, and statements
-- **Mutation score >= 75%**
+- Unit test coverage >= 90% across lines, functions, branches, and statements
+- Mutation score >= 75%
 
 The latest [mutation report](https://dhansak79.github.io/FocusIn/) is published to GitHub Pages on each merge to `main`.
