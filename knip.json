@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "entry": [
+    "src/index.js",
+    "src/service_worker.js",
+    "src/popup/popup.js",
+    "src/content/content.js"
+  ],
+  "project": ["src/**/*.js"],
+  "ignore": ["src/lib/**"],
+  "ignoreDependencies": [
+    "@xenova/transformers",
+    "@creativebulma/bulma-divider",
+    "@creativebulma/bulma-tooltip",
+    "@yaireo/tagify",
+    "bulma",
+    "bulma-switch"
+  ]
+}
