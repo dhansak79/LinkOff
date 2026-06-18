@@ -6,7 +6,7 @@ const LINE_PATTERN_RATIO = 0.6
 const HEAVY_LINE_COUNT = 15
 const HEAVY_LINE_RATIO = 0.8
 
-export const SLOP_THRESHOLD = 2
+const SLOP_THRESHOLD = 2
 
 const countMatchingPhrases = (text) => {
   const lower = text.toLowerCase()

@@ -13271,7 +13271,7 @@ body {
 }
 .home-header .app-subtitle {
   font-size: 0.8rem;
-  color: #505868;
+  color: #ffffff;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -13453,7 +13453,7 @@ body {
   border-top: 1px solid #1e3a7a;
 }
 .signal-item .signal-name {
-  color: #bbc4d0;
+  color: #ffffff;
 }
 .signal-item .signal-count {
   color: #00d1b2;
@@ -13511,13 +13511,4 @@ body {
 #semantic-test-result {
   font-size: 0.78rem;
   color: #505868;
-}
-
-.age-filter-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-  font-size: 0.88rem;
-  color: #bbc4d0;
 }

@@ -82,7 +82,7 @@ body {
 
   .app-subtitle {
     font-size: 0.8rem;
-    color: $muted;
+    color: $white;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -287,7 +287,7 @@ body {
   border-top: 1px solid $border-col;
 
   .signal-name {
-    color: $text;
+    color: $white;
   }
 
   .signal-count {
@@ -353,12 +353,3 @@ body {
   color: $muted;
 }
 
-// ── Age filter row ─────────────────────────────────────────────────────────
-.age-filter-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-  font-size: 0.88rem;
-  color: $text;
-}

@@ -7,6 +7,7 @@
     "css-watch": "npm run css-build -- --watch",
     "start": "npm run css-watch",
     "lint": "eslint . --ignore-path .eslintignore",
+    "knip": "knip",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "test:visual": "playwright test",
@@ -27,6 +28,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jsdom": "^29.1.1",
+    "knip": "^6.17.1",
     "prettier": "^2.4.1",
     "sass": "^1.80.4",
     "vitest": "^4.1.8"
