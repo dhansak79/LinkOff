@@ -740,6 +740,13 @@ describe('slop-archetype-check integration', () => {
       vi.advanceTimersByTime(350)
     }).not.toThrow()
   })
+
+  it('does not send archetype-check for a post with very short text (e.g. the composer widget)', () => {
+    buildFeedDOM(['Start a post'])
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+    expect(sendMessageSpy).not.toHaveBeenCalled()
+  })
 })
 
 // ---------------------------------------------------------------------------

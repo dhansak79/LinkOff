@@ -313,17 +313,19 @@ const blockPostsByKeywords = (keywords, mode, detectSlop, hideSlop, semanticQuer
   }
 
   const requestSemanticChecks = (post) => {
+    const text = extractPostText(post).trim()
+    if (text.length < 60) return
     if (slopArchetypeCheckEnabled(post)) {
       post.dataset.slopArchetypeChecked = '1'
       sendSemanticMessage(
-        { 'slop-archetype-check': { post: extractPostText(post).slice(0, 256) } },
+        { 'slop-archetype-check': { post: text.slice(0, 256) } },
         (r) => applySemanticSlopResult(post, r)
       )
     }
     if (semanticCheckEnabled(post)) {
       post.dataset.semanticChecked = '1'
       sendSemanticMessage(
-        { 'semantic-check': { queries: semanticTopics, post: extractPostText(post).slice(0, 256) } },
+        { 'semantic-check': { queries: semanticTopics, post: text.slice(0, 256) } },
         (r) => applySemanticResult(post, r)
       )
     }
