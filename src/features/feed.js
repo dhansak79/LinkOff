@@ -1,4 +1,5 @@
 import {
+  ACTIVITY_FEED_SELECTOR,
   FEED_SELECTOR_CANDIDATES,
   MIN_POST_COUNT,
   POST_SELECTOR,
@@ -152,16 +153,23 @@ const addRevealBanner = (post, signals) => {
 // Feed observation and post filtering
 // ---------------------------------------------------------------------------
 
-// Returns true if a DOM node is a feed post (not an intermediate container or non-element)
-const isPostNode = (node) => {
-  if (node.nodeType !== Node.ELEMENT_NODE) return false
-  if (node.dataset?.focusinInjected) return false
+const isMainFeedPost = (node) => {
   const parent = node.parentElement
   return (
     node.matches('[role="listitem"]') ||
     parent?.hasAttribute('data-lazy-mount-id') ||
     parent?.getAttribute('data-display-contents') === 'true'
   )
+}
+
+const isActivityFeedPost = (node) =>
+  node.tagName === 'LI' && !!node.closest(ACTIVITY_FEED_SELECTOR)
+
+// Returns true if a DOM node is a feed post (not an intermediate container or non-element)
+const isPostNode = (node) => {
+  if (node.nodeType !== Node.ELEMENT_NODE) return false
+  if (node.dataset.focusinInjected) return false
+  return isMainFeedPost(node) || isActivityFeedPost(node)
 }
 
 const SEMANTIC_THRESHOLD = 0.35

@@ -21,7 +21,7 @@ chrome.storage.onChanged.addListener((changes) => {
 
 const onNavigate = (url) => {
   const pathname = new URL(url).pathname
-  if (pathname !== '/feed/' && pathname !== '/') return
+  if (pathname !== '/feed/' && pathname !== '/' && !pathname.includes('/recent-activity/')) return
   loadAndApply()
 }
 
