@@ -494,6 +494,22 @@ describe('semantic-filter integration', () => {
     expect(posts[0].previousElementSibling?.textContent).toMatch(/🎯 Semantic match/)
   })
 
+  it('shows author on semantic match banner when author is present in DOM', () => {
+    const postWithAuthor = `<a href="/in/someone"><strong>Grace Hopper</strong></a>${CLEAN_POST}`
+    const posts = buildFeedDOM([postWithAuthor])
+    doFeed({ ...baseConfig, 'semantic-filter': 'hustle culture', 'slop-archetype': false })
+    vi.advanceTimersByTime(350)
+    const authorText = posts[0].previousElementSibling?.querySelector('.focusedin-slop-author')?.textContent ?? ''
+    expect(authorText).toContain('Grace Hopper')
+  })
+
+  it('omits author row on semantic match banner when no author is present in DOM', () => {
+    const posts = buildFeedDOM([CLEAN_POST])
+    doFeed({ ...baseConfig, 'semantic-filter': 'hustle culture', 'slop-archetype': false })
+    vi.advanceTimersByTime(350)
+    expect(posts[0].previousElementSibling?.querySelector('.focusedin-slop-author')).toBeNull()
+  })
+
   it('clicking Show anyway on semantic banner reveals the post', () => {
     const posts = buildFeedDOM([CLEAN_POST])
     doFeed({ ...baseConfig, 'semantic-filter': 'hustle culture' })
@@ -605,13 +621,37 @@ describe('slop-archetype-check integration', () => {
     )
   })
 
-  it('collapses a post and shows a Structural slop banner when score meets the threshold', () => {
+  it('collapses a post and shows a Pattern match banner when score meets the threshold', () => {
     const posts = buildFeedDOM([CLEAN_POST])
     doFeed({ ...baseConfig, 'detect-slop': true })
     vi.advanceTimersByTime(350)
     expect(posts[0].dataset.hidden).toBe('true')
     expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
-    expect(posts[0].previousElementSibling?.textContent).toMatch(/🎯 Structural slop/)
+    expect(posts[0].previousElementSibling?.textContent).toMatch(/🎯 Pattern match/)
+  })
+
+  it('shows pattern match signal text with percentage on the pattern match banner', () => {
+    const posts = buildFeedDOM([CLEAN_POST])
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+    const signalText = posts[0].previousElementSibling?.querySelector('.focusedin-slop-signals')?.textContent ?? ''
+    expect(signalText).toMatch(/pattern match · \d+%/)
+  })
+
+  it('shows author on pattern match banner when author is present in DOM', () => {
+    const postWithAuthor = `<a href="/in/someone"><strong>Ada Lovelace</strong></a>${CLEAN_POST}`
+    const posts = buildFeedDOM([postWithAuthor])
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+    const authorText = posts[0].previousElementSibling?.querySelector('.focusedin-slop-author')?.textContent ?? ''
+    expect(authorText).toContain('Ada Lovelace')
+  })
+
+  it('omits author row on pattern match banner when no author is present in DOM', () => {
+    const posts = buildFeedDOM([CLEAN_POST])
+    doFeed({ ...baseConfig, 'detect-slop': true })
+    vi.advanceTimersByTime(350)
+    expect(posts[0].previousElementSibling?.querySelector('.focusedin-slop-author')).toBeNull()
   })
 
   it('clicking Show anyway on archetype banner reveals the post and collapses banner to tag', () => {

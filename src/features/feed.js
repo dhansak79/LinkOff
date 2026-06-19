@@ -208,6 +208,13 @@ const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchety
     scoreRow.className = 'focusedin-slop-signals'
     scoreRow.textContent = signalText
     banner.append(scoreRow)
+    const author = extractAuthorName(post)
+    if (author) {
+      const authorEl = document.createElement('div')
+      authorEl.className = 'focusedin-slop-author'
+      authorEl.textContent = author
+      banner.append(authorEl)
+    }
     const btn = document.createElement('button')
     btn.type = 'button'
     btn.className = 'focusedin-slop-reveal-btn'
@@ -239,8 +246,8 @@ const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchety
   )
 
   const applySemanticSlopResult = makeSemanticApplier(
-    SLOP_ARCHETYPE_THRESHOLD, trackSlopCollapsed, '🎯 Structural slop',
-    (_r, pct) => `structural slop · ${pct}%`
+    SLOP_ARCHETYPE_THRESHOLD, trackSlopCollapsed, '🎯 Pattern match',
+    (_r, pct) => `pattern match · ${pct}%`
   )
 
   const chromeMessagingAvailable = () =>
