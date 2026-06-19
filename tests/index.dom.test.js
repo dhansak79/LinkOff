@@ -103,6 +103,18 @@ describe('Navigation API — when navigation is in window', () => {
     expect(mockGet).not.toHaveBeenCalled()
   })
 
+  it('calls initialize for a profile recent-activity URL', async () => {
+    navigateHandlers[0]({ canIntercept: true, hashChange: false, downloadRequest: null, destination: { url: 'https://www.linkedin.com/in/alshalloway/recent-activity/all/' } })
+    await Promise.resolve()
+    expect(mockGet).toHaveBeenCalled()
+  })
+
+  it('ignores a profile URL that is not recent-activity', async () => {
+    navigateHandlers[0]({ canIntercept: true, hashChange: false, downloadRequest: null, destination: { url: 'https://www.linkedin.com/in/alshalloway/details/skills/' } })
+    await Promise.resolve()
+    expect(mockGet).not.toHaveBeenCalled()
+  })
+
   it('calls doFeed on each navigation when config is loaded', async () => {
     const doFeed = (await import('../src/features/feed.js')).default
     mockGet.mockResolvedValue({ 'main-toggle': true })

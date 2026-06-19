@@ -315,3 +315,57 @@ describe('reactive auto-scroll', () => {
     expect(spy).not.toHaveBeenCalled()
   })
 })
+
+// ---------------------------------------------------------------------------
+// Profile activity feed (.scaffold-finite-scroll--infinite li)
+// ---------------------------------------------------------------------------
+
+const buildActivityFeedDOM = (postContents) => {
+  const items = postContents.map((c) => `<li><div><div class="relative artdeco-card">${c}</div></div></li>`).join('')
+  document.body.innerHTML = `
+    <div class="scaffold-finite-scroll scaffold-finite-scroll--infinite">
+      <div class="scaffold-finite-scroll__content">
+        <ul>${items}</ul>
+      </div>
+    </div>`
+  return document.querySelectorAll('.scaffold-finite-scroll--infinite li')
+}
+
+describe('profile activity feed (.scaffold-finite-scroll--infinite)', () => {
+  it('hides a post via keyword match on the activity feed DOM', () => {
+    const posts = buildActivityFeedDOM(['Post 1', 'Post 2', 'synergy post'])
+
+    doFeed({ ...baseConfig, 'feed-keywords': 'synergy' })
+
+    const matched = Array.from(posts).find((p) => p.textContent.includes('synergy'))
+    expect(matched.classList.contains('hide')).toBe(true)
+  })
+
+  it('sets data-hidden=false on posts that do not match', () => {
+    const posts = buildActivityFeedDOM(['Post 1', 'synergy post'])
+
+    doFeed({ ...baseConfig, 'feed-keywords': 'synergy' })
+
+    const unmatched = Array.from(posts).find((p) => !p.textContent.includes('synergy'))
+    expect(unmatched.dataset.hidden).toBe('false')
+  })
+
+  it('processes a new li added by the MutationObserver', async () => {
+    document.body.innerHTML = `
+      <div class="scaffold-finite-scroll scaffold-finite-scroll--infinite">
+        <div class="scaffold-finite-scroll__content">
+          <ul></ul>
+        </div>
+      </div>`
+
+    doFeed({ ...baseConfig, 'feed-keywords': 'synergy' })
+
+    const li = document.createElement('li')
+    li.innerHTML = '<div><div class="relative artdeco-card">synergy post</div></div>'
+    document.querySelector('.scaffold-finite-scroll--infinite ul').appendChild(li)
+
+    await Promise.resolve()
+
+    expect(li.classList.contains('hide')).toBe(true)
+  })
+})
