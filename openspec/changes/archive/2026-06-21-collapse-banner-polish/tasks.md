@@ -15,7 +15,7 @@
 
 ## 3. Tests
 
-- [ ] 3.1 Update all test assertions in `tests/features/slop.dom.test.js` that reference `.focusedin-whitelist-btn` → `.focusedin-trust-btn`
+- [x] 3.1 Update all test assertions in `tests/features/slop.dom.test.js` that reference `.focusedin-whitelist-btn` → `.focusedin-trust-btn`
 - [x] 3.2 Update test assertions that check button text `'Whitelist'` → `'Trust author'` and `'Whitelisted ✓'` → `'Trusted ✓'`
 - [x] 3.3 Add a test for the action wrapper: verify `.focusedin-banner-actions` is present and contains both the Unfollow and Trust author buttons
 
