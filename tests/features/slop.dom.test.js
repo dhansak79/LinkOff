@@ -1039,3 +1039,88 @@ describe('Trust author button', () => {
     expect(actionsIdx).toBeLessThan(revealIdx)
   })
 })
+
+// ---------------------------------------------------------------------------
+// Tone filter integration
+// ---------------------------------------------------------------------------
+
+describe('tone-filter integration', () => {
+  let sendMessageSpy
+
+  beforeEach(() => {
+    sendMessageSpy = vi.fn((msg, cb) => {
+      if (msg['tone-check']) cb({ score: 0.85, label: 'NEGATIVE' })
+      else cb({ score: 0 })
+    })
+    vi.stubGlobal('chrome', {
+      runtime: { lastError: null, sendMessage: sendMessageSpy },
+    })
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('collapses a post and shows a Negative tone banner when tone-filter fires above threshold', () => {
+    const posts = buildFeedDOM(SIX_CLEAN)
+    doFeed({ ...baseConfig, 'tone-filter': true, 'tone-threshold': 70, 'slop-archetype': false })
+    vi.advanceTimersByTime(350)
+    expect(posts[0].dataset.hidden).toBe('true')
+    expect(posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed')).toBe(true)
+    expect(posts[0].previousElementSibling?.textContent).toMatch(/🌩 Negative tone/)
+  })
+
+  it('shows confidence percentage on the negative tone banner signal line', () => {
+    const posts = buildFeedDOM(SIX_CLEAN)
+    doFeed({ ...baseConfig, 'tone-filter': true, 'tone-threshold': 70, 'slop-archetype': false })
+    vi.advanceTimersByTime(350)
+    const signalText = posts[0].previousElementSibling?.querySelector('.focusedin-slop-signals')?.textContent ?? ''
+    expect(signalText).toMatch(/negative tone · \d+%/)
+  })
+
+  it('does not send a tone-check message when tone-filter is false', () => {
+    buildFeedDOM(SIX_CLEAN)
+    doFeed({ ...baseConfig, 'tone-filter': false, 'slop-archetype': false })
+    vi.advanceTimersByTime(350)
+    const toneCalls = sendMessageSpy.mock.calls.filter((c) => c[0]['tone-check'])
+    expect(toneCalls.length).toBe(0)
+  })
+
+  it('does not collapse a post when the score is below the threshold', () => {
+    sendMessageSpy.mockImplementation((msg, cb) => {
+      if (msg['tone-check']) cb({ score: 0.5 })
+      else cb({ score: 0 })
+    })
+    const posts = buildFeedDOM(SIX_CLEAN)
+    doFeed({ ...baseConfig, 'tone-filter': true, 'tone-threshold': 70, 'slop-archetype': false })
+    vi.advanceTimersByTime(350)
+    expect(posts[0].dataset.hidden).not.toBe('true')
+  })
+
+  it('does not send tone-check for a post already collapsed by slop detection', () => {
+    buildFeedDOM([SLOP_WITH_ACTOR])
+    doFeed({ ...baseConfig, 'detect-slop': true, 'tone-filter': true, 'tone-threshold': 70, 'slop-archetype': false })
+    vi.advanceTimersByTime(350)
+    const toneCalls = sendMessageSpy.mock.calls.filter((c) => c[0]['tone-check'])
+    expect(toneCalls.length).toBe(0)
+  })
+
+  it('does not add a second banner when archetype and tone both fire for the same post', () => {
+    sendMessageSpy.mockImplementation((msg, cb) => {
+      if (msg['slop-archetype-check']) cb({ score: 0.8, topic: 'slop' })
+      else if (msg['tone-check']) cb({ score: 0.9 })
+      else cb({ score: 0 })
+    })
+    buildFeedDOM([CLEAN_POST])
+    doFeed({ ...baseConfig, 'detect-slop': true, 'tone-filter': true, 'tone-threshold': 70 })
+    vi.advanceTimersByTime(350)
+    expect(document.querySelectorAll('.focusedin-slop-collapsed').length).toBe(1)
+  })
+
+  it('does not collapse a post by tone when the author is whitelisted', () => {
+    const posts = buildFeedDOM([CLEAN_WITH_ACTOR])
+    doFeed({ ...baseConfig, 'tone-filter': true, 'tone-threshold': 70, 'slop-archetype': false, 'author-whitelist': [{ vanity: 'jane-smith', name: 'Jane Smith' }] })
+    vi.advanceTimersByTime(350)
+    expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
+  })
+})

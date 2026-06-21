@@ -60,6 +60,19 @@
       <label for="slop-archetype"></label>
     </div>
 
+    <div class="divider">Filter by tone</div>
+
+    <div class="field">
+      <label for="tone-filter">Negative tone filter <small>(~17 MB download on first use)</small></label>
+      <input id="tone-filter" class="switch is-rounded" type="checkbox" />
+      <label for="tone-filter"></label>
+    </div>
+
+    <div class="field tone-threshold-field">
+      <label for="tone-threshold">Sensitivity: <span id="tone-threshold-value">70</span>%</label>
+      <input id="tone-threshold" type="range" min="0" max="100" value="70" />
+    </div>
+
     <div class="divider">Filter by keyword</div>
 
     <div class="field">
@@ -82,6 +95,8 @@
           <li><label><input type="checkbox" class="semantic-topic" value="AI productivity tools" /> AI productivity tools</label></li>
           <li><label><input type="checkbox" class="semantic-topic" value="startup success story" /> startup success story</label></li>
           <li><label><input type="checkbox" class="semantic-topic" value="sales and lead generation" /> sales and lead generation</label></li>
+          <li><label><input type="checkbox" class="semantic-topic" value="political content" /> political content</label></li>
+          <li><label><input type="checkbox" class="semantic-topic" value="war and conflict" /> war and conflict</label></li>
         </ul>
         <input id="semantic-custom-topics" placeholder="Add your own topics..." class="tagify--outside" />
         <div class="semantic-diag">

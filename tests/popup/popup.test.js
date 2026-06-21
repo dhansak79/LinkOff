@@ -35,7 +35,11 @@ beforeEach(async () => {
         <button type="button" id="tab-filters" class="tab-btn active">Filters</button>
         <button type="button" id="tab-authors" class="tab-btn">Authors</button>
       </div>
-      <div id="settings-panel" class="tab-panel active"></div>
+      <div id="settings-panel" class="tab-panel active">
+        <input id="tone-filter" class="switch is-rounded" type="checkbox" />
+        <input id="tone-threshold" type="range" min="0" max="100" value="70" />
+        <span id="tone-threshold-value">70</span>
+      </div>
       <div id="authors-panel" class="tab-panel">
         <input id="author-whitelist" />
       </div>
@@ -43,6 +47,8 @@ beforeEach(async () => {
     <input id="hide-by-keywords" />
     <input type="checkbox" class="semantic-topic" value="hustle culture" />
     <input type="checkbox" class="semantic-topic" value="cryptocurrency" />
+    <input type="checkbox" class="semantic-topic" value="political content" />
+    <input type="checkbox" class="semantic-topic" value="war and conflict" />
     <input id="semantic-custom-topics" />
     <button id="test-semantic-btn">Test model</button>
     <span id="semantic-test-result"></span>
@@ -107,7 +113,7 @@ describe('popup', () => {
     await Promise.resolve()
     const checkboxes = document.querySelectorAll('.semantic-topic')
     checkboxes.forEach((cb) => expect(cb.checked).toBe(true))
-    expect(mockSet).toHaveBeenCalledWith({ 'semantic-filter': 'hustle culture, cryptocurrency' }, expect.any(Function))
+    expect(mockSet).toHaveBeenCalledWith({ 'semantic-filter': 'hustle culture, cryptocurrency, political content, war and conflict' }, expect.any(Function))
   })
 
   it('restores saved semantic topic selection from storage on load', async () => {
@@ -223,5 +229,72 @@ describe('popup', () => {
       }
     })
     expect(() => { window.onload() }).not.toThrow()
+  })
+
+  it('saves tone-filter to storage when tone-filter switch changes', () => {
+    const toggle = document.getElementById('tone-filter')
+    toggle.checked = true
+    toggle.dispatchEvent(new Event('change'))
+    expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({ 'tone-filter': true }))
+  })
+
+  it('saves tone-threshold to storage when slider changes', () => {
+    const slider = document.getElementById('tone-threshold')
+    slider.value = '80'
+    slider.dispatchEvent(new Event('input'))
+    expect(mockSet).toHaveBeenCalledWith({ 'tone-threshold': 80 })
+  })
+
+  it('updates tone-threshold-value label when slider changes', () => {
+    const slider = document.getElementById('tone-threshold')
+    slider.value = '55'
+    slider.dispatchEvent(new Event('input'))
+    expect(document.getElementById('tone-threshold-value').textContent).toBe('55')
+  })
+
+  it('loads tone-threshold from storage and sets slider and label on window.onload', async () => {
+    mockGet.mockImplementation((keyOrObj, cb) => {
+      if (typeof keyOrObj === 'object' && 'tone-threshold' in keyOrObj) {
+        cb({ 'tone-threshold': 85 })
+      } else {
+        cb({})
+      }
+    })
+    window.onload()
+    await Promise.resolve()
+    expect(document.getElementById('tone-threshold').value).toBe('85')
+    expect(document.getElementById('tone-threshold-value').textContent).toBe('85')
+  })
+
+  it('political content checkbox is unchecked when not in stored semantic-filter', async () => {
+    mockGet.mockImplementation((key, cb) => {
+      if (key === 'semantic-filter') cb({ 'semantic-filter': 'hustle culture' })
+      else cb({})
+    })
+    window.onload()
+    await Promise.resolve()
+    const cb = document.querySelector('.semantic-topic[value="political content"]')
+    expect(cb.checked).toBe(false)
+  })
+
+  it('war and conflict checkbox is unchecked when not in stored semantic-filter', async () => {
+    mockGet.mockImplementation((key, cb) => {
+      if (key === 'semantic-filter') cb({ 'semantic-filter': 'hustle culture' })
+      else cb({})
+    })
+    window.onload()
+    await Promise.resolve()
+    const cb = document.querySelector('.semantic-topic[value="war and conflict"]')
+    expect(cb.checked).toBe(false)
+  })
+
+  it('checking political content saves it to semantic-filter storage', () => {
+    const cb = document.querySelector('.semantic-topic[value="political content"]')
+    cb.checked = true
+    cb.dispatchEvent(new Event('change'))
+    expect(mockSet).toHaveBeenCalledWith(
+      expect.objectContaining({ 'semantic-filter': expect.stringContaining('political content') }),
+      expect.any(Function)
+    )
   })
 })
