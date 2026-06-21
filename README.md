@@ -16,9 +16,13 @@ The detector scans for patterns: em dashes, emoji bullets, hook/contrast structu
 
 A second pass runs a local classifier against structural archetypes of AI writing, for posts that clear the pattern checks but still read like no one wrote them.
 
-There is also a semantic topic filter that hides posts by meaning rather than exact words, using an embedding model that runs entirely in your browser. "Hustle culture" catches posts about it even when that phrase never appears. You can use the built-in topics or add your own.
+There is also a semantic topic filter that hides posts by meaning rather than exact words, using an embedding model that runs entirely in your browser. "Hustle culture" catches posts about it even when that phrase never appears. Built-in presets cover hustle culture, personal branding, motivational quotes, cryptocurrency, job interview tips, AI productivity tools, startup success stories, sales content, political content, and war and conflict. All are off by default. You can also add your own topics.
+
+A tone filter runs a sentiment classifier on each post and collapses those with a high negative-tone score. Sensitivity is adjustable (default 70%). It is off by default and downloads a ~17 MB model on first use.
 
 And a keyword filter, for when you just want anything mentioning a specific word gone.
+
+When a post is collapsed, the banner shows which filter fired, the author's name, and two action buttons: **Unfollow** to unfollow the author on LinkedIn, and **Trust author** to add them to a whitelist so their posts are never collapsed again.
 
 ## Signal table
 

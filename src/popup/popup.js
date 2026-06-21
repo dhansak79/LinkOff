@@ -133,6 +133,24 @@ document.getElementById('test-semantic-btn').addEventListener('click', () => {
   )
 })
 
+const toneThresholdInput = document.getElementById('tone-threshold')
+const toneThresholdValue = document.getElementById('tone-threshold-value')
+if (toneThresholdInput) {
+  toneThresholdInput.addEventListener('input', () => {
+    const val = Number(toneThresholdInput.value)
+    if (toneThresholdValue) toneThresholdValue.textContent = val
+    chrome.storage.local.set({ 'tone-threshold': val })
+  })
+}
+
+const loadToneThreshold = () => {
+  chrome.storage.local.get({ 'tone-threshold': 70 }, (res) => {
+    const val = res['tone-threshold'] ?? 70
+    if (toneThresholdInput) toneThresholdInput.value = val
+    if (toneThresholdValue) toneThresholdValue.textContent = val
+  })
+}
+
 const authorWhitelistInput = document.querySelector('#author-whitelist')
 let authorWhitelistTagify = null
 if (authorWhitelistInput) {
@@ -171,6 +189,8 @@ window.onload = function () {
     const customTopics = stored.filter((t) => !presetValues.has(t))
     if (customTopics.length) customTopicTagify?.addTags(customTopics)
   })
+
+  loadToneThreshold()
 
   readStats((stats) =>
     renderDamageReport(stats, {

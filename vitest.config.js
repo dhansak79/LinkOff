@@ -14,6 +14,7 @@ export default defineConfig({
         'src/features/slop-keywords.js',
         'src/features/classifier.js',
         'src/features/semantic-filter.js',
+        'src/features/tone-filter.js',
         'src/features/feed.js',
         'src/features/unfollow.js',
         'src/utils.js',

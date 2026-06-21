@@ -252,7 +252,7 @@ const isPostNode = (node) => {
 const SEMANTIC_THRESHOLD = 0.35
 const SLOP_ARCHETYPE_THRESHOLD = 0.25
 
-const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchetype, whitelisted) => {
+const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchetype, whitelisted, toneFilterEnabled, toneThreshold) => {
   let postsProcessed = 0
 
   const countOnce = (post, fn, signals) => {
@@ -337,6 +337,11 @@ const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchety
     (_r, pct) => `pattern match · ${pct}%`
   )
 
+  const applyToneResult = makeSemanticApplier(
+    toneThreshold / 100, trackPostFiltered, '🌩 Negative tone',
+    (_r, pct) => `negative tone · ${pct}%`
+  )
+
   const chromeMessagingAvailable = () =>
     typeof chrome !== 'undefined' && !!chrome.runtime?.sendMessage
 
@@ -345,6 +350,9 @@ const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchety
 
   const slopArchetypeCheckEnabled = (post) =>
     detectSlopArchetype && !post.dataset.slopArchetypeChecked && chromeMessagingAvailable()
+
+  const toneCheckEnabled = (post) =>
+    toneFilterEnabled && !post.dataset.toneChecked && chromeMessagingAvailable()
 
   const sendSemanticMessage = (msg, callback) => {
     try {
@@ -362,6 +370,13 @@ const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchety
       sendSemanticMessage(
         { 'slop-archetype-check': { post: text.slice(0, 256) } },
         (r) => applySemanticSlopResult(post, r)
+      )
+    }
+    if (toneCheckEnabled(post)) {
+      post.dataset.toneChecked = '1'
+      sendSemanticMessage(
+        { 'tone-check': { post: text.slice(0, 256) } },
+        (r) => applyToneResult(post, r)
       )
     }
     if (semanticCheckEnabled(post)) {
@@ -448,7 +463,7 @@ const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchety
     feedObserver.observe(feedContainer, { childList: true, subtree: true })
   }
 
-  if (keywords.length || detectSlop || semanticTopics.length || detectSlopArchetype) connectObserver()
+  if (keywords.length || detectSlop || semanticTopics.length || detectSlopArchetype || toneFilterEnabled) connectObserver()
 }
 
 const disconnectObserver = () => {
@@ -479,7 +494,9 @@ const handleFilterFeed = (mode, config) => {
     !!config['detect-slop'],
     config['semantic-filter'] || '',
     !!config['slop-archetype'],
-    whitelisted
+    whitelisted,
+    !!config['tone-filter'],
+    config['tone-threshold'] ?? 70
   )
 }
 

@@ -1,4 +1,5 @@
 import { semanticCheck } from './features/semantic-filter.js'
+import { toneCheck } from './features/tone-filter.js'
 import { SLOP_ARCHETYPES } from './features/slop-keywords.js'
 
 chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
@@ -16,6 +17,13 @@ chrome.runtime.onMessage.addListener((req, _sender, sendResponse) => {
       .catch(() => sendResponse({ score: 0 }))
     return true
   }
+  if (req['tone-check']) {
+    const { post } = req['tone-check']
+    toneCheck(post)
+      .then(({ score, label }) => sendResponse({ score, label }))
+      .catch(() => sendResponse({ score: 0, label: 'POSITIVE' }))
+    return true
+  }
 })
 
 chrome.runtime.onInstalled.addListener(async (details) => {
@@ -29,5 +37,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     'detect-slop': true,
     'slop-archetype': true,
     'semantic-filter': 'hustle culture, personal branding, motivational quotes, cryptocurrency, job interview tips, AI productivity tools, startup success story, sales and lead generation',
+    'tone-filter': false,
+    'tone-threshold': 70,
   })
 })

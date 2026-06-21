@@ -4,6 +4,10 @@ vi.mock('../src/features/semantic-filter.js', () => ({
   semanticCheck: vi.fn(),
 }))
 
+vi.mock('../src/features/tone-filter.js', () => ({
+  toneCheck: vi.fn(),
+}))
+
 let capturedInstallListener = null
 let capturedMessageListener = null
 const mockGet = vi.fn()
@@ -64,6 +68,8 @@ describe('onInstalled', () => {
         'detect-slop': true,
         'slop-archetype': true,
         'semantic-filter': expect.any(String),
+        'tone-filter': false,
+        'tone-threshold': 70,
       })
     )
   })
@@ -129,6 +135,33 @@ describe('onMessage — slop-archetype-check', () => {
     )
     await flushPromises()
     expect(semanticCheck).toHaveBeenCalledWith(SLOP_ARCHETYPES, 'some post text')
+  })
+})
+
+describe('onMessage — tone-check', () => {
+  it('sends the tone score and label', async () => {
+    const { toneCheck } = await import('../src/features/tone-filter.js')
+    toneCheck.mockResolvedValue({ score: 0.85, label: 'NEGATIVE' })
+    const sendResponse = vi.fn()
+    capturedMessageListener({ 'tone-check': { post: 'outrage bait content' } }, {}, sendResponse)
+    await flushPromises()
+    expect(toneCheck).toHaveBeenCalledWith('outrage bait content')
+    expect(sendResponse).toHaveBeenCalledWith({ score: 0.85, label: 'NEGATIVE' })
+  })
+
+  it('returns true to signal an async response', async () => {
+    const { toneCheck } = await import('../src/features/tone-filter.js')
+    toneCheck.mockResolvedValue({ score: 0.5, label: 'POSITIVE' })
+    expect(capturedMessageListener({ 'tone-check': { post: 'content' } }, {}, vi.fn())).toBe(true)
+  })
+
+  it('sends score 0 and POSITIVE label when toneCheck rejects', async () => {
+    const { toneCheck } = await import('../src/features/tone-filter.js')
+    toneCheck.mockRejectedValue(new Error('model failed'))
+    const sendResponse = vi.fn()
+    capturedMessageListener({ 'tone-check': { post: 'content' } }, {}, sendResponse)
+    await flushPromises()
+    expect(sendResponse).toHaveBeenCalledWith({ score: 0, label: 'POSITIVE' })
   })
 })
 
