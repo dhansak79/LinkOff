@@ -3,11 +3,13 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 
 const mockGet = vi.fn()
 const mockSet = vi.fn()
+let tagifyInstances = []
 
 beforeEach(async () => {
   vi.resetModules()
   mockGet.mockReset()
   mockSet.mockReset()
+  tagifyInstances = []
 
   vi.stubGlobal('chrome', {
     storage: { local: { get: mockGet, set: mockSet } },
@@ -21,12 +23,23 @@ beforeEach(async () => {
   })
   vi.stubGlobal('Tagify', function MockTagify(el, opts) {
     this.addTags = vi.fn()
+    this.value = []
+    tagifyInstances.push(this)
     if (opts?.originalInputValueFormat) opts.originalInputValueFormat([{ value: 'test' }])
   })
 
   document.body.innerHTML = `
     <input id="main-toggle" class="switch" type="checkbox" />
-    <div id="settings-panel"></div>
+    <div id="focusin-panels">
+      <div id="tab-bar">
+        <button type="button" id="tab-filters" class="tab-btn active">Filters</button>
+        <button type="button" id="tab-authors" class="tab-btn">Authors</button>
+      </div>
+      <div id="settings-panel" class="tab-panel active"></div>
+      <div id="authors-panel" class="tab-panel">
+        <input id="author-whitelist" />
+      </div>
+    </div>
     <input id="hide-by-keywords" />
     <input type="checkbox" class="semantic-topic" value="hustle culture" />
     <input type="checkbox" class="semantic-topic" value="cryptocurrency" />
@@ -61,11 +74,11 @@ describe('popup', () => {
     expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({ 'main-toggle': expect.any(Boolean) }))
   })
 
-  it('hides settings panel when main toggle is unchecked', () => {
+  it('hides panels when main toggle is unchecked', () => {
     const toggle = document.getElementById('main-toggle')
     toggle.checked = false
     toggle.dispatchEvent(new Event('change'))
-    expect(document.getElementById('settings-panel').style.display).toBe('none')
+    expect(document.getElementById('focusin-panels').style.display).toBe('none')
   })
 
   it('saves feed keywords to storage when feed input changes', () => {
@@ -141,5 +154,74 @@ describe('popup', () => {
     stubRuntimeAndClickTest({ lastError: { message: 'Could not connect' }, sendMessage: vi.fn((_msg, cb) => cb(null)) })
     await Promise.resolve()
     expect(document.getElementById('semantic-test-result').textContent).toContain('Could not connect')
+  })
+
+  it('switches to Authors tab and shows authors panel', () => {
+    document.getElementById('tab-authors').click()
+    expect(document.getElementById('tab-authors').classList.contains('active')).toBe(true)
+    expect(document.getElementById('tab-filters').classList.contains('active')).toBe(false)
+    expect(document.getElementById('authors-panel').classList.contains('active')).toBe(true)
+    expect(document.getElementById('settings-panel').classList.contains('active')).toBe(false)
+  })
+
+  it('switches back to Filters tab when Filters is clicked', () => {
+    document.getElementById('tab-authors').click()
+    document.getElementById('tab-filters').click()
+    expect(document.getElementById('tab-filters').classList.contains('active')).toBe(true)
+    expect(document.getElementById('settings-panel').classList.contains('active')).toBe(true)
+    expect(document.getElementById('authors-panel').classList.contains('active')).toBe(false)
+  })
+
+  it('saves author whitelist to storage when author-whitelist input changes (vanity from tag.vanity)', () => {
+    // tagifyInstances[2] is authorWhitelistTagify (feedTagify=0, customTopicTagify=1, authorTagify=2)
+    tagifyInstances[2].value = [{ value: 'John Doe', vanity: 'john-doe' }]
+    document.getElementById('author-whitelist').dispatchEvent(new Event('change'))
+    expect(mockSet).toHaveBeenCalledWith({ 'author-whitelist': [{ vanity: 'john-doe', name: 'John Doe' }] })
+  })
+
+  it('falls back to tag.value as vanity when tag.vanity is absent', () => {
+    tagifyInstances[2].value = [{ value: 'jane-smith' }]
+    document.getElementById('author-whitelist').dispatchEvent(new Event('change'))
+    expect(mockSet).toHaveBeenCalledWith({ 'author-whitelist': [{ vanity: 'jane-smith', name: 'jane-smith' }] })
+  })
+
+  it('loads whitelisted authors into Tagify with name and vanity on window.onload', async () => {
+    mockGet.mockImplementation((keyOrObj, cb) => {
+      if (typeof keyOrObj === 'object') {
+        cb({ 'author-whitelist': [{ vanity: 'john-doe', name: 'John Doe' }, { vanity: 'no-name' }] })
+      } else {
+        cb({})
+      }
+    })
+    window.onload()
+    await Promise.resolve()
+    expect(tagifyInstances[2].addTags).toHaveBeenCalledWith([
+      { value: 'John Doe', vanity: 'john-doe' },
+      { value: 'no-name', vanity: 'no-name' },
+    ])
+  })
+
+  it('skips addTags when author-whitelist entries are empty on load', async () => {
+    mockGet.mockImplementation((keyOrObj, cb) => {
+      if (typeof keyOrObj === 'object') {
+        cb({ 'author-whitelist': [] })
+      } else {
+        cb({})
+      }
+    })
+    window.onload()
+    await Promise.resolve()
+    expect(tagifyInstances[2].addTags).not.toHaveBeenCalled()
+  })
+
+  it('handles non-array author-whitelist value from storage without throwing', async () => {
+    mockGet.mockImplementation((keyOrObj, cb) => {
+      if (typeof keyOrObj === 'object') {
+        cb({ 'author-whitelist': 'invalid' })
+      } else {
+        cb({})
+      }
+    })
+    expect(() => { window.onload() }).not.toThrow()
   })
 })

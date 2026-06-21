@@ -131,6 +131,28 @@ const makeUnfollowButton = (vanityName) => {
   return btn
 }
 
+const makeWhitelistButton = (vanityName, authorName, post, banner) => {
+  const btn = document.createElement('button')
+  btn.type = 'button'
+  btn.className = 'focusedin-whitelist-btn'
+  btn.textContent = 'Whitelist'
+  btn.addEventListener('click', (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    chrome.storage.local.get({ 'author-whitelist': [] }, (result) => {
+      const list = Array.isArray(result['author-whitelist']) ? result['author-whitelist'] : []
+      const filtered = list.filter((entry) => entry.vanity !== vanityName)
+      chrome.storage.local.set({ 'author-whitelist': [...filtered, { vanity: vanityName, name: authorName ?? vanityName }] })
+    })
+    btn.textContent = 'Whitelisted ✓'
+    setTimeout(() => {
+      post.classList.remove('focusedin-slop-soft-hide')
+      banner.remove()
+    }, 600)
+  })
+  return btn
+}
+
 const collapseToTag = (banner, author) => {
   banner.className = 'focusedin-slop-tag'
   while (banner.firstChild) banner.removeChild(banner.firstChild)
@@ -181,6 +203,7 @@ const addRevealBanner = (post, signals) => {
 
   if (vanityName) {
     banner.append(makeUnfollowButton(vanityName))
+    banner.append(makeWhitelistButton(vanityName, author, post, banner))
   }
 
   const btn = document.createElement('button')
@@ -226,7 +249,7 @@ const isPostNode = (node) => {
 const SEMANTIC_THRESHOLD = 0.35
 const SLOP_ARCHETYPE_THRESHOLD = 0.25
 
-const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchetype) => {
+const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchetype, whitelisted) => {
   let postsProcessed = 0
 
   const countOnce = (post, fn, signals) => {
@@ -269,6 +292,7 @@ const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchety
     }
     if (vanityName) {
       banner.append(makeUnfollowButton(vanityName))
+      banner.append(makeWhitelistButton(vanityName, author, post, banner))
     }
     const btn = document.createElement('button')
     btn.type = 'button'
@@ -288,6 +312,8 @@ const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchety
     if (chrome.runtime.lastError || response?.score == null) return
     if (response.score < threshold) return
     if (post.dataset.semanticHidden) return
+    const vanity = extractAuthorVanityName(post)
+    if (vanity && whitelisted.has(vanity)) return
     post.dataset.semanticHidden = '1'
     post.dataset.hidden = true
     countOnce(post, trackFn)
@@ -350,6 +376,8 @@ const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchety
   }
 
   const applySlopDecision = (post, slopSignals) => {
+    const vanity = extractAuthorVanityName(post)
+    if (vanity && whitelisted.has(vanity)) return
     post.classList.add('focusedin-slop-soft-hide')
     post.dataset.hidden = true
     addRevealBanner(post, slopSignals)
@@ -435,12 +463,17 @@ const handleToggledOff = () => {
 const handleFilterFeed = (mode, config) => {
   disconnectObserver()
   resetBlockedPosts()
+  const rawWhitelist = config['author-whitelist']
+  const whitelisted = new Set(
+    Array.isArray(rawWhitelist) ? rawWhitelist.map((e) => e?.vanity).filter(Boolean) : []
+  )
   blockPosts(
     config['feed-keywords'] ? config['feed-keywords'].split(',').map((k) => k.trim()).filter(Boolean) : [],
     mode,
     !!config['detect-slop'],
     config['semantic-filter'] || '',
-    !!config['slop-archetype']
+    !!config['slop-archetype'],
+    whitelisted
   )
 }
 

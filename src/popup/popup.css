@@ -13512,3 +13512,43 @@ body {
   font-size: 0.78rem;
   color: #505868;
 }
+
+#tab-bar {
+  display: flex;
+  border-bottom: 1px solid #1e3a7a;
+  padding: 0 1rem;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #bbc4d0;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: -1px;
+  letter-spacing: 0.04em;
+  transition: color 0.1s, border-color 0.1s;
+}
+.tab-btn:hover {
+  color: #ffffff;
+}
+.tab-btn.active {
+  color: #00d1b2;
+  border-bottom-color: #00d1b2;
+}
+
+.tab-panel {
+  display: none;
+}
+.tab-panel.active {
+  display: block;
+}
+
+#authors-panel .field {
+  display: block;
+}
+#authors-panel .field .tagify {
+  width: 100%;
+}

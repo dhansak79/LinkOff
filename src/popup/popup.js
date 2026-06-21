@@ -21,10 +21,24 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   var mainToggle = document.getElementById('main-toggle')
-  var settingsPanel = document.getElementById('settings-panel')
+  var focusinPanels = document.getElementById('focusin-panels')
   mainToggle.addEventListener('change', function () {
-    settingsPanel.style.display = mainToggle.checked ? 'block' : 'none'
+    focusinPanels.style.display = mainToggle.checked ? 'block' : 'none'
   })
+
+  const tabFilters = document.getElementById('tab-filters')
+  const tabAuthors = document.getElementById('tab-authors')
+  const settingsPanel = document.getElementById('settings-panel')
+  const authorsPanel = document.getElementById('authors-panel')
+  const switchTab = (name) => {
+    const isFilters = name === 'filters'
+    tabFilters.classList.toggle('active', isFilters)
+    tabAuthors.classList.toggle('active', !isFilters)
+    settingsPanel.classList.toggle('active', isFilters)
+    authorsPanel.classList.toggle('active', !isFilters)
+  }
+  tabFilters.addEventListener('click', () => switchTab('filters'))
+  tabAuthors.addEventListener('click', () => switchTab('authors'))
 
   // Set initial checked state from storage
   chrome.storage.local.get(
@@ -36,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
             x[i].checked = res[x[i].id]
           }
         }
-        settingsPanel.style.display = mainToggle.checked ? 'block' : 'none'
+        focusinPanels.style.display = mainToggle.checked ? 'block' : 'none'
       }
     }
   )
@@ -119,9 +133,30 @@ document.getElementById('test-semantic-btn').addEventListener('click', () => {
   )
 })
 
+const authorWhitelistInput = document.querySelector('#author-whitelist')
+let authorWhitelistTagify = null
+if (authorWhitelistInput) {
+  authorWhitelistTagify = new Tagify(authorWhitelistInput)
+  authorWhitelistInput.addEventListener('change', () => {
+    const whitelist = authorWhitelistTagify.value.map((tag) => ({
+      vanity: tag.vanity ?? tag.value,
+      name: tag.value,
+    }))
+    chrome.storage.local.set({ 'author-whitelist': whitelist })
+  })
+}
+
 window.onload = function () {
   chrome.storage.local.get('feed-keywords', function (res) {
     feedTagify.addTags(res['feed-keywords'])
+  })
+  chrome.storage.local.get({ 'author-whitelist': [] }, function (res) {
+    const entries = Array.isArray(res['author-whitelist']) ? res['author-whitelist'] : []
+    if (entries.length) {
+      authorWhitelistTagify?.addTags(
+        entries.map(({ vanity, name }) => ({ value: name ?? vanity, vanity }))
+      )
+    }
   })
   chrome.storage.local.get('semantic-filter', function (res) {
     if (res['semantic-filter'] === undefined) {
