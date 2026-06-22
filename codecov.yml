@@ -1,3 +1,4 @@
 ignore:
   - "src/popup/"
   - "src/content/"
+  - "scripts/"
