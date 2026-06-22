@@ -12,7 +12,8 @@
     "coverage": "vitest run --coverage",
     "test:visual": "playwright test",
     "mutate": "stryker run",
-    "mutate:report": "stryker run && node scripts/mutation-report.js"
+    "mutate:report": "stryker run && node scripts/mutation-report.js",
+    "spec:coverage": "node scripts/spec-coverage.js"
   },
   "devDependencies": {
     "@creativebulma/bulma-divider": "^1.1.0",
