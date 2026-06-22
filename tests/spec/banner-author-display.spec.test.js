@@ -65,8 +65,6 @@ it('Scenario: Author available on pattern match banner', () => {
   expect(authorEl?.textContent).toContain('Grace Hopper')
 })
 
-it.todo('Scenario: No author available on pattern match banner')
-
 // ---------------------------------------------------------------------------
 // Requirement: Pattern match label replaces structural slop label
 // ---------------------------------------------------------------------------
@@ -79,8 +77,6 @@ it('Scenario: Pattern match headline', () => {
   const headline = posts[0].previousElementSibling?.querySelector('.focusedin-slop-headline')?.textContent ?? ''
   expect(headline).toMatch(/🎯 Pattern match/)
 })
-
-it.todo('Scenario: Pattern match signal text')
 
 // ---------------------------------------------------------------------------
 // Requirement: Author vanity name extracted alongside display name
@@ -105,13 +101,3 @@ it('Scenario: Vanity name absent when no profile link in DOM', () => {
   expect(banner?.querySelector('.focusedin-unfollow-btn')).toBeNull()
 })
 
-// ---------------------------------------------------------------------------
-// Requirement: Whitelist button appears on banners alongside Unfollow
-// Requirement: Clicking Whitelist saves the author and reveals the post
-// Interaction scenarios — require DOM event simulation post-collapse
-// ---------------------------------------------------------------------------
-
-it.todo('Scenario: Whitelist button present when vanity name available')
-it.todo('Scenario: Whitelist button absent when vanity name unavailable')
-it.todo('Scenario: Post revealed immediately on whitelist')
-it.todo('Scenario: Whitelist button shows confirmation before removal')

@@ -59,9 +59,7 @@ const testContents = findFiles(join(ROOT, 'tests'), (n) => n.endsWith('.test.js'
 
 const isCovered = (name) =>
   testContents.includes(`it('Scenario: ${name}'`) ||
-  testContents.includes(`it("Scenario: ${name}"`) ||
-  testContents.includes(`it.todo('Scenario: ${name}')`) ||
-  testContents.includes(`it.todo("Scenario: ${name}")`)
+  testContents.includes(`it("Scenario: ${name}"`)
 
 const specFiles = findFiles(specsDir, (n) => n === 'spec.md')
 let total = 0

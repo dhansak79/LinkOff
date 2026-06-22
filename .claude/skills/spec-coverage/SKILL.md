@@ -45,25 +45,17 @@ Summary: 1 / 2 scenarios covered
 
 ## What To Do With Missing Scenarios
 
-For each ✗:
+For each ✗, if the scenario describes a DOM mutation (post collapsed, banner present, button visible), write a boundary test in `tests/spec/<capability>.spec.test.js`:
+```js
+it('Scenario: <exact name from spec>', () => {
+  // setup DOM + config
+  doFeed({ ...baseConfig, ... })
+  vi.advanceTimersByTime(350)
+  // assert DOM outcome
+})
+```
 
-1. **Can it be tested through `feed.js`?** If the scenario describes a DOM mutation (post collapsed, banner present, button visible), write a boundary test in `tests/spec/<capability>.spec.test.js`:
-   ```js
-   it('Scenario: <exact name from spec>', () => {
-     // setup DOM + config
-     doFeed({ ...baseConfig, ... })
-     vi.advanceTimersByTime(350)
-     // assert DOM outcome
-   })
-   ```
-
-2. **Is it a popup UI scenario?** If the scenario requires popup HTML context (tab switching, Tagify inputs, settings panels), mark it as todo with a reason:
-   ```js
-   it.todo('Scenario: <exact name from spec>') // popup UI — requires popup HTML context
-   ```
-   `it.todo` is still detected as "covered" by the parser.
-
-3. **Is it genuinely not testable** via jsdom (e.g., browser API with no mock path)? Mark `it.todo` with a reason comment explaining why.
+If the scenario is a popup UI or interaction scenario that isn't testable via jsdom, leave it uncovered — the ✗ is honest.
 
 ## Definition of Done (Informational)
 

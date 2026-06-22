@@ -34,10 +34,6 @@ it('Scenario: Tone filter toggle is off by default', () => {
   expect(toneCalls.length).toBe(0)
 })
 
-// Popup-UI scenarios (requires popup HTML context, not testable via jsdom)
-it.todo('Scenario: User enables tone filter')
-it.todo('Scenario: Sensitivity slider is visible when tone filter is enabled')
-
 // ---------------------------------------------------------------------------
 // Requirement: Posts with negative or hostile tone are collapsed
 // ---------------------------------------------------------------------------
@@ -84,6 +80,3 @@ it('Scenario: Banner shows confidence percentage', () => {
   expect(signalText).toMatch(/negative tone · \d+%/)
 })
 
-// Interaction scenarios require DOM event simulation beyond initial collapse
-it.todo('Scenario: Show anyway reveals the post')
-it.todo('Scenario: Trust author prevents future collapse for that author')

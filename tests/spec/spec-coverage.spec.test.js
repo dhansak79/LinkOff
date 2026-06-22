@@ -88,8 +88,8 @@ it('Scenario: Summary line shows overall counts', () => {
 })
 
 it('Scenario: Exit code 0 when all scenarios covered', () => {
-  // Global run — all 41 scenarios covered (41/41 after boundary tests written)
-  const result = run()
+  // Archived change has all 13 scenarios covered by real it() blocks in this file
+  const result = run(['--change', 'archive/2026-06-22-spec-coverage-parser'])
   expect(result.status).toBe(0)
 })
 

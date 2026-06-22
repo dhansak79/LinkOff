@@ -79,16 +79,3 @@ it('Scenario: Default whitelist is empty', () => {
   // No whitelist bypass — slop post is still collapsed
   expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(true)
 })
-
-// Storage-read scenarios verify chrome.storage contract, covered by slop.dom.test.js
-it.todo('Scenario: Entry contains vanity and name')
-
-// ---------------------------------------------------------------------------
-// Requirement: Authors tab in popup displays and manages whitelist
-// Popup-UI scenarios — not testable via jsdom
-// ---------------------------------------------------------------------------
-
-it.todo('Scenario: Whitelist entries shown as tags on popup open')
-it.todo('Scenario: Removing a tag persists the change')
-it.todo('Scenario: Popup has two tabs')
-it.todo('Scenario: Tab switching shows correct panel')

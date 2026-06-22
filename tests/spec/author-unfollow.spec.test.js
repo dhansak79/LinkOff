@@ -52,12 +52,3 @@ it('Scenario: Unfollow button absent when vanity name unavailable', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Requirement: Clicking Unfollow fires LinkedIn's unfollow API
-// Requirement: Banner reflects unfollow outcome
-// Interaction scenarios — require DOM event simulation post-collapse
-// ---------------------------------------------------------------------------
-
-it.todo('Scenario: Unfollow request sent on click')
-it.todo('Scenario: Button shows loading state during request')
-it.todo('Scenario: Success state after unfollow')
-it.todo('Scenario: Error state after failed unfollow')
