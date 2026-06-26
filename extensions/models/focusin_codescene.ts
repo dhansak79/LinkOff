@@ -125,11 +125,15 @@ export const model = {
         const handle = await context.writeResource("healthResult", "current", health);
 
         if (!health.passed) {
-          const names = health.files.map((f) => `  ${f.name} (${f.newScore}/10)`).join("\n");
+          const names = health.files
+            .map((f) => `  ${projectDir}/${f.name}  (${f.newScore}/10)`)
+            .join("\n");
           throw new Error(
             `CodeScene health gate failed — ${health.failedFiles} file(s) introduced degradations:\n${names}\n\n` +
-              "Use the CodeScene MCP tool `code_health_review` on each failing file for a detailed\n" +
-              "breakdown, then follow the `codescene:guiding-refactoring-with-code-health` skill.",
+              "REQUIRED: Call the CodeScene MCP tool `code_health_review` on each file above\n" +
+              "before attempting any fixes. Do not reason about or propose solutions without\n" +
+              "first inspecting the tool output.\n\n" +
+              "After reviewing all files, apply the `guiding-refactoring-with-code-health` skill.",
           );
         }
 
