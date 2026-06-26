@@ -64,6 +64,19 @@ export function parseDeltaOutput(raw: string): DegradedFile[] {
   }
 }
 
+/** Build the environment for the cs command, extending PATH with ~/.local/bin. */
+export function buildCommandEnv(
+  base: Record<string, string | undefined>,
+): Record<string, string> {
+  const home = base.HOME ?? "";
+  const path = base.PATH ?? "";
+  return {
+    ...(base as Record<string, string>),
+    PATH: `${home}/.local/bin:${path}`,
+    CS_DISABLE_VERSION_CHECK: "1",
+  };
+}
+
 /** Build the healthResult envelope from the list of degraded files. */
 export function buildHealthResult(
   files: DegradedFile[],
@@ -100,9 +113,7 @@ export const model = {
         const { projectDir } = context.globalArgs;
         const ranAt = new Date().toISOString();
 
-        const env = Deno.env.toObject();
-        env.PATH = `${env.HOME ?? ""}/.local/bin:${env.PATH ?? ""}`;
-        env.CS_DISABLE_VERSION_CHECK = "1";
+        const env = buildCommandEnv(Deno.env.toObject());
 
         const result = await new Deno.Command("cs", {
           args: ["delta", "main", "--output-format", "json"],

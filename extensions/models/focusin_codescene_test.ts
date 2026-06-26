@@ -1,5 +1,5 @@
 import { assertEquals, assertRejects } from "jsr:@std/assert";
-import { buildHealthResult, model, parseDeltaOutput } from "./focusin_codescene.ts";
+import { buildCommandEnv, buildHealthResult, model, parseDeltaOutput } from "./focusin_codescene.ts";
 
 type MockOutput = { code: number; stdout: Uint8Array; stderr: Uint8Array };
 
@@ -63,6 +63,20 @@ Deno.test("parseDeltaOutput: tolerates version-check lines before JSON", () => {
   const result = parseDeltaOutput(raw);
   assertEquals(result.length, 1);
   assertEquals(result[0].name, "src/x.js");
+});
+
+// --- buildCommandEnv ---
+
+Deno.test("buildCommandEnv: extends PATH with home .local/bin prefix", () => {
+  const result = buildCommandEnv({ HOME: "/home/user", PATH: "/usr/bin:/bin" });
+  assertEquals(result.PATH, "/home/user/.local/bin:/usr/bin:/bin");
+  assertEquals(result.CS_DISABLE_VERSION_CHECK, "1");
+});
+
+Deno.test("buildCommandEnv: handles missing HOME and PATH gracefully", () => {
+  const result = buildCommandEnv({});
+  assertEquals(result.PATH, "/.local/bin:");
+  assertEquals(result.CS_DISABLE_VERSION_CHECK, "1");
 });
 
 // --- buildHealthResult ---
