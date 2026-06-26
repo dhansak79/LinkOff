@@ -15,7 +15,7 @@
 
 - [x] 3.1 Confirm graduation criteria: 3 consecutive workflow runs with valid `healthResult` written AND (at least one `failedFiles > 0` run observed OR 5+ clean pushes with no unexplained missing results)
 - [x] 3.2 Flip `allowFailure: true` → `allowFailure: false` in the workflow YAML
-- [ ] 3.3 Run `swamp workflow run quality-gate` to confirm the step now blocks on failure
+- [x] 3.3 Run `swamp workflow run quality-gate` to confirm the step now blocks on failure
 
 ## 4. Pre-commit Cleanup (Phase 3 — only after Phase 2 complete)
 
