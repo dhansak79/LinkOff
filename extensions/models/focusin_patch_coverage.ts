@@ -24,7 +24,17 @@ type WriteResourceFn = (
   data: Record<string, unknown>,
 ) => Promise<{ name: string }>;
 
-/** Parse lcov data into a map of { filePath: { lineNumber: hitCount } }. */
+function isBranchUncovered(taken: string): boolean {
+  return taken === "0" || taken === "-";
+}
+
+function applyBranchLine(fileCov: Record<number, number>, line: string): void {
+  const parts = line.slice(5).split(",");
+  if (isBranchUncovered(parts[3])) fileCov[Number(parts[0])] = 0;
+}
+
+/** Parse lcov data into a map of { filePath: { lineNumber: hitCount } }.
+ * BRDA entries downgrade partially-covered lines to 0 to match Codecov patch behaviour. */
 export function parseLcov(raw: string): Record<string, Record<number, number>> {
   const coverage: Record<string, Record<number, number>> = {};
   let file: string | null = null;
@@ -35,6 +45,8 @@ export function parseLcov(raw: string): Record<string, Record<number, number>> {
     } else if (line.startsWith("DA:") && file) {
       const [ln, hits] = line.slice(3).split(",");
       coverage[file][Number(ln)] = Number(hits);
+    } else if (line.startsWith("BRDA:") && file) {
+      applyBranchLine(coverage[file], line);
     }
   }
   return coverage;

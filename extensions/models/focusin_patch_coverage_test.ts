@@ -63,6 +63,21 @@ Deno.test("parseLcov: returns empty for empty input", () => {
   assertEquals(parseLcov(""), {});
 });
 
+Deno.test("parseLcov: downgrades covered line when a branch has taken=0 (partial)", () => {
+  const raw = "SF:src/utils.js\nDA:1,3\nBRDA:1,0,0,0\nend_of_record\n";
+  assertEquals(parseLcov(raw)["src/utils.js"][1], 0);
+});
+
+Deno.test("parseLcov: downgrades covered line when a branch has taken=- (never executed)", () => {
+  const raw = "SF:src/utils.js\nDA:1,3\nBRDA:1,0,0,-\nend_of_record\n";
+  assertEquals(parseLcov(raw)["src/utils.js"][1], 0);
+});
+
+Deno.test("parseLcov: leaves covered line when all branches are taken", () => {
+  const raw = "SF:src/utils.js\nDA:1,3\nBRDA:1,0,0,2\nBRDA:1,0,1,1\nend_of_record\n";
+  assertEquals(parseLcov(raw)["src/utils.js"][1], 3);
+});
+
 // ---- parseStagedDiff ----
 
 // Uses -U0 format (no context lines) matching `git diff --cached -U0` in production
