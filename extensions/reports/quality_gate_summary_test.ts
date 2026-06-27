@@ -206,14 +206,23 @@ Deno.test("report: counts attempt 2 when prior failed run YAML exists on disk", 
   const currentStartedAt = new Date(now).toISOString();
   const priorStartedAt = new Date(now - 30 * 60 * 1000).toISOString();
 
+  // Current run YAML (covers readCurrentStartedAt success path)
   await Deno.writeTextFile(
     `${wfDir}/workflow-run-run-current.yaml`,
     JSON.stringify({ id: "run-current", workflowId: "wf-123", workflowName: "quality-gate", status: "succeeded", startedAt: currentStartedAt }),
   );
+  // Prior failed run (covers isPriorAttempt lines 97-98 returning true)
   await Deno.writeTextFile(
     `${wfDir}/workflow-run-run-prior.yaml`,
     JSON.stringify({ id: "run-prior", workflowId: "wf-123", workflowName: "quality-gate", status: "failed", startedAt: priorStartedAt }),
   );
+  // Prior succeeded run (covers isPriorAttempt line 96 returning false for non-failed status)
+  await Deno.writeTextFile(
+    `${wfDir}/workflow-run-run-old.yaml`,
+    JSON.stringify({ id: "run-old", workflowId: "wf-123", workflowName: "quality-gate", status: "succeeded", startedAt: priorStartedAt }),
+  );
+  // Non-YAML file (covers line 114 continue branch for non-matching entries)
+  await Deno.writeTextFile(`${wfDir}/README.txt`, "ignored");
 
   try {
     const ctx = makeContext({ repoDir: tmpDir, runId: "run-current" });
