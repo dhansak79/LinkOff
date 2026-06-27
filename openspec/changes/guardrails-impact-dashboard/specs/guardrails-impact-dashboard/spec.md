@@ -21,20 +21,14 @@ The dashboard generator script SHALL embed all telemetry data as a JavaScript co
 - **WHEN** the HTML is opened in a browser
 - **THEN** all charts render immediately from the embedded constant without any network request
 
-### Requirement: Dashboard renders the pre-hardening spec coverage trajectory
-The dashboard SHALL render two spec coverage series:
-- **"Actual (gate enforced)"**: spec coverage % per `quality-gate` run in chronological order
-- **"Pre-hardening trajectory"**: the observed slope from runs before the `spec-coverage` gate was hardened (before `allowFailure` was changed to `false`), shown as a straight continuation from the hardening date
+## REMOVED Requirements
 
-The pre-hardening trajectory SHALL be labelled clearly as a historical trend, not a forecast. Both series SHALL be hidden if fewer than two data points exist.
+### ~~Requirement: Dashboard renders the pre-hardening spec coverage trajectory~~
+Removed. The `spec-coverage` check is being removed from the quality gate pipeline. All spec coverage chart series and the pre-hardening slope calculation are out of scope.
 
-#### Scenario: Both series render after gate hardening
-- **WHEN** the data includes runs from before and after the spec-coverage gate was hardened
-- **THEN** the "actual" line diverges upward (or holds) from the "pre-hardening trajectory" line at the hardening date
+---
 
-#### Scenario: Only actual series renders before any divergence
-- **WHEN** all runs occurred before the gate was hardened (no blocked spec-coverage runs exist)
-- **THEN** only the "actual" series renders; the "pre-hardening trajectory" series is hidden
+## ADDED Requirements (continued)
 
 ### Requirement: Dashboard renders an agent attempt sessions chart
 The dashboard SHALL render a bar chart showing the number of push attempts per inferred session, derived from the `quality-gate` YAML telemetry. Each bar represents one session; bar height is the attempt count. Sessions with a single successful attempt (no blocks) have height 1.
@@ -55,6 +49,36 @@ The dashboard SHALL include a summary section showing: total `quality-gate` runs
 #### Scenario: Summary panel reflects current telemetry
 - **WHEN** the YAML corpus contains 32 runs forming 10 sessions with a total of 14 attempts across blocked runs
 - **THEN** the summary panel shows the correct totals and the date/step of the most recent block
+
+### Requirement: Dashboard includes a session explorer with per-attempt check detail
+The dashboard SHALL render a **Session Explorer** section below the summary and charts. Each session SHALL be displayed as a collapsible row. When expanded, the session SHALL show a table with one column per attempt and one row per quality-gate check, displaying the result of each check on each attempt.
+
+The checks shown SHALL be: `tests`, `coverage`, `mutation`, `codescene`, `patch-coverage`. `spec-coverage` SHALL be excluded.
+
+Per-check detail requirements:
+- **tests**: show `passing/total` count per attempt; highlight red when `passed: false`
+- **coverage**: show `lines`, `functions`, `branches`, `statements` as percentages per attempt; highlight any value below 90% in red
+- **mutation**: show overall score per attempt, and a per-file score sub-row for each file in `mutation.files`; highlight files below the passing threshold
+- **codescene**: show degraded file count per attempt; when `files[]` is non-empty, show each degraded filename
+- **patch-coverage**: show `uncoveredLines` count per attempt; highlight red when `passed: false`
+
+Sessions with a single successful attempt (never blocked) MAY be shown collapsed by default. Sessions with 2+ attempts SHOULD be shown expanded by default.
+
+#### Scenario: Single-attempt session is shown collapsed
+- **WHEN** a session contains exactly 1 attempt (no blocks)
+- **THEN** the session row renders as a single collapsed line showing the date and "1 attempt ✓"
+
+#### Scenario: Multi-attempt session shows per-check per-attempt table
+- **WHEN** a session with 3 attempts is expanded
+- **THEN** the check table renders 3 columns (A1, A2, A3) and one row per check
+
+#### Scenario: Mutation file scores visible within session
+- **WHEN** a session is expanded and mutation data includes per-file scores
+- **THEN** each file path and score is visible within the mutation row
+
+#### Scenario: Coverage threshold breaches highlighted
+- **WHEN** a coverage attempt has `branches: 89.5`
+- **THEN** the branches cell renders in red (below the 90% threshold)
 
 ### Requirement: Dashboard is navigable from the GitHub Pages mutation report root
 The Stryker report root page SHALL include a visible link to `/FocusIn/insights/` so users can navigate between the mutation report and the guardrails dashboard.

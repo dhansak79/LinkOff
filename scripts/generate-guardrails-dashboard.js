@@ -7,20 +7,19 @@
  */
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
-import { execSync } from "child_process";
 import jsYaml from "js-yaml";
 
 const TELEMETRY_DIR = "telemetry/workflow-runs";
 const OUTPUT_FILE = "reports/workflow-insights/index.html";
 const QUALITY_GATE_WORKFLOW = "quality-gate";
 const SESSION_WINDOW_MS = 4 * 60 * 60 * 1000;
+const COVERAGE_THRESHOLD = 90;
 
 const PAGE_CSS = `
   body{font-family:system-ui,sans-serif;max-width:1100px;margin:0 auto;padding:2rem;background:#0d1117;color:#e6edf3}
   h1{font-size:1.5rem;font-weight:700;margin-bottom:.25rem}
   .subtitle{color:#8b949e;font-size:.9rem;margin-bottom:2rem}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem}
-  .card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:1.5rem}
+  .card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:1.5rem;margin-bottom:2rem}
   .card h2{font-size:1rem;font-weight:600;margin:0 0 1rem;color:#8b949e;text-transform:uppercase;letter-spacing:.05em}
   .chart-wrap{position:relative;height:260px}
   .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
@@ -30,7 +29,22 @@ const PAGE_CSS = `
   .stat .sub{font-size:.8rem;color:#e6edf3;margin-top:.25rem}
   .empty{color:#8b949e;font-size:.9rem;padding:2rem 0;text-align:center}
   a{color:#58a6ff}
-  @media(max-width:700px){.grid{grid-template-columns:1fr}.summary{grid-template-columns:1fr 1fr}}
+  .session{background:#0d1117;border:1px solid #30363d;border-radius:6px;margin-bottom:.5rem;overflow:hidden}
+  .session summary{padding:.65rem 1rem;cursor:pointer;list-style:none;display:flex;align-items:center;gap:.75rem;font-size:.88rem}
+  .session summary::-webkit-details-marker{display:none}
+  .s-label{color:#58a6ff;font-weight:700;min-width:2.5rem}
+  .s-date{color:#8b949e}
+  .s-badge{margin-left:auto;font-size:.78rem;padding:.15rem .5rem;border-radius:4px;background:#21262d}
+  .s-pass{color:#3fb950}.s-fail{color:#f85149}
+  .session-body{padding:.5rem 1rem 1rem;overflow-x:auto}
+  .check-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:.5rem}
+  .check-table th{padding:.3rem .6rem;color:#8b949e;font-weight:600;border-bottom:1px solid #30363d;text-align:right}
+  .check-table th:first-child{text-align:left}
+  .check-table td{padding:.28rem .6rem;border-bottom:1px solid #21262d;text-align:right;white-space:nowrap}
+  .check-table td:first-child{text-align:left;color:#8b949e}
+  .check-table .ok{color:#3fb950}.check-table .bad{color:#f85149}
+  .check-table tr.sub td:first-child{padding-left:1.5rem;font-size:.78rem;color:#6e7681}
+  @media(max-width:700px){.summary{grid-template-columns:1fr 1fr}}
 `;
 
 // ── Data extraction ────────────────────────────────────────────────────────────
@@ -67,10 +81,11 @@ function findBlockingStep(jobs) {
 export function parseRun(doc) {
   if (doc.workflowName !== QUALITY_GATE_WORKFLOW) return null;
   const jobs = doc.jobs ?? [];
-  const spec = getStepAttrs(jobs, "spec-coverage");
   const tests = getStepAttrs(jobs, "tests");
-  const coverage = getStepAttrs(jobs, "coverage");
-  const mutation = getStepAttrs(jobs, "mutation");
+  const cov = getStepAttrs(jobs, "coverage");
+  const mut = getStepAttrs(jobs, "mutation");
+  const cs = getStepAttrs(jobs, "codescene-health");
+  const patch = getStepAttrs(jobs, "patch-coverage");
 
   return {
     id: doc.id,
@@ -79,10 +94,21 @@ export function parseRun(doc) {
     completedAt: doc.completedAt ?? null,
     blockingStep: findBlockingStep(jobs),
     metrics: {
-      specCoverage: spec.attrs ? { pct: spec.attrs.pct, passed: spec.attrs.passed } : null,
-      tests: tests.attrs ? { total: tests.attrs.total, failing: tests.attrs.failing, passed: tests.attrs.passed } : null,
-      coverage: coverage.attrs ? { lines: coverage.attrs.lines, passed: coverage.attrs.passed } : null,
-      mutation: mutation.attrs ? { score: mutation.attrs.overallScore, passed: mutation.attrs.passed } : null,
+      tests: tests.attrs
+        ? { passed: tests.attrs.passed, total: tests.attrs.total, passing: tests.attrs.passing, failing: tests.attrs.failing }
+        : null,
+      coverage: cov.attrs
+        ? { passed: cov.attrs.passed, lines: cov.attrs.lines, functions: cov.attrs.functions, branches: cov.attrs.branches, statements: cov.attrs.statements }
+        : null,
+      mutation: mut.attrs
+        ? { passed: mut.attrs.passed, score: mut.attrs.overallScore, files: mut.attrs.files ?? [] }
+        : null,
+      codescene: cs.attrs
+        ? { passed: cs.attrs.passed, failedFiles: cs.attrs.failedFiles, files: cs.attrs.files ?? [] }
+        : null,
+      patchCoverage: patch.attrs
+        ? { passed: patch.attrs.passed, uncoveredLines: patch.attrs.uncoveredLines }
+        : null,
     },
   };
 }
@@ -113,50 +139,6 @@ export function clusterSessions(runs) {
   });
 }
 
-// ── Pre-hardening slope (linear regression) ────────────────────────────────────
-
-export function computePreHardeningSlope(runs, hardeningDate) {
-  const pre = runs.filter(
-    (r) => r.metrics.specCoverage !== null && new Date(r.startedAt) < new Date(hardeningDate),
-  );
-  if (pre.length < 2) return null;
-
-  const t0 = new Date(pre[0].startedAt).getTime();
-  const pts = pre.map((r) => ({
-    x: (new Date(r.startedAt).getTime() - t0) / 86400000,
-    y: r.metrics.specCoverage.pct,
-  }));
-
-  const n = pts.length;
-  const sx = pts.reduce((s, p) => s + p.x, 0);
-  const sy = pts.reduce((s, p) => s + p.y, 0);
-  const sxy = pts.reduce((s, p) => s + p.x * p.y, 0);
-  const sx2 = pts.reduce((s, p) => s + p.x * p.x, 0);
-  const denom = n * sx2 - sx * sx;
-  if (denom === 0) return null;
-
-  const slope = (n * sxy - sx * sy) / denom;
-  const intercept = (sy - slope * sx) / n;
-  return { slope, intercept, t0, firstDate: pre[0].startedAt };
-}
-
-export function projectSlope(slope, intercept, t0, atDate) {
-  return slope * ((new Date(atDate).getTime() - t0) / 86400000) + intercept;
-}
-
-// ── Git hardening date ─────────────────────────────────────────────────────────
-
-function getHardeningDate() {
-  try {
-    return execSync(
-      "git log --format=%aI -1 -- workflows/workflow-adb5a2c2-eee7-4dbb-a708-86c7f53cd81a.yaml",
-      { encoding: "utf8" },
-    ).trim() || null;
-  } catch {
-    return null;
-  }
-}
-
 // ── Load all telemetry runs ────────────────────────────────────────────────────
 
 function loadDirRuns(dirPath) {
@@ -177,22 +159,11 @@ function loadRuns() {
 
 // ── Dashboard data assembly ────────────────────────────────────────────────────
 
-function buildData(runs, sessions, hardeningDate, slope) {
-  const specRuns = runs.filter((r) => r.metrics.specCoverage !== null);
-  const specDates = specRuns.map((r) => r.startedAt.slice(0, 10));
-  const specActual = specRuns.map((r) => r.metrics.specCoverage.pct);
-  const specProjected = slope && hardeningDate
-    ? specRuns.map((r) => parseFloat(projectSlope(slope.slope, slope.intercept, slope.t0, r.startedAt).toFixed(1)))
-    : null;
-
+function buildData(runs, sessions) {
   const lastBlocked = [...runs].reverse().find((r) => r.blockingStep !== null);
   return {
-    specDates,
-    specActual,
-    specProjected,
     sessionLabels: sessions.map((_, i) => `S${i + 1}`),
     sessionAttempts: sessions.map((s) => s.attemptCount),
-    hardeningDate: hardeningDate ?? null,
     summary: {
       totalRuns: runs.length,
       totalSessions: sessions.length,
@@ -216,23 +187,124 @@ function renderSummary(s) {
 
 function renderChartInit() {
   return `(function(){
-  if(DATA.specDates.length>=2){
-    const ds=[{label:'Actual (gate enforced)',data:DATA.specActual,borderColor:'#58a6ff',backgroundColor:'rgba(88,166,255,0.08)',tension:0.3,pointRadius:3,fill:true}];
-    if(DATA.specProjected)ds.push({label:'Pre-hardening trajectory',data:DATA.specProjected,borderColor:'#f0883e',borderDash:[6,4],pointRadius:0,tension:0,fill:false});
-    new Chart(document.getElementById('specChart'),{type:'line',data:{labels:DATA.specDates,datasets:ds},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#e6edf3'}},tooltip:{callbacks:{label:(c)=>c.dataset.label+': '+c.parsed.y.toFixed(1)+(c.dataset.label==='Pre-hardening trajectory'?' (observed trend before gate hardened)':'%')}}},scales:{x:{ticks:{color:'#8b949e'},grid:{color:'#30363d'}},y:{ticks:{color:'#8b949e',callback:(v)=>v+'%'},grid:{color:'#30363d'},min:0,max:100}}}});
-  }
   if(DATA.sessionLabels.length>0){
     new Chart(document.getElementById('sessionChart'),{type:'bar',data:{labels:DATA.sessionLabels,datasets:[{label:'Attempts',data:DATA.sessionAttempts,backgroundColor:DATA.sessionAttempts.map((n)=>n===1?'rgba(63,185,80,0.7)':n<=2?'rgba(240,136,62,0.7)':'rgba(248,81,73,0.7)'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8b949e'},grid:{color:'#30363d'}},y:{ticks:{color:'#8b949e',stepSize:1},grid:{color:'#30363d'},min:0}}}});
   }
 })();`;
 }
 
-function renderHtml(data, chartJsSrc) {
-  const hasSpec = data.specDates.length >= 2;
+// ── Session explorer ───────────────────────────────────────────────────────────
+
+function fmtPct(v) {
+  return v !== null && v !== undefined ? `${Number(v).toFixed(1)}%` : "—";
+}
+
+function renderCell(content, passed) {
+  if (passed === null || passed === undefined) return `<td>${content}</td>`;
+  return `<td class="${passed ? "ok" : "bad"}">${content}</td>`;
+}
+
+function renderTestsRow(runs) {
+  const cells = runs.map((r) => {
+    const m = r.metrics.tests;
+    if (!m) return "<td>—</td>";
+    return renderCell(`${m.passing ?? m.total}/${m.total}`, m.passed);
+  }).join("");
+  return `<tr><td>tests</td>${cells}</tr>`;
+}
+
+function renderCoverageSubRow(label, key, runs) {
+  const cells = runs.map((r) => {
+    const val = r.metrics.coverage?.[key] ?? null;
+    const ok = val !== null ? val >= COVERAGE_THRESHOLD : null;
+    return renderCell(val !== null ? `${val.toFixed(1)}%` : "—", ok);
+  }).join("");
+  return `<tr class="sub"><td>${label}</td>${cells}</tr>`;
+}
+
+function renderCoverageRows(runs) {
+  const headerCells = runs.map((r) => {
+    const m = r.metrics.coverage;
+    return renderCell(m ? (m.passed ? "✓" : "✗") : "—", m?.passed ?? null);
+  }).join("");
+  return [
+    `<tr><td>coverage</td>${headerCells}</tr>`,
+    renderCoverageSubRow("lines", "lines", runs),
+    renderCoverageSubRow("functions", "functions", runs),
+    renderCoverageSubRow("branches", "branches", runs),
+    renderCoverageSubRow("statements", "statements", runs),
+  ].join("");
+}
+
+function renderMutationFileRow(filePath, runs) {
+  const cells = runs.map((r) => {
+    const file = (r.metrics.mutation?.files ?? []).find((f) => f.path === filePath);
+    if (!file) return "<td>—</td>";
+    return renderCell(fmtPct(file.score), file.score >= 80);
+  }).join("");
+  const name = filePath.split("/").pop();
+  return `<tr class="sub"><td>${name}</td>${cells}</tr>`;
+}
+
+function renderMutationRows(runs) {
+  const headerCells = runs.map((r) => {
+    const m = r.metrics.mutation;
+    return renderCell(m ? fmtPct(m.score) : "—", m?.passed ?? null);
+  }).join("");
+  const allFiles = [...new Set(runs.flatMap((r) => (r.metrics.mutation?.files ?? []).map((f) => f.path)))];
+  const fileRows = allFiles.map((p) => renderMutationFileRow(p, runs));
+  return [`<tr><td>mutation</td>${headerCells}</tr>`, ...fileRows].join("");
+}
+
+function renderCodeSceneRow(runs) {
+  const cells = runs.map((r) => {
+    const m = r.metrics.codescene;
+    if (!m) return "<td>—</td>";
+    const label = m.files.length > 0 ? m.files.map((f) => f.path?.split("/").pop() ?? f).join(", ") : `${m.failedFiles} degraded`;
+    return renderCell(label, m.passed);
+  }).join("");
+  return `<tr><td>codescene</td>${cells}</tr>`;
+}
+
+function renderPatchCoverageRow(runs) {
+  const cells = runs.map((r) => {
+    const m = r.metrics.patchCoverage;
+    if (!m) return "<td>—</td>";
+    return renderCell(`${m.uncoveredLines} uncov`, m.passed);
+  }).join("");
+  return `<tr><td>patch-coverage</td>${cells}</tr>`;
+}
+
+function renderSessionTable(runs) {
+  const headers = runs.map((_, i) => `<th>A${i + 1}</th>`).join("");
+  return `<table class="check-table"><thead><tr><th>Check</th>${headers}</tr></thead><tbody>
+${renderTestsRow(runs)}
+${renderCoverageRows(runs)}
+${renderMutationRows(runs)}
+${renderCodeSceneRow(runs)}
+${renderPatchCoverageRow(runs)}
+</tbody></table>`;
+}
+
+function renderSession(session, idx) {
+  const openAttr = session.attemptCount > 1 ? " open" : "";
+  const passed = session.succeeded;
+  const icon = `<span class="${passed ? "s-pass" : "s-fail"}">${passed ? "✓" : "✗"}</span>`;
+  const label = `${session.attemptCount} attempt${session.attemptCount === 1 ? "" : "s"}`;
+  const date = session.startedAt.slice(0, 16).replace("T", " ");
+  return `<details class="session"${openAttr}>
+<summary><span class="s-label">S${idx + 1}</span><span class="s-date">${date}</span><span class="s-badge">${label} ${icon}</span></summary>
+<div class="session-body">${renderSessionTable(session.runs)}</div>
+</details>`;
+}
+
+function renderSessionExplorer(sessions) {
+  if (sessions.length === 0) return '<div class="empty">No sessions recorded yet.</div>';
+  return sessions.map((s, i) => renderSession(s, i)).join("\n");
+}
+
+function renderHtml(data, sessions, chartJsSrc) {
   const hasSessions = data.sessionLabels.length > 0;
-  const specCard = hasSpec
-    ? `<div class="chart-wrap"><canvas id="specChart"></canvas></div>`
-    : `<div class="empty">Not enough data yet.</div>`;
   const sessionCard = hasSessions
     ? `<div class="chart-wrap"><canvas id="sessionChart"></canvas></div>`
     : `<div class="empty">No sessions recorded yet.</div>`;
@@ -249,10 +321,8 @@ function renderHtml(data, chartJsSrc) {
 <h1>Guardrails Impact Dashboard</h1>
 <p class="subtitle">Quality gate telemetry · <a href="/FocusIn/">Mutation Report</a></p>
 ${renderSummary(data.summary)}
-<div class="grid">
-  <div class="card"><h2>Spec Coverage Trend</h2>${specCard}</div>
-  <div class="card"><h2>Agent Attempt Sessions</h2>${sessionCard}</div>
-</div>
+<div class="card"><h2>Agent Attempt Sessions</h2>${sessionCard}</div>
+<div class="card"><h2>Session Explorer</h2>${renderSessionExplorer(sessions)}</div>
 <script>const DATA=${JSON.stringify(data)};</script>
 <script>${chartJsSrc}</script>
 <script>${renderChartInit()}</script>
@@ -264,15 +334,13 @@ ${renderSummary(data.summary)}
 
 export function generate(opts = {}) {
   const runs = opts.runs ?? loadRuns();
-  const hardeningDate = opts.hardeningDate ?? getHardeningDate();
   const sessions = clusterSessions(runs);
-  const slope = hardeningDate ? computePreHardeningSlope(runs, hardeningDate) : null;
-  const data = buildData(runs, sessions, hardeningDate, slope);
+  const data = buildData(runs, sessions);
   const chartJsSrc = readFileSync(
     new URL("../node_modules/chart.js/dist/chart.umd.min.js", import.meta.url),
     "utf8",
   );
-  const html = renderHtml(data, chartJsSrc);
+  const html = renderHtml(data, sessions, chartJsSrc);
   mkdirSync(new URL("../reports/workflow-insights", import.meta.url).pathname, { recursive: true });
   writeFileSync(new URL(`../${OUTPUT_FILE}`, import.meta.url).pathname, html, "utf8");
   return { runs: runs.length, sessions: sessions.length, outputFile: OUTPUT_FILE };
