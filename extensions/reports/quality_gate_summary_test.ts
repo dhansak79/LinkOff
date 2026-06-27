@@ -182,3 +182,44 @@ Deno.test("report.name is @focusin/quality-gate-summary", () => {
   assertEquals(report.name, "@focusin/quality-gate-summary");
   assertEquals(report.scope, "workflow");
 });
+
+Deno.test("report: returns null metric when getContent returns null for a ready step", async () => {
+  const ctx = {
+    ...makeContext({
+      workflowStatus: "succeeded",
+      steps: [makeStep("tests", "succeeded", { passed: true, total: 10, passing: 10, failing: 0, durationMs: 500 })],
+    }),
+    dataRepository: {
+      getContent: async (): Promise<Uint8Array | null> => null,
+    },
+  };
+  const result = await report.execute(ctx as Parameters<typeof report.execute>[0]);
+  assertEquals((result.json.metrics as { tests: { passed: null } }).tests.passed, null);
+});
+
+Deno.test("report: counts attempt 2 when prior failed run YAML exists on disk", async () => {
+  const tmpDir = await Deno.makeTempDir();
+  const wfDir = `${tmpDir}/.swamp/workflow-runs/wf-123`;
+  await Deno.mkdir(wfDir, { recursive: true });
+
+  const now = Date.now();
+  const currentStartedAt = new Date(now).toISOString();
+  const priorStartedAt = new Date(now - 30 * 60 * 1000).toISOString();
+
+  await Deno.writeTextFile(
+    `${wfDir}/workflow-run-run-current.yaml`,
+    JSON.stringify({ id: "run-current", workflowId: "wf-123", workflowName: "quality-gate", status: "succeeded", startedAt: currentStartedAt }),
+  );
+  await Deno.writeTextFile(
+    `${wfDir}/workflow-run-run-prior.yaml`,
+    JSON.stringify({ id: "run-prior", workflowId: "wf-123", workflowName: "quality-gate", status: "failed", startedAt: priorStartedAt }),
+  );
+
+  try {
+    const ctx = makeContext({ repoDir: tmpDir, runId: "run-current" });
+    const result = await report.execute(ctx as Parameters<typeof report.execute>[0]);
+    assertEquals(result.json.attemptNumber, 2);
+  } finally {
+    await Deno.remove(tmpDir, { recursive: true });
+  }
+});
