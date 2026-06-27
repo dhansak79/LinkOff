@@ -1,5 +1,0 @@
-#!/bin/sh
-SWAMP="${HOME}/.swamp/bin/swamp"
-command -v swamp >/dev/null 2>&1 && SWAMP="swamp"
-
-"$SWAMP" workflow run quality-gate-fast
