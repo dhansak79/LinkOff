@@ -101,6 +101,11 @@ Deno.test("parseStagedDiff: returns empty for no staged changes", () => {
   assertEquals(parseStagedDiff(""), {});
 });
 
+Deno.test("parseStagedDiff: ignores added lines when hunk header has no +N", () => {
+  const diff = `+++ b/src/utils.js\n@@ malformed @@\n+added\n`;
+  assertEquals(parseStagedDiff(diff)["src/utils.js"].size, 0);
+});
+
 // ---- findUncoveredLines ----
 
 Deno.test("findUncoveredLines: returns empty when all staged lines are covered", () => {

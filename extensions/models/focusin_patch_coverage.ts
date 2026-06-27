@@ -54,7 +54,8 @@ export function parseLcov(raw: string): Record<string, Record<number, number>> {
 
 function parseHunkStart(line: string): number | null {
   const m = line.match(/\+(\d+)/);
-  return m ? Number(m[1]) : null;
+  if (!m) return null;
+  return Number(m[1]);
 }
 
 function isAddedLine(line: string): boolean {
