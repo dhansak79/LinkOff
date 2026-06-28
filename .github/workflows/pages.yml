@@ -1,4 +1,4 @@
-name: Mutation Tests
+name: Pages
 
 on:
   push:
