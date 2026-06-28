@@ -1,0 +1,288 @@
+id: ad448512-eddc-4d3d-8809-d2fd87fd1f59
+workflowId: 8ea0fc6a-5c9e-411f-b9d3-90202e7e9c62
+workflowName: quality-gate-fast
+status: failed
+startedAt: '2026-06-28T11:31:29.096Z'
+completedAt: '2026-06-28T11:31:43.186Z'
+jobs:
+  - jobName: check
+    status: failed
+    startedAt: '2026-06-28T11:31:29.100Z'
+    completedAt: '2026-06-28T11:31:43.167Z'
+    steps:
+      - stepName: lint
+        status: failed
+        startedAt: '2026-06-28T11:31:29.104Z'
+        completedAt: '2026-06-28T11:31:31.923Z'
+        error: >+
+          Lint failed with 2 issue(s):
+
+
+          > lint
+
+          > eslint . --ignore-path .eslintignore
+
+
+
+          /Users/daniel/Repos/FocusIn/tests/cucumber/step-definitions/spec-coverage-unit.js
+            83:51  error  Unnecessary escape character: \`  no-useless-escape
+            92:52  error  Unnecessary escape character: \`  no-useless-escape
+
+          ✖ 2 problems (2 errors, 0 warnings)
+
+        dataArtifacts:
+          - dataId: c608e9d3-866b-437a-8039-03485193fb95
+            name: current
+            version: 80
+            tags:
+              type: resource
+              specName: lintResult
+              modelName: focusin-lint
+              source: step-output
+              workflow: quality-gate-fast
+              workflowRunId: ad448512-eddc-4d3d-8809-d2fd87fd1f59
+              job: check
+              step: lint
+      - stepName: knip
+        status: failed
+        startedAt: '2026-06-28T11:31:29.104Z'
+        completedAt: '2026-06-28T11:31:32.706Z'
+        error: |
+          Knip failed with 2 issue(s):
+
+          > knip
+          > knip
+
+          Unresolved imports (1)
+          progress  cucumber.mjs
+          Configuration hints (1)
+          @cucumber/cucumber    knip.json  Remove from ignoreDependencies
+        dataArtifacts:
+          - dataId: def1339e-7ea4-4c69-9e38-66a31467fb3e
+            name: current
+            version: 80
+            tags:
+              type: resource
+              specName: knipResult
+              modelName: focusin-knip
+              source: step-output
+              workflow: quality-gate-fast
+              workflowRunId: ad448512-eddc-4d3d-8809-d2fd87fd1f59
+              job: check
+              step: knip
+      - stepName: tests
+        status: succeeded
+        startedAt: '2026-06-28T11:31:29.104Z'
+        completedAt: '2026-06-28T11:31:43.155Z'
+        output:
+          type: model_method
+          model: focusin-tests
+          method: test
+          resources:
+            testResult:
+              current:
+                id: 1d127e4e-d70f-4e75-8397-6336167f26a4
+                name: current
+                version: 210
+                isLatest: true
+                createdAt: '2026-06-28T11:31:43.122Z'
+                namespace: ''
+                attributes:
+                  passed: true
+                  total: 736
+                  passing: 736
+                  failing: 0
+                  durationMs: 13954
+                  ranAt: '2026-06-28T11:31:29.146Z'
+                tags:
+                  type: resource
+                  specName: testResult
+                  modelName: focusin-tests
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ad448512-eddc-4d3d-8809-d2fd87fd1f59
+                  job: check
+                  step: tests
+                modelName: focusin-tests
+                modelId: a56242b9-b056-4576-9d69-acd8f2f43d94
+                modelType: '@focusin/tests'
+                specName: testResult
+                dataType: resource
+                contentType: application/json
+                lifetime: 30d
+                ownerType: model-method
+                streaming: false
+                size: 107
+                content: ''
+                ownerRef: a56242b9-b056-4576-9d69-acd8f2f43d94
+                workflowRunId: ad448512-eddc-4d3d-8809-d2fd87fd1f59
+                workflowName: quality-gate-fast
+                jobName: check
+                stepName: tests
+                source: step-output
+          files: {}
+          dataArtifacts:
+            - dataId: 1d127e4e-d70f-4e75-8397-6336167f26a4
+              name: current
+              version: 210
+              tags:
+                type: resource
+                specName: testResult
+                modelName: focusin-tests
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ad448512-eddc-4d3d-8809-d2fd87fd1f59
+                job: check
+                step: tests
+            - dataId: b60eab2d-0ff1-4cff-a40b-8e9c6a673552
+              name: report-swamp-method-summary
+              version: 210
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+            - dataId: 8bd774e4-6e77-49ad-95ff-4f3de4c935fe
+              name: report-swamp-method-summary-json
+              version: 210
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+          dataHandles:
+            - name: current
+              specName: testResult
+              kind: resource
+              dataId: 1d127e4e-d70f-4e75-8397-6336167f26a4
+              version: 210
+              size: 107
+              tags:
+                type: resource
+                specName: testResult
+                modelName: focusin-tests
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ad448512-eddc-4d3d-8809-d2fd87fd1f59
+                job: check
+                step: tests
+              metadata:
+                contentType: application/json
+                lifetime: 30d
+                garbageCollection: 20
+                streaming: false
+                tags:
+                  type: resource
+                  specName: testResult
+                  modelName: focusin-tests
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ad448512-eddc-4d3d-8809-d2fd87fd1f59
+                  job: check
+                  step: tests
+                ownerDefinition:
+                  ownerType: model-method
+                  ownerRef: a56242b9-b056-4576-9d69-acd8f2f43d94
+                  workflowRunId: ad448512-eddc-4d3d-8809-d2fd87fd1f59
+                  workflowName: quality-gate-fast
+                  jobName: check
+                  stepName: tests
+                  source: step-output
+        dataArtifacts:
+          - dataId: 1d127e4e-d70f-4e75-8397-6336167f26a4
+            name: current
+            version: 210
+            tags:
+              type: resource
+              specName: testResult
+              modelName: focusin-tests
+              source: step-output
+              workflow: quality-gate-fast
+              workflowRunId: ad448512-eddc-4d3d-8809-d2fd87fd1f59
+              job: check
+              step: tests
+          - dataId: b60eab2d-0ff1-4cff-a40b-8e9c6a673552
+            name: report-swamp-method-summary
+            version: 210
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+          - dataId: 8bd774e4-6e77-49ad-95ff-4f3de4c935fe
+            name: report-swamp-method-summary-json
+            version: 210
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+      - stepName: codescene-health
+        status: failed
+        startedAt: '2026-06-28T11:31:29.104Z'
+        completedAt: '2026-06-28T11:31:40.708Z'
+        error: >-
+          CodeScene health gate failed — 3 file(s) introduced degradations:
+            /Users/daniel/Repos/FocusIn/extensions/models/spec_change_test.ts  (9.09/10)
+            /Users/daniel/Repos/FocusIn/extensions/models/spec_change.ts  (8.41/10)
+            /Users/daniel/Repos/FocusIn/scripts/migrate-specs-to-features.js  (9.6/10)
+
+          REQUIRED: Call the CodeScene MCP tool `code_health_review` on each
+          file above
+
+          before attempting any fixes. Do not reason about or propose solutions
+          without
+
+          first inspecting the tool output.
+
+
+          After reviewing all files, apply the
+          `guiding-refactoring-with-code-health` skill.
+        dataArtifacts:
+          - dataId: 3af2a8b6-a00b-4c1d-92ce-19b0a9b343d6
+            name: current
+            version: 90
+            tags:
+              type: resource
+              specName: healthResult
+              modelName: focusin-codescene
+              source: step-output
+              workflow: quality-gate-fast
+              workflowRunId: ad448512-eddc-4d3d-8809-d2fd87fd1f59
+              job: check
+              step: codescene-health
+  - jobName: coverage
+    status: skipped
+    completedAt: '2026-06-28T11:31:43.173Z'
+    steps:
+      - stepName: coverage
+        status: skipped
+        completedAt: '2026-06-28T11:31:43.173Z'
+  - jobName: deno-ext
+    status: skipped
+    completedAt: '2026-06-28T11:31:43.177Z'
+    steps:
+      - stepName: deno-ext-tests
+        status: skipped
+        completedAt: '2026-06-28T11:31:43.177Z'
+  - jobName: patch-coverage
+    status: skipped
+    completedAt: '2026-06-28T11:31:43.182Z'
+    steps:
+      - stepName: patch-coverage
+        status: skipped
+        completedAt: '2026-06-28T11:31:43.182Z'
+tags: {}
+logFile: >-
+  .swamp/workflow-runs/8ea0fc6a-5c9e-411f-b9d3-90202e7e9c62/workflow-run-ad448512-eddc-4d3d-8809-d2fd87fd1f59.log
+workflowDataArtifacts:
+  - dataId: 16e04a60-b872-46fa-8f85-7283985cc155
+    name: report-swamp-workflow-summary
+    version: 40
+    tags:
+      type: report
+      reportName: '@swamp/workflow-summary'
+      reportScope: workflow
+  - dataId: b892de0b-00ac-4a69-93e9-86b3cfe62681
+    name: report-swamp-workflow-summary-json
+    version: 40
+    tags:
+      type: report
+      reportName: '@swamp/workflow-summary'
+      reportScope: workflow

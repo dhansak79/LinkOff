@@ -1,6 +1,6 @@
 id: adb5a2c2-eee7-4dbb-a708-86c7f53cd81a
 name: quality-gate
-description: Full quality pipeline — lint, knip, spec-coverage, tests, and CodeScene in parallel, then coverage, deno ext tests, patch-coverage, then mutation
+description: Full quality pipeline — lint, knip, tests, and CodeScene in parallel, then spec-coverage, coverage, deno ext tests, patch-coverage, then mutation
 tags: {}
 version: 1
 reports:
@@ -8,7 +8,7 @@ reports:
     - "@focusin/quality-gate-summary"
 jobs:
   - name: check
-    description: Lint, knip, spec-coverage, tests, and CodeScene health — run in parallel
+    description: Lint, knip, tests, and CodeScene health — run in parallel
     steps:
       - name: lint
         description: Run ESLint and store pass/fail result
@@ -22,15 +22,8 @@ jobs:
           type: model_method
           modelIdOrName: focusin-knip
           methodName: check
-      - name: spec-coverage
-        description: Check which spec scenarios have boundary tests
-        allowFailure: false
-        task:
-          type: model_method
-          modelIdOrName: focusin-spec-coverage
-          methodName: run
       - name: tests
-        description: Run vitest and verify all tests pass
+        description: Run vitest and cucumber (not @wip) and verify all pass
         task:
           type: model_method
           modelIdOrName: focusin-tests
@@ -41,6 +34,21 @@ jobs:
           type: model_method
           modelIdOrName: focusin-codescene
           methodName: check
+
+  - name: spec-coverage
+    description: Check every scenario in openspec/specs/ has a boundary test or feature file entry
+    dependsOn:
+      - job: check
+        condition:
+          type: succeeded
+    steps:
+      - name: spec-coverage
+        description: Check spec scenario coverage across tests and feature files
+        allowFailure: false
+        task:
+          type: model_method
+          modelIdOrName: focusin-spec-coverage
+          methodName: run
 
   - name: coverage
     description: Run vitest with coverage and verify thresholds (90% lines/branches/functions/statements)

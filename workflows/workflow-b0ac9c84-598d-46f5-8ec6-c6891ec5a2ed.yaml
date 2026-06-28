@@ -1,0 +1,55 @@
+id: b0ac9c84-598d-46f5-8ec6-c6891ec5a2ed
+name: spec-gate
+description: Development-time spec verification — generate Gherkin feature files, run Cucumber, and record scenario results
+tags: {}
+version: 1
+inputs:
+  properties:
+    name:
+      type: string
+      description: Spec-change name to verify
+  required:
+    - name
+jobs:
+  - name: generate-features
+    description: Write @wip-tagged Gherkin feature files for the spec change
+    steps:
+      - name: generate
+        description: Call spec-change.generate-features for this change
+        task:
+          type: model_method
+          modelIdOrName: spec-change
+          methodName: generate-features
+          inputs:
+            name: ${{ inputs.name }}
+
+  - name: run-runner
+    description: Run Cucumber against the feature files and write cucumber-report.json
+    dependsOn:
+      - job: generate-features
+        condition:
+          type: succeeded
+    steps:
+      - name: run
+        description: Call focusin-spec-runner.run to execute all non-@wip scenarios
+        task:
+          type: model_method
+          modelIdOrName: focusin-spec-runner
+          methodName: run
+
+  - name: record-results
+    description: Ingest cucumber-report.json and update scenario statuses in the model
+    dependsOn:
+      - job: run-runner
+        condition:
+          type: completed
+    steps:
+      - name: record
+        description: Call spec-change.record-results with the cucumber report
+        task:
+          type: model_method
+          modelIdOrName: spec-change
+          methodName: record-results
+          inputs:
+            name: ${{ inputs.name }}
+            reportPath: cucumber-report.json

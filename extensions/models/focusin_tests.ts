@@ -82,7 +82,7 @@ export const model = {
   },
   methods: {
     test: {
-      description: "Run vitest and store pass/fail counts",
+      description: "Run vitest and cucumber-js (not @wip), store pass/fail counts",
       arguments: z.object({}),
       execute: async (
         _args: Record<string, never>,
@@ -93,13 +93,22 @@ export const model = {
         const outputFile = `${projectDir}/.swamp/vitest-out-${Date.now()}.json`;
 
         const start = Date.now();
-        const { code } = await new Deno.Command("npm", {
-          args: ["test", "--", "--reporter=json", `--outputFile=${outputFile}`],
+        const vitestResult = await new Deno.Command("npx", {
+          args: ["vitest", "run", "--reporter=json", `--outputFile=${outputFile}`],
           cwd: projectDir,
           stdout: "piped",
           stderr: "piped",
         }).output();
+
+        const cucumberResult = await new Deno.Command("npx", {
+          args: ["cucumber-js", "--tags", "not @wip", "--format", "progress"],
+          cwd: projectDir,
+          stdout: "piped",
+          stderr: "piped",
+        }).output();
+
         const durationMs = Date.now() - start;
+        const code = vitestResult.code === 0 && cucumberResult.code === 0 ? 0 : 1;
 
         let total = 0, passing = 0, failing = 0;
         try {
@@ -107,8 +116,9 @@ export const model = {
           await Deno.remove(outputFile).catch(() => {});
           ({ total, passing, failing } = parseVitestOutput(raw));
         } catch {
-          failing = code !== 0 ? 1 : 0;
+          failing = vitestResult.code !== 0 ? 1 : 0;
         }
+        if (cucumberResult.code !== 0) failing += 1;
 
         const handle = await context.writeResource("testResult", "current", {
           passed: code === 0,
