@@ -20,3 +20,6 @@ done
 if [ "$run_check" -eq 1 ]; then
   "$SWAMP" workflow run quality-gate
 fi
+
+# Final sync after workflow completes — captures the current run's own YAML
+node scripts/sync-telemetry.js && git add telemetry/ && git diff --cached --quiet || git commit -m "telemetry: sync"
