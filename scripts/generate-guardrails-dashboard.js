@@ -12,6 +12,7 @@ import jsYaml from "js-yaml";
 const TELEMETRY_DIR = "telemetry/workflow-runs";
 const OUTPUT_FILE = "reports/workflow-insights/index.html";
 const QUALITY_GATE_WORKFLOW = "quality-gate";
+const QUALITY_GATE_FAST_WORKFLOW = "quality-gate-fast";
 const SESSION_WINDOW_MS = 4 * 60 * 60 * 1000;
 const COVERAGE_THRESHOLD = 90;
 
@@ -79,7 +80,7 @@ function findBlockingStep(jobs) {
 }
 
 export function parseRun(doc) {
-  if (doc.workflowName !== QUALITY_GATE_WORKFLOW) return null;
+  if (doc.workflowName !== QUALITY_GATE_WORKFLOW && doc.workflowName !== QUALITY_GATE_FAST_WORKFLOW) return null;
   const jobs = doc.jobs ?? [];
   const tests = getStepAttrs(jobs, "tests");
   const cov = getStepAttrs(jobs, "coverage");

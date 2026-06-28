@@ -100,7 +100,7 @@ describe("clusterSessions", () => {
     expect(sessions[0].attemptCount).toBe(3);
   });
 
-  it("quality-gate-fast runs excluded (they would have different workflowName filtered at parse time)", () => {
+  it("clusters quality-gate and quality-gate-fast runs together within the time window", () => {
     const runs = [makeRun(0), makeRun(HOUR)];
     const sessions = clusterSessions(runs);
     expect(sessions).toHaveLength(1);
@@ -116,9 +116,24 @@ describe("clusterSessions", () => {
 });
 
 describe("parseRun", () => {
-  it("returns null for non-quality-gate workflows", () => {
-    const doc = { workflowName: "quality-gate-fast", status: "succeeded", startedAt: "2026-06-25T10:00:00Z", jobs: [] };
+  it("returns null for unrecognised workflows", () => {
+    const doc = { workflowName: "some-other-workflow", status: "succeeded", startedAt: "2026-06-25T10:00:00Z", jobs: [] };
     expect(parseRun(doc)).toBeNull();
+  });
+
+  it("parses a quality-gate-fast run with partial metrics", () => {
+    const doc = {
+      id: "run-fast-1",
+      workflowName: "quality-gate-fast",
+      status: "failed",
+      startedAt: "2026-06-25T10:00:00Z",
+      jobs: [{ steps: [{ stepName: "codescene-health", status: "failed", output: { resources: {} } }] }],
+    };
+    const run = parseRun(doc);
+    expect(run).not.toBeNull();
+    expect(run.blockingStep).toBe("codescene-health");
+    expect(run.metrics.coverage).toBeNull();
+    expect(run.metrics.mutation).toBeNull();
   });
 
   it("parses tests metrics from a quality-gate run", () => {
