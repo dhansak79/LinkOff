@@ -1,8 +1,4 @@
-## Purpose
-
-Defines the requirements for deploying the mutation test report and guardrails dashboard together to GitHub Pages on each push to main.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Mutation report is accessible at the GitHub Pages root URL
 The CI pipeline SHALL ensure that the mutation report is accessible at `https://dhansak79.github.io/FocusIn/` without requiring any subpath navigation. The Pages artifact root SHALL contain an `index.html` that is the Stryker HTML report.

@@ -1,0 +1,31 @@
+name: Mutation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run mutate
+      - name: Generate mutation summary
+        if: always()
+        run: node scripts/mutation-report.js
+      - name: Post summary to job page
+        if: always()
+        run: cat reports/mutation/mutation-summary.md >> $GITHUB_STEP_SUMMARY
+      - name: Upload mutation report artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-report
+          path: reports/mutation/
