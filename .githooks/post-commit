@@ -1,0 +1,7 @@
+#!/bin/sh
+# Don't recurse on telemetry sync commits
+git log -1 --format="%s" | grep -q "^telemetry:" && exit 0
+
+node scripts/sync-telemetry.js 2>/dev/null || true
+git add telemetry/ 2>/dev/null || true
+git diff --cached --quiet || git commit -m "telemetry: sync"
