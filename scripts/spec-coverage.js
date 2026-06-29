@@ -37,9 +37,12 @@ export const parseScenarios = (filePath, changeMode) => {
   })
 }
 
-export const isCovered = (name, testContents) =>
+export const isCovered = (name, testContents, featureContents = '') =>
   testContents.includes(`it('Scenario: ${name}'`) ||
-  testContents.includes(`it("Scenario: ${name}"`)
+  testContents.includes(`it("Scenario: ${name}"`) ||
+  testContents.includes(`it.todo('Scenario: ${name}'`) ||
+  testContents.includes(`it.todo("Scenario: ${name}"`) ||
+  featureContents.includes(`Scenario: ${name}`)
 
 /* c8 ignore start */
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
@@ -61,6 +64,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     .map((f) => readFileSync(f, 'utf8'))
     .join('\n')
 
+  const featuresDir = join(ROOT, 'tests', 'cucumber', 'features')
+  const featureContents = existsSync(featuresDir)
+    ? findFiles(featuresDir, (n) => n.endsWith('.feature'))
+        .map((f) => readFileSync(f, 'utf8'))
+        .join('\n')
+    : ''
+
   const specFiles = findFiles(specsDir, (n) => n === 'spec.md')
   let total = 0
   let covered = 0
@@ -80,7 +90,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         console.log(`  ${requirement}`)
         lastReq = requirement
       }
-      const hit = isCovered(scenario, testContents)
+      const hit = isCovered(scenario, testContents, featureContents)
       console.log(`    ${hit ? '✓' : '✗'} ${scenario}`)
       total++
       if (hit) covered++

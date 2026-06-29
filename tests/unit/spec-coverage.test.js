@@ -120,3 +120,30 @@ it('isCovered returns false when no match', () => {
 it('isCovered does not match on partial name', () => {
   expect(isCovered('Foo', "it('Scenario: Foo happens', () => {})")).toBe(false)
 })
+
+it('isCovered returns true for it.todo single-quoted match', () => {
+  expect(isCovered('Foo happens', "it.todo('Scenario: Foo happens')")).toBe(true)
+})
+
+it('isCovered returns true for it.todo double-quoted match', () => {
+  expect(isCovered('Foo happens', 'it.todo("Scenario: Foo happens")')).toBe(true)
+})
+
+it('isCovered returns true when scenario appears in feature file contents', () => {
+  const featureContent = 'Feature: foo\n\n  Scenario: Foo happens\n    Given something\n'
+  expect(isCovered('Foo happens', '', featureContent)).toBe(true)
+})
+
+it('isCovered returns true for @wip tagged scenario in feature file', () => {
+  const featureContent = 'Feature: foo\n\n  @wip\n  Scenario: Foo happens\n    Given something\n'
+  expect(isCovered('Foo happens', '', featureContent)).toBe(true)
+})
+
+it('isCovered returns false when feature file has different scenario name', () => {
+  const featureContent = 'Feature: foo\n\n  Scenario: Bar happens\n    Given something\n'
+  expect(isCovered('Foo happens', '', featureContent)).toBe(false)
+})
+
+it('isCovered returns false when feature contents not provided', () => {
+  expect(isCovered('Foo happens', '')).toBe(false)
+})

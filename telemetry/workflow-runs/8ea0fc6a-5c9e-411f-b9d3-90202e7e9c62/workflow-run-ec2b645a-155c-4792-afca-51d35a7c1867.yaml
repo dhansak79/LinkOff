@@ -1,0 +1,772 @@
+id: ec2b645a-155c-4792-afca-51d35a7c1867
+workflowId: 8ea0fc6a-5c9e-411f-b9d3-90202e7e9c62
+workflowName: quality-gate-fast
+status: failed
+startedAt: '2026-06-28T12:08:06.934Z'
+completedAt: '2026-06-28T12:08:35.329Z'
+jobs:
+  - jobName: check
+    status: succeeded
+    startedAt: '2026-06-28T12:08:06.939Z'
+    completedAt: '2026-06-28T12:08:22.813Z'
+    steps:
+      - stepName: lint
+        status: succeeded
+        startedAt: '2026-06-28T12:08:06.945Z'
+        completedAt: '2026-06-28T12:08:10.877Z'
+        output:
+          type: model_method
+          model: focusin-lint
+          method: check
+          resources:
+            lintResult:
+              current:
+                id: ed0f4366-ffd8-4a7f-bb91-f021748264b3
+                name: current
+                version: 83
+                isLatest: true
+                createdAt: '2026-06-28T12:08:10.784Z'
+                namespace: ''
+                attributes:
+                  passed: true
+                  issueCount: 0
+                  ranAt: '2026-06-28T12:08:06.977Z'
+                tags:
+                  type: resource
+                  specName: lintResult
+                  modelName: focusin-lint
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  job: check
+                  step: lint
+                modelName: focusin-lint
+                modelId: db3d41e1-a342-4d96-9e79-f1f61cbed956
+                modelType: '@focusin/lint'
+                specName: lintResult
+                dataType: resource
+                contentType: application/json
+                lifetime: 30d
+                ownerType: model-method
+                streaming: false
+                size: 65
+                content: ''
+                ownerRef: db3d41e1-a342-4d96-9e79-f1f61cbed956
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                workflowName: quality-gate-fast
+                jobName: check
+                stepName: lint
+                source: step-output
+          files: {}
+          dataArtifacts:
+            - dataId: ed0f4366-ffd8-4a7f-bb91-f021748264b3
+              name: current
+              version: 83
+              tags:
+                type: resource
+                specName: lintResult
+                modelName: focusin-lint
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                job: check
+                step: lint
+            - dataId: 2f841a22-ca8d-4b16-8b3b-1f95f0207a6b
+              name: report-swamp-method-summary
+              version: 83
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+            - dataId: 0c34d63e-5a86-4413-8905-9bd840d1c97f
+              name: report-swamp-method-summary-json
+              version: 83
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+          dataHandles:
+            - name: current
+              specName: lintResult
+              kind: resource
+              dataId: ed0f4366-ffd8-4a7f-bb91-f021748264b3
+              version: 83
+              size: 65
+              tags:
+                type: resource
+                specName: lintResult
+                modelName: focusin-lint
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                job: check
+                step: lint
+              metadata:
+                contentType: application/json
+                lifetime: 30d
+                garbageCollection: 20
+                streaming: false
+                tags:
+                  type: resource
+                  specName: lintResult
+                  modelName: focusin-lint
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  job: check
+                  step: lint
+                ownerDefinition:
+                  ownerType: model-method
+                  ownerRef: db3d41e1-a342-4d96-9e79-f1f61cbed956
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  workflowName: quality-gate-fast
+                  jobName: check
+                  stepName: lint
+                  source: step-output
+        dataArtifacts:
+          - dataId: ed0f4366-ffd8-4a7f-bb91-f021748264b3
+            name: current
+            version: 83
+            tags:
+              type: resource
+              specName: lintResult
+              modelName: focusin-lint
+              source: step-output
+              workflow: quality-gate-fast
+              workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+              job: check
+              step: lint
+          - dataId: 2f841a22-ca8d-4b16-8b3b-1f95f0207a6b
+            name: report-swamp-method-summary
+            version: 83
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+          - dataId: 0c34d63e-5a86-4413-8905-9bd840d1c97f
+            name: report-swamp-method-summary-json
+            version: 83
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+      - stepName: knip
+        status: succeeded
+        startedAt: '2026-06-28T12:08:06.945Z'
+        completedAt: '2026-06-28T12:08:10.724Z'
+        output:
+          type: model_method
+          model: focusin-knip
+          method: check
+          resources:
+            knipResult:
+              current:
+                id: ff97c50e-7155-4a75-966c-ad1dfe183b63
+                name: current
+                version: 83
+                isLatest: true
+                createdAt: '2026-06-28T12:08:10.692Z'
+                namespace: ''
+                attributes:
+                  passed: true
+                  issueCount: 0
+                  ranAt: '2026-06-28T12:08:06.980Z'
+                tags:
+                  type: resource
+                  specName: knipResult
+                  modelName: focusin-knip
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  job: check
+                  step: knip
+                modelName: focusin-knip
+                modelId: 9701a98a-093e-4e78-9edb-3607ab82a8b6
+                modelType: '@focusin/knip'
+                specName: knipResult
+                dataType: resource
+                contentType: application/json
+                lifetime: 30d
+                ownerType: model-method
+                streaming: false
+                size: 65
+                content: ''
+                ownerRef: 9701a98a-093e-4e78-9edb-3607ab82a8b6
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                workflowName: quality-gate-fast
+                jobName: check
+                stepName: knip
+                source: step-output
+          files: {}
+          dataArtifacts:
+            - dataId: ff97c50e-7155-4a75-966c-ad1dfe183b63
+              name: current
+              version: 83
+              tags:
+                type: resource
+                specName: knipResult
+                modelName: focusin-knip
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                job: check
+                step: knip
+            - dataId: 698f1692-7de7-4003-8095-d00c71488657
+              name: report-swamp-method-summary
+              version: 83
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+            - dataId: b342ec13-9148-424d-aaca-a1787a8039f0
+              name: report-swamp-method-summary-json
+              version: 83
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+          dataHandles:
+            - name: current
+              specName: knipResult
+              kind: resource
+              dataId: ff97c50e-7155-4a75-966c-ad1dfe183b63
+              version: 83
+              size: 65
+              tags:
+                type: resource
+                specName: knipResult
+                modelName: focusin-knip
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                job: check
+                step: knip
+              metadata:
+                contentType: application/json
+                lifetime: 30d
+                garbageCollection: 20
+                streaming: false
+                tags:
+                  type: resource
+                  specName: knipResult
+                  modelName: focusin-knip
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  job: check
+                  step: knip
+                ownerDefinition:
+                  ownerType: model-method
+                  ownerRef: 9701a98a-093e-4e78-9edb-3607ab82a8b6
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  workflowName: quality-gate-fast
+                  jobName: check
+                  stepName: knip
+                  source: step-output
+        dataArtifacts:
+          - dataId: ff97c50e-7155-4a75-966c-ad1dfe183b63
+            name: current
+            version: 83
+            tags:
+              type: resource
+              specName: knipResult
+              modelName: focusin-knip
+              source: step-output
+              workflow: quality-gate-fast
+              workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+              job: check
+              step: knip
+          - dataId: 698f1692-7de7-4003-8095-d00c71488657
+            name: report-swamp-method-summary
+            version: 83
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+          - dataId: b342ec13-9148-424d-aaca-a1787a8039f0
+            name: report-swamp-method-summary-json
+            version: 83
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+      - stepName: tests
+        status: succeeded
+        startedAt: '2026-06-28T12:08:06.945Z'
+        completedAt: '2026-06-28T12:08:22.810Z'
+        output:
+          type: model_method
+          model: focusin-tests
+          method: test
+          resources:
+            testResult:
+              current:
+                id: 253d84a6-f328-483f-b207-c5817f4857cc
+                name: current
+                version: 214
+                isLatest: true
+                createdAt: '2026-06-28T12:08:22.773Z'
+                namespace: ''
+                attributes:
+                  passed: true
+                  total: 736
+                  passing: 736
+                  failing: 0
+                  durationMs: 15755
+                  ranAt: '2026-06-28T12:08:06.987Z'
+                tags:
+                  type: resource
+                  specName: testResult
+                  modelName: focusin-tests
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  job: check
+                  step: tests
+                modelName: focusin-tests
+                modelId: a56242b9-b056-4576-9d69-acd8f2f43d94
+                modelType: '@focusin/tests'
+                specName: testResult
+                dataType: resource
+                contentType: application/json
+                lifetime: 30d
+                ownerType: model-method
+                streaming: false
+                size: 107
+                content: ''
+                ownerRef: a56242b9-b056-4576-9d69-acd8f2f43d94
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                workflowName: quality-gate-fast
+                jobName: check
+                stepName: tests
+                source: step-output
+          files: {}
+          dataArtifacts:
+            - dataId: 253d84a6-f328-483f-b207-c5817f4857cc
+              name: current
+              version: 214
+              tags:
+                type: resource
+                specName: testResult
+                modelName: focusin-tests
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                job: check
+                step: tests
+            - dataId: 123d721b-111b-44dc-a505-93b1ce92f382
+              name: report-swamp-method-summary
+              version: 214
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+            - dataId: f07430f6-054f-47db-b56e-3a82991fd919
+              name: report-swamp-method-summary-json
+              version: 214
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+          dataHandles:
+            - name: current
+              specName: testResult
+              kind: resource
+              dataId: 253d84a6-f328-483f-b207-c5817f4857cc
+              version: 214
+              size: 107
+              tags:
+                type: resource
+                specName: testResult
+                modelName: focusin-tests
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                job: check
+                step: tests
+              metadata:
+                contentType: application/json
+                lifetime: 30d
+                garbageCollection: 20
+                streaming: false
+                tags:
+                  type: resource
+                  specName: testResult
+                  modelName: focusin-tests
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  job: check
+                  step: tests
+                ownerDefinition:
+                  ownerType: model-method
+                  ownerRef: a56242b9-b056-4576-9d69-acd8f2f43d94
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  workflowName: quality-gate-fast
+                  jobName: check
+                  stepName: tests
+                  source: step-output
+        dataArtifacts:
+          - dataId: 253d84a6-f328-483f-b207-c5817f4857cc
+            name: current
+            version: 214
+            tags:
+              type: resource
+              specName: testResult
+              modelName: focusin-tests
+              source: step-output
+              workflow: quality-gate-fast
+              workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+              job: check
+              step: tests
+          - dataId: 123d721b-111b-44dc-a505-93b1ce92f382
+            name: report-swamp-method-summary
+            version: 214
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+          - dataId: f07430f6-054f-47db-b56e-3a82991fd919
+            name: report-swamp-method-summary-json
+            version: 214
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+      - stepName: codescene-health
+        status: succeeded
+        startedAt: '2026-06-28T12:08:06.945Z'
+        completedAt: '2026-06-28T12:08:09.892Z'
+        output:
+          type: model_method
+          model: focusin-codescene
+          method: check
+          resources:
+            healthResult:
+              current:
+                id: 7ec92886-dcdc-4137-97c0-1946bfa67f49
+                name: current
+                version: 93
+                isLatest: true
+                createdAt: '2026-06-28T12:08:09.859Z'
+                namespace: ''
+                attributes:
+                  passed: true
+                  failedFiles: 0
+                  ranAt: '2026-06-28T12:08:06.968Z'
+                  files: []
+                tags:
+                  type: resource
+                  specName: healthResult
+                  modelName: focusin-codescene
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  job: check
+                  step: codescene-health
+                modelName: focusin-codescene
+                modelId: 9968babb-f38a-4219-a966-d946d0111f72
+                modelType: '@focusin/codescene'
+                specName: healthResult
+                dataType: resource
+                contentType: application/json
+                lifetime: 30d
+                ownerType: model-method
+                streaming: false
+                size: 77
+                content: ''
+                ownerRef: 9968babb-f38a-4219-a966-d946d0111f72
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                workflowName: quality-gate-fast
+                jobName: check
+                stepName: codescene-health
+                source: step-output
+          files: {}
+          dataArtifacts:
+            - dataId: 7ec92886-dcdc-4137-97c0-1946bfa67f49
+              name: current
+              version: 93
+              tags:
+                type: resource
+                specName: healthResult
+                modelName: focusin-codescene
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                job: check
+                step: codescene-health
+            - dataId: 91efc708-08d2-487d-b604-2666b98c2aec
+              name: report-swamp-method-summary
+              version: 93
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+            - dataId: 02b19e96-05d9-44de-8328-2bb283ff4d63
+              name: report-swamp-method-summary-json
+              version: 93
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+          dataHandles:
+            - name: current
+              specName: healthResult
+              kind: resource
+              dataId: 7ec92886-dcdc-4137-97c0-1946bfa67f49
+              version: 93
+              size: 77
+              tags:
+                type: resource
+                specName: healthResult
+                modelName: focusin-codescene
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                job: check
+                step: codescene-health
+              metadata:
+                contentType: application/json
+                lifetime: 30d
+                garbageCollection: 20
+                streaming: false
+                tags:
+                  type: resource
+                  specName: healthResult
+                  modelName: focusin-codescene
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  job: check
+                  step: codescene-health
+                ownerDefinition:
+                  ownerType: model-method
+                  ownerRef: 9968babb-f38a-4219-a966-d946d0111f72
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  workflowName: quality-gate-fast
+                  jobName: check
+                  stepName: codescene-health
+                  source: step-output
+        dataArtifacts:
+          - dataId: 7ec92886-dcdc-4137-97c0-1946bfa67f49
+            name: current
+            version: 93
+            tags:
+              type: resource
+              specName: healthResult
+              modelName: focusin-codescene
+              source: step-output
+              workflow: quality-gate-fast
+              workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+              job: check
+              step: codescene-health
+          - dataId: 91efc708-08d2-487d-b604-2666b98c2aec
+            name: report-swamp-method-summary
+            version: 93
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+          - dataId: 02b19e96-05d9-44de-8328-2bb283ff4d63
+            name: report-swamp-method-summary-json
+            version: 93
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+  - jobName: coverage
+    status: succeeded
+    startedAt: '2026-06-28T12:08:22.820Z'
+    completedAt: '2026-06-28T12:08:30.868Z'
+    steps:
+      - stepName: coverage
+        status: succeeded
+        startedAt: '2026-06-28T12:08:22.821Z'
+        completedAt: '2026-06-28T12:08:30.865Z'
+        output:
+          type: model_method
+          model: focusin-tests
+          method: coverage
+          resources:
+            coverageResult:
+              current:
+                id: d1853bea-5bde-4d13-b8f8-dced35a8e66b
+                name: current
+                version: 215
+                isLatest: true
+                createdAt: '2026-06-28T12:08:30.834Z'
+                namespace: ''
+                attributes:
+                  passed: true
+                  lines: 100
+                  functions: 98.99
+                  branches: 91.87
+                  statements: 98.7
+                  ranAt: '2026-06-28T12:08:22.845Z'
+                tags:
+                  type: resource
+                  specName: coverageResult
+                  modelName: focusin-tests
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  job: coverage
+                  step: coverage
+                modelName: focusin-tests
+                modelId: a56242b9-b056-4576-9d69-acd8f2f43d94
+                modelType: '@focusin/tests'
+                specName: coverageResult
+                dataType: resource
+                contentType: application/json
+                lifetime: 30d
+                ownerType: model-method
+                streaming: false
+                size: 115
+                content: ''
+                ownerRef: a56242b9-b056-4576-9d69-acd8f2f43d94
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                workflowName: quality-gate-fast
+                jobName: coverage
+                stepName: coverage
+                source: step-output
+          files: {}
+          dataArtifacts:
+            - dataId: d1853bea-5bde-4d13-b8f8-dced35a8e66b
+              name: current
+              version: 215
+              tags:
+                type: resource
+                specName: coverageResult
+                modelName: focusin-tests
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                job: coverage
+                step: coverage
+            - dataId: 6de05413-76bc-4484-aeae-48c68761211f
+              name: report-swamp-method-summary
+              version: 215
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+            - dataId: 9b480473-2cc3-4856-abda-85eef3604de8
+              name: report-swamp-method-summary-json
+              version: 215
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+          dataHandles:
+            - name: current
+              specName: coverageResult
+              kind: resource
+              dataId: d1853bea-5bde-4d13-b8f8-dced35a8e66b
+              version: 215
+              size: 115
+              tags:
+                type: resource
+                specName: coverageResult
+                modelName: focusin-tests
+                source: step-output
+                workflow: quality-gate-fast
+                workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                job: coverage
+                step: coverage
+              metadata:
+                contentType: application/json
+                lifetime: 30d
+                garbageCollection: 20
+                streaming: false
+                tags:
+                  type: resource
+                  specName: coverageResult
+                  modelName: focusin-tests
+                  source: step-output
+                  workflow: quality-gate-fast
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  job: coverage
+                  step: coverage
+                ownerDefinition:
+                  ownerType: model-method
+                  ownerRef: a56242b9-b056-4576-9d69-acd8f2f43d94
+                  workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+                  workflowName: quality-gate-fast
+                  jobName: coverage
+                  stepName: coverage
+                  source: step-output
+        dataArtifacts:
+          - dataId: d1853bea-5bde-4d13-b8f8-dced35a8e66b
+            name: current
+            version: 215
+            tags:
+              type: resource
+              specName: coverageResult
+              modelName: focusin-tests
+              source: step-output
+              workflow: quality-gate-fast
+              workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+              job: coverage
+              step: coverage
+          - dataId: 6de05413-76bc-4484-aeae-48c68761211f
+            name: report-swamp-method-summary
+            version: 215
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+          - dataId: 9b480473-2cc3-4856-abda-85eef3604de8
+            name: report-swamp-method-summary-json
+            version: 215
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+  - jobName: deno-ext
+    status: failed
+    startedAt: '2026-06-28T12:08:30.875Z'
+    completedAt: '2026-06-28T12:08:35.306Z'
+    steps:
+      - stepName: deno-ext-tests
+        status: failed
+        startedAt: '2026-06-28T12:08:30.875Z'
+        completedAt: '2026-06-28T12:08:35.295Z'
+        error: "Deno extension tests failed (5 failing):\n\e[0m\e[38;5;245mrunning 14 tests from ./extensions/models/focusin_codescene_test.ts\e[0m\nparseDeltaOutput: empty string returns empty array ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(11ms)\e[0m\nparseDeltaOutput: no JSON array in output returns empty array ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseDeltaOutput: maps kebab-case fields to camelCase ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseDeltaOutput: null old-score for new files is preserved ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseDeltaOutput: invalid JSON after [ returns empty array ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseDeltaOutput: findings not an array falls back to empty array ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseDeltaOutput: tolerates version-check lines before JSON ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nbuildCommandEnv: extends PATH with home .local/bin prefix ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nbuildCommandEnv: handles missing HOME and PATH gracefully ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nbuildHealthResult: empty files gives passed:true and failedFiles:0 ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nbuildHealthResult: one degraded file gives passed:false and failedFiles:1 ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.check.execute: no degradations — writes passed result and returns ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(5ms)\e[0m\nmodel.check.execute: degraded file — writes result then throws ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(1ms)\e[0m\nmodel.check.execute: cs binary not found — throws with install message ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\n\e[0m\e[38;5;245mrunning 9 tests from ./extensions/models/focusin_deno_ext_tests_test.ts\e[0m\nbuildDenoEnv: uses empty string fallback when HOME and PATH are absent ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(10ms)\e[0m\nparseDenoTestOutput: parses all-pass millisecond summary ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(1ms)\e[0m\nparseDenoTestOutput: parses failure summary ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseDenoTestOutput: parses seconds duration ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseDenoTestOutput: returns zeros for unrecognised output ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.run.execute: writes testResult with passed=true when all tests pass ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(5ms)\e[0m\nmodel.run.execute: writes resource then throws when tests fail ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.run.execute: handles lcov command failure gracefully ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.run.execute: throws with assertRejects on failure ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\n\e[0m\e[38;5;245mrunning 9 tests from ./extensions/models/focusin_knip_test.ts\e[0m\nparseKnipOutput: returns 0 for empty output ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(10ms)\e[0m\nparseKnipOutput: returns 0 when no parenthetical counts ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseKnipOutput: sums all parenthetical counts ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseKnipOutput: handles single section ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nbuildKnipResult: passed=true when issueCount=0 ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nbuildKnipResult: passed=false when issueCount>0 ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.check.execute: writes knipResult with passed=true on zero issues ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(4ms)\e[0m\nmodel.check.execute: writes resource then throws on non-zero issues ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.check.execute: throws with message when npm not found ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\n\e[0m\e[38;5;245mrunning 9 tests from ./extensions/models/focusin_lint_test.ts\e[0m\nparseLintOutput: returns 0 when no problems reported ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(13ms)\e[0m\nparseLintOutput: extracts singular problem count ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseLintOutput: extracts plural problem count ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nbuildLintResult: passed=true when issueCount=0 ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nbuildLintResult: passed=false when issueCount>0 ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.check.execute: writes lintResult with passed=true on zero issues ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(4ms)\e[0m\nmodel.check.execute: writes resource then throws on non-zero issues ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.check.execute: non-zero exit with zero-count output still fails ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.check.execute: throws with message when npm not found ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(1ms)\e[0m\n\e[0m\e[38;5;245mrunning 8 tests from ./extensions/models/focusin_mutation_test.ts\e[0m\nscoreMutants: killed and timeout both count as killed ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(17ms)\e[0m\nscoreMutants: all killed gives score 100 ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nscoreMutants: empty mutants gives score 100 ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\naggregateScores: sums across files correctly ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\naggregateScores: empty files gives zero overallScore ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\naggregateScores: sums noCoverage correctly ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.run.execute: reads mutation report and writes correct resource ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(19ms)\e[0m\nmodel.run.execute: handles missing mutation report gracefully ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\n\e[0m\e[38;5;245mrunning 23 tests from ./extensions/models/focusin_patch_coverage_test.ts\e[0m\nparseLcov: parses basic lcov data ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(21ms)\e[0m\nparseLcov: handles multiple files ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseLcov: returns empty for empty input ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseLcov: downgrades covered line when a branch has taken=0 (partial) ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseLcov: downgrades covered line when a branch has taken=- (never executed) ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseLcov: leaves covered line when all branches are taken ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseStagedDiff: extracts added line numbers ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseStagedDiff: returns empty for no staged changes ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseStagedDiff: ignores added lines when hunk header has no +N ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nfindUncoveredLines: returns empty when all staged lines are covered ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nfindUncoveredLines: reports uncovered lines in src js files ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nfindUncoveredLines: reports uncovered lines in deno extension files ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nfindUncoveredLines: skips test files (not present in lcov) ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nfindUncoveredLines: skips staged line not present in file coverage data ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nfindUncoveredLines: skips files not in lcov (e.g. markdown, yaml, content files) ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nfindUncoveredLines: reports uncovered lines in scripts/ files ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nfindUncoveredLines: reports uncovered lines in extensions/reports/ files ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nfindUncoveredLines: reports uncovered lines in src/popup/ files when in lcov ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.check.execute: vacuous pass when no staged changes ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(6ms)\e[0m\nmodel.check.execute: passes when all staged lines are covered ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(3ms)\e[0m\nmodel.check.execute: writes resource then throws when staged lines uncovered ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(3ms)\e[0m\nmodel.check.execute: passes gracefully when lcov.info missing ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(1ms)\e[0m\nmodel.check.execute: throws with assertRejects on uncovered lines ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(2ms)\e[0m\n\e[0m\e[38;5;245mrunning 7 tests from ./extensions/models/focusin_spec_coverage_test.ts\e[0m\nparseSpecCoverageOutput: parses valid summary line ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(10ms)\e[0m\nparseSpecCoverageOutput: full coverage ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseSpecCoverageOutput: zero coverage ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseSpecCoverageOutput: no match returns zeros ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseSpecCoverageOutput: handles extra whitespace ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.run.execute: writes correct resource on success ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(3ms)\e[0m\nmodel.run.execute: handles command failure and empty stdout ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\n\e[0m\e[38;5;245mrunning 12 tests from ./extensions/models/focusin_tests_test.ts\e[0m\nparseVitestOutput: parses valid JSON reporter output ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(12ms)\e[0m\nparseVitestOutput: returns zeros for invalid JSON ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseVitestOutput: returns zeros for missing fields ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseVitestOutput: all tests passed ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nreadCoverageMetrics: reads from coverage-summary.json ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(9ms)\e[0m\nreadCoverageMetrics: returns zeros when file missing ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nreadCoverageMetrics: returns zeros for malformed JSON ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(5ms)\e[0m\nreadCoverageMetrics: returns zeros when total field is absent ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(5ms)\e[0m\nmodel.test.execute: parses vitest output file and writes resource when both commands succeed ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(5ms)\e[0m\nmodel.test.execute: failing=0 when both commands succeed but output file absent ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.test.execute: passed=false and failing>0 when commands fail and no output file ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nmodel.coverage.execute: reads coverage-summary.json and writes resource ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(5ms)\e[0m\n\e[0m\e[38;5;245mrunning 23 tests from ./extensions/models/spec_change_test.ts\e[0m\nbuildFeatureFile: generates valid Gherkin with @wip tags ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(39ms)\e[0m\nbuildFeatureFile: multi-step uses And keyword ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nbuildFeatureFile: scenario with no Given is handled gracefully ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseCucumberReport: marks all-passed scenario as pass ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseCucumberReport: marks failed step as fail ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseCucumberReport: empty array returns empty map ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nparseCucumberReport: non-array returns empty map ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\ncreate: initialises change in draft phase ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(13ms)\e[0m\nset-proposal: draft -> proposal-pending-approval ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(3ms)\e[0m\nset-proposal: rejects if not in draft ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(3ms)\e[0m\napprove-proposal: proposal-pending-approval -> proposal-approved with timestamp ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(3ms)\e[0m\napprove-proposal: rejects empty proposal text ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(3ms)\e[0m\nset-scenarios: stores with pending status ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(1ms)\e[0m\napprove-scenarios: Gate 2 records timestamp ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(5ms)\e[0m\napprove-scenarios: rejects with no scenarios ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(4ms)\e[0m\narchive: succeeds when all scenarios pass ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(4ms)\e[0m\narchive: blocked by failing scenario ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(1ms)\e[0m\narchive: blocked by pending scenario ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(1ms)\e[0m\narchive: blocked by wrong phase (not verifying) ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(1ms)\e[0m\ncomplete-task: marks task done ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(4ms)\e[0m\ncomplete-task: rejects unknown task id ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(1ms)\e[0m\nSpecChangeSchema: validates correct data ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(1ms)\e[0m\ngenerate-features: writes feature file per capability ... \e[0m\e[31mFAILED\e[0m \e[0m\e[38;5;245m(3ms)\e[0m\n\e[0m\e[38;5;245mrunning 8 tests from ./extensions/reports/quality_gate_summary_test.ts\e[0m\nreport: produces succeeded markdown with attempt 1 on first run ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(19ms)\e[0m\nreport: marks blocking step when a step failed ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nreport: skipped step appears as null metrics ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nreport: markdown includes attempt number and check mark ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(2ms)\e[0m\nreport: markdown includes blocked step on failure ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nreport.name is @focusin/quality-gate-summary ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(0ms)\e[0m\nreport: returns null metric when getContent returns null for a ready step ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(2ms)\e[0m\nreport: counts attempt 2 when prior failed run YAML exists on disk ... \e[0m\e[32mok\e[0m \e[0m\e[38;5;245m(12ms)\e[0m\n\n\e[0m\e[1m\e[37m\e[41m ERRORS \e[0m\n\ncreate: initialises change in draft phase \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:147:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\nset-proposal: draft -> proposal-pending-approval \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:157:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\nset-proposal: rejects if not in draft \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:166:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\napprove-proposal: proposal-pending-approval -> proposal-approved with timestamp \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:177:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\napprove-proposal: rejects empty proposal text \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:185:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\nset-scenarios: stores with pending status \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:199:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\napprove-scenarios: Gate 2 records timestamp \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:211:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\napprove-scenarios: rejects with no scenarios \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:223:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\narchive: succeeds when all scenarios pass \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:237:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\narchive: blocked by failing scenario \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:246:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\narchive: blocked by pending scenario \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:252:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\narchive: blocked by wrong phase (not verifying) \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:261:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\ncomplete-task: marks task done \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:271:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\ncomplete-task: rejects unknown task id \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:279:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\ngenerate-features: writes feature file per capability \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:301:6\e[0m\n\e[0m\e[1m\e[31merror\e[0m: RangeError: Maximum call stack size exceeded\nasync function makeContext(): Promise<{ projectDir: string; ctx: never }> {\n\e[0m\e[31m               ^\e[0m\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m38\e[0m:\e[0m\e[33m16\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n    at \e[0m\e[1m\e[3mmakeContext\e[0m (\e[0m\e[2m\e[38;5;245mfile:///Users/daniel/Repos/FocusIn/\e[0m\e[0m\e[36mextensions/models/spec_change_test.ts\e[0m:\e[0m\e[33m39\e[0m:\e[0m\e[33m37\e[0m)\n\n\e[0m\e[1m\e[37m\e[41m FAILURES \e[0m\n\ncreate: initialises change in draft phase \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:147:6\e[0m\nset-proposal: draft -> proposal-pending-approval \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:157:6\e[0m\nset-proposal: rejects if not in draft \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:166:6\e[0m\napprove-proposal: proposal-pending-approval -> proposal-approved with timestamp \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:177:6\e[0m\napprove-proposal: rejects empty proposal text \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:185:6\e[0m\nset-scenarios: stores with pending status \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:199:6\e[0m\napprove-scenarios: Gate 2 records timestamp \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:211:6\e[0m\napprove-scenarios: rejects with no scenarios \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:223:6\e[0m\narchive: succeeds when all scenarios pass \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:237:6\e[0m\narchive: blocked by failing scenario \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:246:6\e[0m\narchive: blocked by pending scenario \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:252:6\e[0m\narchive: blocked by wrong phase (not verifying) \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:261:6\e[0m\ncomplete-task: marks task done \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:271:6\e[0m\ncomplete-task: rejects unknown task id \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:279:6\e[0m\ngenerate-features: writes feature file per capability \e[0m\e[38;5;245m=> ./extensions/models/spec_change_test.ts:301:6\e[0m\n\n\e[0m\e[31mFAILED\e[0m | 107 passed | 15 failed \e[0m\e[38;5;245m(2s)\e[0m\n\n\e[0m\e[32mCheck\e[0m extensions/models/focusin_codescene_test.ts\n\e[0m\e[32mCheck\e[0m extensions/models/focusin_deno_ext_tests_test.ts\n\e[0m\e[32mCheck\e[0m extensions/models/focusin_knip_test.ts\n\e[0m\e[32mCheck\e[0m extensions/models/focusin_lint_test.ts\n\e[0m\e[32mCheck\e[0m extensions/models/focusin_mutation_test.ts\n\e[0m\e[32mCheck\e[0m extensions/models/focusin_patch_coverage_test.ts\n\e[0m\e[32mCheck\e[0m extensions/models/focusin_spec_coverage_test.ts\n\e[0m\e[32mCheck\e[0m extensions/models/focusin_tests_test.ts\n\e[0m\e[32mCheck\e[0m extensions/models/spec_change_test.ts\n\e[0m\e[32mCheck\e[0m extensions/reports/quality_gate_summary_test.ts\n\e[0m\e[1m\e[31merror\e[0m: Test failed\n"
+        dataArtifacts:
+          - dataId: 7199b597-4f22-43f5-9ce7-7dd315409bdf
+            name: current
+            version: 76
+            tags:
+              type: resource
+              specName: testResult
+              modelName: focusin-deno-ext-tests
+              source: step-output
+              workflow: quality-gate-fast
+              workflowRunId: ec2b645a-155c-4792-afca-51d35a7c1867
+              job: deno-ext
+              step: deno-ext-tests
+  - jobName: patch-coverage
+    status: skipped
+    completedAt: '2026-06-28T12:08:35.318Z'
+    steps:
+      - stepName: patch-coverage
+        status: skipped
+        completedAt: '2026-06-28T12:08:35.318Z'
+tags: {}
+logFile: >-
+  .swamp/workflow-runs/8ea0fc6a-5c9e-411f-b9d3-90202e7e9c62/workflow-run-ec2b645a-155c-4792-afca-51d35a7c1867.log
+workflowDataArtifacts:
+  - dataId: dad9a96b-a035-474d-a220-c817005bde60
+    name: report-swamp-workflow-summary
+    version: 43
+    tags:
+      type: report
+      reportName: '@swamp/workflow-summary'
+      reportScope: workflow
+  - dataId: 17376357-76f5-4574-a070-6230c9cafc7e
+    name: report-swamp-workflow-summary-json
+    version: 43
+    tags:
+      type: report
+      reportName: '@swamp/workflow-summary'
+      reportScope: workflow

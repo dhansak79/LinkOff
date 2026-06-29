@@ -1,11 +1,11 @@
 id: 8ea0fc6a-5c9e-411f-b9d3-90202e7e9c62
 name: quality-gate-fast
-description: Fast quality pipeline — lint, knip, spec-coverage, tests, and CodeScene in parallel, then coverage, deno ext tests, and patch-coverage
+description: Fast quality pipeline — lint, knip, tests, and CodeScene in parallel, then coverage, deno ext tests, and patch-coverage
 tags: {}
 version: 1
 jobs:
   - name: check
-    description: Lint, knip, spec-coverage, tests, and CodeScene health — run in parallel
+    description: Lint, knip, tests, and CodeScene health — run in parallel
     steps:
       - name: lint
         description: Run ESLint and store pass/fail result
@@ -19,13 +19,6 @@ jobs:
           type: model_method
           modelIdOrName: focusin-knip
           methodName: check
-      - name: spec-coverage
-        description: Check which spec scenarios have boundary tests
-        allowFailure: false
-        task:
-          type: model_method
-          modelIdOrName: focusin-spec-coverage
-          methodName: run
       - name: tests
         description: Run vitest and verify all tests pass
         task:

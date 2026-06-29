@@ -70,7 +70,7 @@ Deno.test("readCoverageMetrics: returns zeros when total field is absent", async
   await Deno.remove(dir, { recursive: true });
 });
 
-Deno.test("model.test.execute: parses output file and writes resource on success", async () => {
+Deno.test("model.test.execute: parses vitest output file and writes resource when both commands succeed", async () => {
   const dir = await Deno.makeTempDir();
   const vitestJson = JSON.stringify({ numTotalTests: 10, numPassedTests: 10, numFailedTests: 0 });
 
@@ -126,16 +126,16 @@ async function runTestExecuteNoFile(exitCode: number): Promise<Record<string, un
   return written[0];
 }
 
-Deno.test("model.test.execute: failing=0 when command succeeds but output file absent", async () => {
+Deno.test("model.test.execute: failing=0 when both commands succeed but output file absent", async () => {
   const result = await runTestExecuteNoFile(0);
   assertEquals(result.passed, true);
   assertEquals(result.failing, 0);
 });
 
-Deno.test("model.test.execute: sets failing=1 when command fails and no output file", async () => {
+Deno.test("model.test.execute: passed=false and failing>0 when commands fail and no output file", async () => {
   const result = await runTestExecuteNoFile(1);
   assertEquals(result.passed, false);
-  assertEquals(result.failing, 1);
+  assertEquals((result.failing as number) > 0, true);
 });
 
 Deno.test("model.coverage.execute: reads coverage-summary.json and writes resource", async () => {

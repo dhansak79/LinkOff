@@ -26,7 +26,7 @@ jobs:
       - name: Install CodeScene coverage CLI
         run: curl https://downloads.codescene.io/enterprise/cli/install-cs-coverage-tool.sh | bash -s -- -y
       - name: Upload coverage to CodeScene
-        if: github.ref == 'refs/heads/main'
+        continue-on-error: true
         run: cs-coverage upload --format "lcov" --metric "line-coverage" "coverage/lcov.info"
         env:
           CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
