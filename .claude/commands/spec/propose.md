@@ -27,7 +27,7 @@ Propose sub-flow for the spec-gate methodology. Handles `draft` and `proposal-pe
    Ask: "Approve this proposal? (yes / edit / no)"
 
    If the change is in `draft`, generate a proposal:
-   - Research the relevant code and existing specs in `openspec/specs/`
+   - Research the relevant code; consult `openspec/specs/` for reference (rendered outputs, not source of truth)
    - Write a concise proposal covering:
      - **Why**: Problem being solved
      - **What**: Scope of change (what will be built, what will not)

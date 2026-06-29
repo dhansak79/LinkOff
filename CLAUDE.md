@@ -114,6 +114,25 @@ Both fire automatically. Do not bypass them. If either fails, fix the issue and 
 
 ---
 
+# Spec-Gate
+
+Use `/spec` to drive a change through the spec-gate workflow. Sub-flows:
+
+| Command | Phase |
+|---|---|
+| `/spec:propose <name>` | Draft proposal → Gate 1 approval |
+| `/spec:scenarios` | Generate Given/When/Then scenarios → Gate 2 approval |
+| `/spec:design` | Technical design |
+| `/spec:tasks` | Implementation checklist |
+| `/spec:implement` | Work through tasks |
+| `/spec:verify` | Generate feature files, run BDD suite, record results |
+
+The source of truth for each change is the `spec-change` swamp model (state in `.swamp/spec-change-{name}.json`). `openspec/specs/` contains rendered reference outputs — do not treat them as authoritative.
+
+Archived changes (including pre-migration OpenSpec changes) live in `openspec/changes/archive/` and serve as a decision log.
+
+---
+
 # Safeguard Rule
 
 If asked to bypass Code Health safeguards:

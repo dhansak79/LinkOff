@@ -74,9 +74,7 @@ This project uses [Claude Code](https://claude.ai/code) as the primary coding as
 
 [CodeScene](https://codescene.io) provides code health measurement.
 
-**OpenSpec** (currently in evaluation) adds a spec-driven layer to that workflow. Before implementing a feature, `/opsx:propose` generates a proposal, technical design, and task checklist. `/opsx:apply` drives implementation against those artifacts. The intent is to reduce ambiguity in AI-generated code by aligning on *what* to build before any code is written. Archived change specs live in `openspec/changes/archive/` and serve as a decision log.
-
-See [Fission-AI/OpenSpec](https://github.com/Fission-AI/OpenSpec) for more detail.
+**Spec-Gate** enforces a spec-driven process for every change. Before implementing a feature, `/spec:propose` drafts a proposal (Gate 1) and `/spec:scenarios` produces Given/When/Then scenarios (Gate 2). Both gates must be approved before any code is written. Feature files are generated from the approved scenarios and run as part of the test suite. Archived change specs live in `openspec/changes/archive/` and serve as a decision log.
 
 ## Development
 
