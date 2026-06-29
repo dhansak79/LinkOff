@@ -487,7 +487,7 @@ const blockPosts = (keywords, mode, detectSlop, semanticQuery, detectSlopArchety
     initSlopReaction(feedContainer, extractAuthorVanityName, extractAuthorName)
   }
 
-  if (keywords.length || detectSlop || semanticTopics.length || detectSlopArchetype || toneFilterEnabled || hidePromoted) connectObserver()
+  connectObserver()
 }
 
 const disconnectObserver = () => {
@@ -533,4 +533,9 @@ export default (config) => {
   }
 
   handleFilterFeed('hide', config)
+}
+
+export function resetFeedState() {
+  feedObserver = null
+  scrollTimerId = null
 }
