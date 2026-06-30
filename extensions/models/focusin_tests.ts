@@ -152,6 +152,7 @@ export const model = {
             "run", "coverage", "--",
             "--coverage.reporter=json-summary",
             "--coverage.reporter=text",
+            "--coverage.reporter=lcov",
           ],
           cwd: projectDir,
           stdout: "piped",
