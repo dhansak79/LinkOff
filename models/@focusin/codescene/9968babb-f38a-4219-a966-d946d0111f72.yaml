@@ -6,6 +6,4 @@ version: 1
 tags: {}
 globalArguments:
   projectDir: /Users/daniel/Repos/FocusIn
-  excludePaths:
-    - telemetry/
 methods: {}
