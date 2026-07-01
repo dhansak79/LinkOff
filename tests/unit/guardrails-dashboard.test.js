@@ -5,6 +5,8 @@ import {
   buildData,
   renderSessionExplorer,
   generate,
+  computeTrends,
+  renderTrendCard,
 } from "../../scripts/generate-guardrails-dashboard.js";
 
 const MS = 1000;
@@ -362,6 +364,165 @@ describe("parseRun", () => {
     expect(run.metrics.mutation).toBeNull();
     expect(run.metrics.codescene).toBeNull();
     expect(run.metrics.patchCoverage).toBeNull();
+  });
+});
+
+function trendsFrom(...overridesList) {
+  const runs = overridesList.map((overrides, i) => {
+    const run = makeFullRun(i * HOUR, overrides);
+    for (const key of Object.keys(overrides)) {
+      if (overrides[key] === null) run.metrics[key] = null;
+    }
+    return run;
+  });
+  return computeTrends(runs);
+}
+
+function expectFlaggedTrend(trends, metricName, expected) {
+  expect(trends.metrics[metricName]).toEqual({ available: true, ...expected });
+}
+
+function renderTrendsFrom(...overridesList) {
+  return renderTrendCard(trendsFrom(...overridesList));
+}
+
+describe("computeTrends", () => {
+  it("marks every metric unavailable with fewer than 2 quality-gate runs", () => {
+    const trends = computeTrends([makeFullRun(0)]);
+    expect(trends.windowRuns).toBe(1);
+    for (const metric of Object.values(trends.metrics)) {
+      expect(metric).toEqual({ available: false });
+    }
+  });
+
+  it("marks every metric unavailable with no runs", () => {
+    const trends = computeTrends([]);
+    expect(trends.windowRuns).toBe(0);
+    for (const metric of Object.values(trends.metrics)) {
+      expect(metric).toEqual({ available: false });
+    }
+  });
+
+  it("flags a metric that declined by more than the threshold", () => {
+    const trends = trendsFrom(
+      { mutation: { passed: true, score: 91.0, files: [] } },
+      { mutation: { passed: true, score: 84.0, files: [] } }
+    );
+    expectFlaggedTrend(trends, "mutationScore", { current: 84.0, baseline: 91.0, delta: -7, flagged: true });
+  });
+
+  it("does not flag a metric that stayed within the threshold", () => {
+    const trends = trendsFrom(
+      { mutation: { passed: true, score: 91.0, files: [] } },
+      { mutation: { passed: true, score: 90.0, files: [] } }
+    );
+    expect(trends.metrics.mutationScore.flagged).toBe(false);
+  });
+
+  it("does not flag an improving metric", () => {
+    const trends = trendsFrom(
+      { mutation: { passed: true, score: 84.0, files: [] } },
+      { mutation: { passed: true, score: 91.0, files: [] } }
+    );
+    expectFlaggedTrend(trends, "mutationScore", { current: 91.0, baseline: 84.0, delta: 7, flagged: false });
+  });
+
+  it("flags codeHealthFailedFiles when the count increases past the threshold", () => {
+    const trends = trendsFrom(
+      { codescene: { passed: true, failedFiles: 0, files: [] } },
+      { codescene: { passed: false, failedFiles: 2, files: [] } }
+    );
+    expectFlaggedTrend(trends, "codeHealthFailedFiles", { current: 2, baseline: 0, delta: 2, flagged: true });
+  });
+
+  it("skips a run with a null metric value when finding the baseline", () => {
+    const trends = trendsFrom(
+      { mutation: null },
+      { mutation: { passed: true, score: 91.0, files: [] } },
+      { mutation: { passed: true, score: 88.0, files: [] } }
+    );
+    expectFlaggedTrend(trends, "mutationScore", {
+      current: 88.0,
+      baseline: 91.0,
+      delta: -3,
+      flagged: true,
+    });
+  });
+
+  it("reports unavailable when every run in the window has a null value for a metric", () => {
+    const trends = trendsFrom({ mutation: null }, { mutation: null });
+    expect(trends.metrics.mutationScore).toEqual({ available: false });
+  });
+
+  it("ignores quality-gate-fast runs when building the trend window", () => {
+    const fastRun = makeFullRun(HOUR, { workflowName: "quality-gate-fast" });
+    fastRun.metrics.mutation = null;
+    const runs = [
+      makeFullRun(0, { mutation: { passed: true, score: 91.0, files: [] } }),
+      fastRun,
+      makeFullRun(2 * HOUR, { mutation: { passed: true, score: 84.0, files: [] } }),
+    ];
+    const trends = computeTrends(runs);
+    expect(trends.windowRuns).toBe(2);
+    expect(trends.metrics.mutationScore.baseline).toBe(91.0);
+    expect(trends.metrics.mutationScore.current).toBe(84.0);
+  });
+
+  it("only considers the trailing 10 quality-gate runs", () => {
+    const runs = [
+      makeFullRun(0, { mutation: { passed: true, score: 50.0, files: [] } }),
+      ...Array.from({ length: 10 }, (_, i) =>
+        makeFullRun((i + 1) * HOUR, { mutation: { passed: true, score: 91.0, files: [] } })
+      ),
+    ];
+    const trends = computeTrends(runs);
+    expect(trends.windowRuns).toBe(10);
+    expect(trends.metrics.mutationScore.baseline).toBe(91.0);
+  });
+
+  it("treats a metric object missing its target field as unavailable, not as zero", () => {
+    const trends = trendsFrom({ mutation: {} }, { mutation: {} });
+    expect(trends.metrics.mutationScore).toEqual({ available: false });
+  });
+});
+
+describe("renderTrendCard", () => {
+  it("shows an insufficient-history message for the whole card when windowRuns < 2", () => {
+    const html = renderTrendCard(computeTrends([makeFullRun(0)]));
+    expect(html).toContain("Insufficient history");
+    expect(html).not.toContain("<table");
+  });
+
+  it("shows an insufficient-history row for a single metric with no data in an otherwise-populated window", () => {
+    const html = renderTrendsFrom({ mutation: null }, { mutation: null });
+    expect(html).toContain("insufficient history");
+  });
+
+  it("marks a flagged metric with the trend-bad class and a warning marker", () => {
+    const html = renderTrendsFrom(
+      { mutation: { passed: true, score: 91.0, files: [] } },
+      { mutation: { passed: true, score: 84.0, files: [] } }
+    );
+    expect(html).toContain("trend-bad");
+    expect(html).toContain("⚠");
+    expect(html).toContain("-7.0");
+  });
+
+  it("does not mark a stable metric as flagged", () => {
+    const html = renderTrendsFrom(
+      { mutation: { passed: true, score: 90.0, files: [] } },
+      { mutation: { passed: true, score: 91.0, files: [] } }
+    );
+    expect(html).not.toContain("trend-bad");
+    expect(html).toContain("+1.0");
+  });
+
+  it("formats codeHealthFailedFiles as a plain integer, not a percentage", () => {
+    const html = renderTrendsFrom(
+      { codescene: { passed: true, failedFiles: 0, files: [] } },
+      { codescene: { passed: false, failedFiles: 2, files: [] } }
+    );
+    expect(html).toContain(">2<");
   });
 });
 
