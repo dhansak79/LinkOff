@@ -15,6 +15,15 @@ const QUALITY_GATE_WORKFLOW = "quality-gate";
 const QUALITY_GATE_FAST_WORKFLOW = "quality-gate-fast";
 const SESSION_WINDOW_MS = 4 * 60 * 60 * 1000;
 const COVERAGE_THRESHOLD = 90;
+const TREND_WINDOW = 10;
+const TREND_THRESHOLD = 2;
+
+const TREND_METRICS = {
+  mutationScore: { path: ["mutation", "score"], badDirection: "down" },
+  lineCoverage: { path: ["coverage", "lines"], badDirection: "down" },
+  specCoverage: { path: ["specCoverage", "pct"], badDirection: "down" },
+  codeHealthFailedFiles: { path: ["codescene", "failedFiles"], badDirection: "up" },
+};
 
 const PAGE_CSS = `
   body{font-family:system-ui,sans-serif;max-width:1100px;margin:0 auto;padding:2rem;background:#0d1117;color:#e6edf3}
@@ -43,7 +52,7 @@ const PAGE_CSS = `
   .check-table th:first-child{text-align:left}
   .check-table td{padding:.28rem .6rem;border-bottom:1px solid #21262d;text-align:right;white-space:nowrap}
   .check-table td:first-child{text-align:left;color:#8b949e}
-  .check-table .ok{color:#3fb950}.check-table .bad{color:#f85149}
+  .check-table .ok{color:#3fb950}.check-table .bad{color:#f85149}.check-table .trend-bad{color:#f85149;font-weight:600}
   .check-table tr.sub td:first-child{padding-left:1.5rem;font-size:.78rem;color:#6e7681}
   @media(max-width:700px){.summary{grid-template-columns:1fr 1fr}}
 `;
@@ -197,6 +206,47 @@ function loadRuns() {
     .sort((a, b) => new Date(a.startedAt) - new Date(b.startedAt));
 }
 
+// ── Trend computation ──────────────────────────────────────────────────────────
+
+function readMetricPath(run, path) {
+  let value = run.metrics;
+  for (const key of path) {
+    if (value == null) return null;
+    value = value[key];
+  }
+  return value ?? null;
+}
+
+function findBaseline(window, path) {
+  for (const run of window) {
+    const value = readMetricPath(run, path);
+    if (value !== null) return value;
+  }
+  return null;
+}
+
+function computeMetricTrend(window, { path, badDirection }) {
+  const current = readMetricPath(window[window.length - 1], path);
+  const baseline = findBaseline(window, path);
+  if (current === null || baseline === null) return { available: false };
+
+  const delta = current - baseline;
+  const flagged = badDirection === "down" ? delta <= -TREND_THRESHOLD : delta >= TREND_THRESHOLD;
+  return { available: true, current, baseline, delta, flagged };
+}
+
+export function computeTrends(runs) {
+  const gateRuns = runs.filter((r) => r.workflowName === QUALITY_GATE_WORKFLOW);
+  const window = gateRuns.slice(-TREND_WINDOW);
+
+  const metrics = {};
+  for (const [name, config] of Object.entries(TREND_METRICS)) {
+    metrics[name] = window.length < 2 ? { available: false } : computeMetricTrend(window, config);
+  }
+
+  return { windowRuns: window.length, metrics };
+}
+
 // ── Dashboard data assembly ────────────────────────────────────────────────────
 
 export function buildData(runs, sessions) {
@@ -204,6 +254,7 @@ export function buildData(runs, sessions) {
   return {
     sessionLabels: sessions.map((_, i) => `S${i + 1}`),
     sessionAttempts: sessions.map((s) => s.attemptCount),
+    trends: computeTrends(runs),
     summary: {
       totalRuns: runs.length,
       totalSessions: sessions.length,
@@ -222,6 +273,45 @@ function renderSummary(s) {
   <div class="stat"><div class="value">${s.totalSessions}</div><div class="label">Sessions</div></div>
   <div class="stat"><div class="value">${s.avgAttempts}</div><div class="label">Avg attempts / session</div></div>
   <div class="stat"><div class="value">${s.lastBlockedStep ?? "—"}</div><div class="label">Last blocking step</div><div class="sub">${s.lastBlockedDate ?? ""}</div></div>
+</div>`;
+}
+
+const TREND_LABELS = {
+  mutationScore: "Mutation score",
+  lineCoverage: "Line coverage",
+  specCoverage: "Spec coverage",
+  codeHealthFailedFiles: "Code health (degraded files)",
+};
+
+function isPercentTrendMetric(name) {
+  return name !== "codeHealthFailedFiles";
+}
+
+function fmtTrendValue(name, value) {
+  return isPercentTrendMetric(name) ? fmtPct(value) : `${value}`;
+}
+
+function renderTrendRow(name, trend) {
+  const label = TREND_LABELS[name];
+  if (!trend.available) {
+    return `<tr><td>${label}</td><td colspan="2" class="empty">insufficient history</td></tr>`;
+  }
+  const sign = trend.delta > 0 ? "+" : "";
+  const deltaText = `${sign}${isPercentTrendMetric(name) ? trend.delta.toFixed(1) : trend.delta}`;
+  const cellClass = trend.flagged ? "trend-bad" : "ok";
+  const marker = trend.flagged ? " ⚠" : "";
+  return `<tr><td>${label}</td><td>${fmtTrendValue(name, trend.current)}</td><td class="${cellClass}">${deltaText}${marker}</td></tr>`;
+}
+
+export function renderTrendCard(trends) {
+  if (trends.windowRuns < 2) {
+    return `<div class="card"><h2>Quality Trends</h2><div class="empty">Insufficient history — need at least 2 quality-gate runs.</div></div>`;
+  }
+  const rows = Object.entries(trends.metrics).map(([name, trend]) => renderTrendRow(name, trend)).join("\n");
+  return `<div class="card"><h2>Quality Trends</h2>
+<table class="check-table"><thead><tr><th>Metric</th><th>Current</th><th>&Delta; over last ${trends.windowRuns} runs</th></tr></thead><tbody>
+${rows}
+</tbody></table>
 </div>`;
 }
 
@@ -396,6 +486,7 @@ function renderHtml(data, sessions, chartJsSrc) {
 <h1>Guardrails Impact Dashboard</h1>
 <p class="subtitle">Quality gate telemetry · <a href="/FocusIn/">Mutation Report</a></p>
 ${renderSummary(data.summary)}
+${renderTrendCard(data.trends)}
 <div class="card"><h2>Agent Attempt Sessions</h2>${sessionCard}</div>
 <div class="card"><h2>Session Explorer</h2>${renderSessionExplorer(sessions)}</div>
 <script>const DATA=${JSON.stringify(data)};</script>
