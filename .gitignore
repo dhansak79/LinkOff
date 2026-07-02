@@ -11,6 +11,7 @@ coverage
 .deno-coverage
 .tmp
 /tests/visual/screenshots
+.codacy
 
 # BEGIN swamp managed section - DO NOT EDIT
 
@@ -26,3 +27,7 @@ coverage
 .claude/scheduled_tasks.lock
 .claude/scheduled_tasks.json
 # END swamp managed section
+
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md

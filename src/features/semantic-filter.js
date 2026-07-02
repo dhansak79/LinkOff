@@ -5,17 +5,13 @@ if (typeof chrome !== 'undefined' && chrome?.runtime?.getURL) {
 }
 env.backends.onnx.wasm.numThreads = 1
 
-let embedderPipeline = null
 let embedderLoading = null
 
+// A resolved promise is memoized, so this also serves as the "already loaded" cache.
 const getEmbedder = () => {
-  if (embedderPipeline) return Promise.resolve(embedderPipeline)
   if (embedderLoading) return embedderLoading
   embedderLoading = pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
     quantized: true,
-  }).then((p) => {
-    embedderPipeline = p
-    return p
   })
   return embedderLoading
 }

@@ -184,4 +184,148 @@ describe('click handler', () => {
     const noAuthorBtn = noAuthorPosts[0].querySelector('.focusedin-slop-reaction-btn')
     expect(() => noAuthorBtn?.click()).not.toThrow()
   })
+
+  it('Scenario: injected button has the expected class, aria-label, and icon', () => {
+    const btnEl = posts[0].querySelector('button.focusedin-slop-reaction-btn')
+    expect(btnEl.className).toBe('focusedin-slop-reaction-btn')
+    expect(btnEl.getAttribute('aria-label')).toBe('Mark as AI Slop')
+    expect(btnEl.textContent).toBe('🤖')
+    expect(btnEl.type).toBe('button')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Requirement: post boundary detection (isPostBoundary / findPostAncestor)
+// ---------------------------------------------------------------------------
+
+describe('post boundary detection', () => {
+  const triggerFor = (host) => {
+    const group = document.createElement('div')
+    const trigger = document.createElement('button')
+    trigger.setAttribute('aria-label', 'Open reactions menu')
+    group.appendChild(trigger)
+    host.appendChild(group)
+    return group
+  }
+
+  const freshFeedContainer = () => {
+    document.body.innerHTML = '<div id="feed"></div>'
+    return document.getElementById('feed')
+  }
+
+  const initReaction = async (feedContainer) => {
+    const { initSlopReaction } = await import('../../src/features/slop-reaction.js')
+    initSlopReaction(feedContainer, (el) => el.getAttribute('data-vanity'), (el) => el.getAttribute('data-name'))
+  }
+
+  const clickReactionBtn = (node) => node.querySelector('.focusedin-slop-reaction-btn').click()
+
+  it.each([
+    {
+      name: 'a node whose parent has data-display-contents="true" is treated as the post boundary',
+      build: (feedContainer) => {
+        const wrapper = document.createElement('div')
+        wrapper.setAttribute('data-display-contents', 'true')
+        const postNode = document.createElement('div')
+        postNode.setAttribute('data-vanity', 'dc-vanity')
+        postNode.setAttribute('data-name', 'DC Name')
+        triggerFor(postNode)
+        wrapper.appendChild(postNode)
+        feedContainer.appendChild(wrapper)
+        return postNode
+      },
+      expected: ['dc-vanity', 'DC Name'],
+    },
+    {
+      name: 'an <li> inside a scaffold-finite-scroll--infinite ancestor is treated as the post boundary',
+      build: (feedContainer) => {
+        const wrapper = document.createElement('div')
+        wrapper.classList.add('scaffold-finite-scroll--infinite')
+        const liNode = document.createElement('li')
+        liNode.setAttribute('data-vanity', 'li-vanity')
+        liNode.setAttribute('data-name', 'LI Name')
+        triggerFor(liNode)
+        wrapper.appendChild(liNode)
+        feedContainer.appendChild(wrapper)
+        return liNode
+      },
+      expected: ['li-vanity', 'LI Name'],
+    },
+    {
+      name: 'a bare <li> without the scaffold-finite-scroll--infinite ancestor is NOT treated as a post boundary',
+      build: (feedContainer) => {
+        const liNode = document.createElement('li')
+        liNode.setAttribute('data-vanity', 'li-only-vanity')
+        liNode.setAttribute('data-name', 'LI Only')
+        triggerFor(liNode)
+        feedContainer.appendChild(liNode)
+        return liNode
+      },
+      expected: null,
+    },
+    {
+      name: 'an ancestor with data-urn containing "activity" is used as the post immediately',
+      build: (feedContainer) => {
+        const urnPost = document.createElement('div')
+        urnPost.setAttribute('data-urn', 'urn:li:activity:123')
+        urnPost.setAttribute('data-vanity', 'urn-vanity')
+        urnPost.setAttribute('data-name', 'Urn Name')
+        triggerFor(urnPost)
+        feedContainer.appendChild(urnPost)
+        return urnPost
+      },
+      expected: ['urn-vanity', 'Urn Name'],
+    },
+  ])('Scenario: $name', async ({ build, expected }) => {
+    const feedContainer = freshFeedContainer()
+    const node = build(feedContainer)
+    await initReaction(feedContainer)
+    clickReactionBtn(node)
+    if (expected) {
+      expect(mockTrackManualSlopReaction).toHaveBeenCalledWith(...expected)
+    } else {
+      expect(mockTrackManualSlopReaction).not.toHaveBeenCalled()
+    }
+  })
+
+  it('Scenario: the post resolved at injection time is reused at click time rather than re-derived', async () => {
+    const feedContainer = freshFeedContainer()
+    const wrapper = document.createElement('div')
+    wrapper.setAttribute('data-lazy-mount-id', 'm1')
+    const postNode = document.createElement('div')
+    postNode.setAttribute('data-vanity', 'cached-vanity')
+    postNode.setAttribute('data-name', 'Cached Name')
+    triggerFor(postNode)
+    wrapper.appendChild(postNode)
+    feedContainer.appendChild(wrapper)
+
+    await initReaction(feedContainer)
+    // Strip the boundary marker after injection — a fresh lookup at click time would now fail.
+    wrapper.removeAttribute('data-lazy-mount-id')
+    clickReactionBtn(postNode)
+    expect(mockTrackManualSlopReaction).toHaveBeenCalledWith('cached-vanity', 'Cached Name')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Requirement: disconnectSlopReaction stops observing the feed
+// ---------------------------------------------------------------------------
+
+describe('disconnectSlopReaction', () => {
+  it('Scenario: no button is injected for nodes added after disconnect', async () => {
+    const { initSlopReaction, disconnectSlopReaction } = await import('../../src/features/slop-reaction.js')
+    document.body.innerHTML = '<div id="feed"></div>'
+    const feedContainer = document.getElementById('feed')
+    initSlopReaction(feedContainer, () => 'vanity', () => 'name')
+    disconnectSlopReaction()
+
+    const group = document.createElement('div')
+    const trigger = document.createElement('button')
+    trigger.setAttribute('aria-label', 'Open reactions menu')
+    group.appendChild(trigger)
+    feedContainer.appendChild(group)
+
+    await Promise.resolve()
+    expect(feedContainer.querySelector('.focusedin-slop-reaction-btn')).toBeNull()
+  })
 })

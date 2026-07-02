@@ -76,6 +76,21 @@ describe('semanticCheck', () => {
     expect(mockEmbedFn).toHaveBeenCalledTimes(3) // 1 query + 2 posts
   })
 
+  it('reuses the already-resolved embedder pipeline across sequential calls', async () => {
+    mockEmbedFn.mockResolvedValue(makeEmbedding([1, 0]))
+    await semanticCheck(['hustle culture'], 'post one')
+    await semanticCheck(['javascript'], 'post two')
+    expect(pipelineMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not throw when chrome is defined but chrome.runtime is not', async () => {
+    vi.resetModules()
+    vi.stubGlobal('chrome', {})
+    const transformers = await import('../../src/lib/transformers.min.js')
+    transformers.pipeline.mockResolvedValue(vi.fn().mockResolvedValue(makeEmbedding([1, 0])))
+    await expect(import('../../src/features/semantic-filter.js')).resolves.toBeDefined()
+  })
+
   it('re-embeds queries when the list changes', async () => {
     mockEmbedFn.mockResolvedValue(makeEmbedding([1, 0]))
     await semanticCheck(['hustle culture'], 'post one')
@@ -90,6 +105,22 @@ describe('semanticCheck', () => {
       semanticCheck(['topic'], 'post b'),
     ])
     expect(pipelineMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('calls the embedder with mean-pooling and normalization enabled', async () => {
+    mockEmbedFn.mockResolvedValue(makeEmbedding([1, 0]))
+    await semanticCheck(['topic'], 'post text')
+    expect(mockEmbedFn).toHaveBeenCalledWith('post text', { pooling: 'mean', normalize: true })
+  })
+
+  it('joins the query list with a separator, not a bare concatenation', async () => {
+    // ['ab', 'c'] and ['a', 'bc'] concatenate identically without a separator
+    // ("abc") but must produce different cache keys ("ab|c" vs "a|bc") so the
+    // second call re-embeds rather than reusing the first call's cache.
+    mockEmbedFn.mockResolvedValue(makeEmbedding([1, 0]))
+    await semanticCheck(['ab', 'c'], 'post one')
+    await semanticCheck(['a', 'bc'], 'post one')
+    expect(mockEmbedFn).toHaveBeenCalledTimes(6) // (2 queries + 1 post) x 2 calls, no cache reuse
   })
 
   it('sets wasmPaths when chrome.runtime.getURL is available', async () => {

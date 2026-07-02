@@ -162,12 +162,13 @@ const collapseToTag = (banner, author) => {
   banner.append(text)
 }
 
+// slopRevealed / revealedTexts are not re-checked here — the only caller
+// (applySlopDecision, via checkSlop) already guards on both before reaching
+// this point.
 const addRevealBanner = (post, signals) => {
   if (post.dataset.focusinBanner) return
-  if (post.dataset.slopRevealed) return
   const fullText = extractPostText(post).trim()
   const postText = fullText.slice(0, 150)
-  if (revealedTexts.has(postText)) return
   post.dataset.focusinBanner = '1'
   const author = extractAuthorName(post)
   const vanityName = extractAuthorVanityName(post)
@@ -243,12 +244,10 @@ const isMainFeedPost = (node) => {
 const isActivityFeedPost = (node) =>
   node.tagName === 'LI' && !!node.closest(ACTIVITY_FEED_SELECTOR)
 
-// Returns true if a DOM node is a feed post (not an intermediate container or non-element)
-const isPostNode = (node) => {
-  if (node.nodeType !== Node.ELEMENT_NODE) return false
-  if (node.dataset.focusinInjected) return false
-  return isMainFeedPost(node) || isActivityFeedPost(node)
-}
+// Returns true if a DOM node is a feed post (not an intermediate container).
+// Callers already filter to Element nodes; applyKeywordToPost separately
+// guards on focusinInjected, so neither is re-checked here.
+const isPostNode = (node) => isMainFeedPost(node) || isActivityFeedPost(node)
 
 const SEMANTIC_THRESHOLD = 0.35
 const SLOP_ARCHETYPE_THRESHOLD = 0.25

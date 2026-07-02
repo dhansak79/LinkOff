@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   findElement,
   removeHideClasses,
@@ -286,6 +286,13 @@ const buildFeedPost = (dataHidden, classes = []) => {
 // ---------------------------------------------------------------------------
 
 describe('resetShownPosts', () => {
+  it('logs the exact reset-shown-posts message', () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    resetShownPosts()
+    expect(logSpy).toHaveBeenCalledWith('FocusedIn: Reset shown posts')
+    logSpy.mockRestore()
+  })
+
   it('removes hide classes from posts with data-hidden=false', () => {
     const post = buildFeedPost('false', ['hide', 'showIcon'])
     resetShownPosts()
@@ -312,6 +319,13 @@ describe('resetShownPosts', () => {
 // ---------------------------------------------------------------------------
 
 describe('resetBlockedPosts', () => {
+  it('logs the exact resetting-blocked-posts message', () => {
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    resetBlockedPosts()
+    expect(logSpy).toHaveBeenCalledWith('FocusedIn: Resetting blocked posts')
+    logSpy.mockRestore()
+  })
+
   it('removes hide classes from posts with data-hidden=true', () => {
     const post = buildFeedPost('true', ['hide', 'showIcon'])
     resetBlockedPosts()
@@ -415,6 +429,27 @@ describe('waitForSelector', () => {
     const result = await waitForSelector('.target', 10)
     expect(result).toBeNull()
   })
+
+  it('does not resolve on a mutation unrelated to the target selector', async () => {
+    document.body.innerHTML = ''
+    const promise = waitForSelector('.target', 5000)
+    let settled = false
+    promise.then(() => {
+      settled = true
+    })
+
+    const unrelated = document.createElement('div')
+    unrelated.className = 'not-the-target'
+    document.body.appendChild(unrelated)
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(settled).toBe(false)
+
+    const target = document.createElement('div')
+    target.className = 'target'
+    document.body.appendChild(target)
+    expect(await promise).toBe(target)
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -454,6 +489,48 @@ describe('waitForSelectorAll', () => {
     document.body.innerHTML = ''
     const result = await waitForSelectorAll('.item', 10)
     expect(result.length).toBe(0)
+  })
+
+  it('does not resolve on a mutation unrelated to the target selector', async () => {
+    document.body.innerHTML = ''
+    const promise = waitForSelectorAll('.item', 5000)
+    let settled = false
+    promise.then(() => {
+      settled = true
+    })
+
+    const unrelated = document.createElement('div')
+    unrelated.className = 'not-the-item'
+    document.body.appendChild(unrelated)
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(settled).toBe(false)
+
+    const item = document.createElement('div')
+    item.className = 'item'
+    document.body.appendChild(item)
+    const result = await promise
+    expect(result.length).toBe(1)
+  })
+
+  it('does not resolve immediately when only one of several matched elements has skeleton content', async () => {
+    document.body.innerHTML = '<div class="item">real content</div><div class="item"><div class="skeleton"></div></div>'
+    let settled = false
+    const promise = waitForSelectorAll('.item', 5000).then((r) => {
+      settled = true
+      return r
+    })
+    // Real code: isReady is false (not every matched element is skeleton-free),
+    // so the promise stays pending across microtask ticks — it must not have
+    // resolved synchronously off the initial isReady check.
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(settled).toBe(false)
+
+    // Let the observer disconnect cleanly instead of leaking past this test.
+    document.querySelector('.skeleton').remove()
+    const result = await promise
+    expect(result.length).toBe(2)
   })
 })
 

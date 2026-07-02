@@ -52,6 +52,8 @@ describe('unfollowAuthor', () => {
     await unfollowAuthor('jane-smith')
     const body = JSON.parse(fetch.mock.calls[0][1].body)
     expect(body.requestId).toBe('com.linkedin.sdui.requests.feed.updateFollowState')
+    expect(body.serverRequest.requestId).toBe('com.linkedin.sdui.requests.feed.updateFollowState')
+    expect(body.serverRequest.requestedArguments.$type).toBe('proto.sdui.actions.requests.RequestedArguments')
     const payload = body.serverRequest.requestedArguments.payload
     expect(payload.followStateType).toBe('FollowStateType_UNFOLLOW')
     expect(payload.memberUrnTypeName).toBe('proto_com_linkedin_common_MemberUrn')
