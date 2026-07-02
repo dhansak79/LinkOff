@@ -31,6 +31,26 @@ export const PROMOTED_POST_WITH_AUTHOR = `
   <p data-testid="expandable-text-box">Buy our amazing product now!</p>
 `
 
+export const PROMOTED_BY_PAGE_POST = `
+  <p><span>Promoted by <a href="/company/pymc-labs/"><strong>PyMC Labs</strong></a></span></p>
+  <p data-testid="expandable-text-box">Buy our amazing product now!</p>
+`
+
+export const PROMOTED_BY_PAGE_POST_NO_TEXTBOX = `
+  <p><span>Promoted by <a href="/company/pymc-labs/"><strong>PyMC Labs</strong></a></span></p>
+  <img src="ad.jpg" alt="Advertisement">
+`
+
+export const PROMOTED_BY_PAGE_POST_WITH_AUTHOR = `
+  <a href="/in/grace-hopper/"><div aria-label="Grace Hopper Profile 1st">Grace Hopper</div></a>
+  <p><span>Promoted by <a href="/company/pymc-labs/"><strong>PyMC Labs</strong></a></span></p>
+  <p data-testid="expandable-text-box">Buy our amazing product now!</p>
+`
+
+export const POST_WITH_PROMOTED_BY_IN_BODY = `
+  <p data-testid="expandable-text-box">Promoted by our own marketing team, this newsletter grew fast.</p>
+`
+
 export const REACTIONS_BAR = `
   <div class="action-bar">
     <div class="reaction-group">

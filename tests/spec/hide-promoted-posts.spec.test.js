@@ -58,6 +58,30 @@ const POST_WITH_PROMOTED_IN_BODY = `
   <p data-testid="expandable-text-box">Our campaign was Promoted across all channels this quarter.</p>
 `
 
+// A "Promoted by <Page>" post: sponsored via a company Page rather than a plain "Promoted" ad.
+const PROMOTED_BY_PAGE_POST = `
+  <p><span>Promoted by <a href="/company/pymc-labs/"><strong>PyMC Labs</strong></a></span></p>
+  <p data-testid="expandable-text-box">Buy our amazing product now!</p>
+`
+
+// A "Promoted by <Page>" post with no expandable-text-box (image-only / video ad).
+const PROMOTED_BY_PAGE_POST_NO_TEXTBOX = `
+  <p><span>Promoted by <a href="/company/pymc-labs/"><strong>PyMC Labs</strong></a></span></p>
+  <img src="ad.jpg" alt="Advertisement">
+`
+
+// A "Promoted by <Page>" post with an extractable author (vanity: grace-hopper).
+const PROMOTED_BY_PAGE_POST_WITH_AUTHOR = `
+  <a href="/in/grace-hopper/"><div aria-label="Grace Hopper Profile 1st">Grace Hopper</div></a>
+  <p><span>Promoted by <a href="/company/pymc-labs/"><strong>PyMC Labs</strong></a></span></p>
+  <p data-testid="expandable-text-box">Buy our amazing product now!</p>
+`
+
+// "Promoted by" only appears inside the expandable text box (post body) — not a sponsored post.
+const POST_WITH_PROMOTED_BY_IN_BODY = `
+  <p data-testid="expandable-text-box">Promoted by our own marketing team, this newsletter grew fast.</p>
+`
+
 // ---------------------------------------------------------------------------
 // Requirement: Promoted posts are hidden when toggle is on
 // ---------------------------------------------------------------------------
@@ -186,4 +210,87 @@ it('Scenario: Promoted post that matches a keyword is not keyword-filtered', () 
   doFeed({ ...baseConfig, 'feed-keywords': 'Buy', 'hide-promoted': false })
 
   expect(posts[0].classList.contains('hide')).toBe(false)
+})
+
+// ---------------------------------------------------------------------------
+// Requirement: "Promoted by <Page>" label variant is detected as promoted
+// ---------------------------------------------------------------------------
+
+it('Scenario: "Promoted by <Page>" post is hidden immediately when toggle is on', () => {
+  const posts = buildFeedDOM([PROMOTED_BY_PAGE_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+  doFeed({ ...baseConfig, 'hide-promoted': true })
+
+  expect(posts[0].classList.contains('hide')).toBe(true)
+})
+
+it('Scenario: Image-only "Promoted by <Page>" post is hidden (no expandable-text-box)', () => {
+  const posts = buildFeedDOM([PROMOTED_BY_PAGE_POST_NO_TEXTBOX, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+  doFeed({ ...baseConfig, 'hide-promoted': true })
+
+  expect(posts[0].classList.contains('hide')).toBe(true)
+})
+
+it('Scenario: "Promoted by <Page>" post is not hidden when toggle is off', () => {
+  const posts = buildFeedDOM([PROMOTED_BY_PAGE_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+  doFeed({ ...baseConfig, 'hide-promoted': false })
+
+  expect(posts[0].classList.contains('hide')).toBe(false)
+})
+
+it('Scenario: Post with "Promoted by" only in body text is not hidden', () => {
+  const posts = buildFeedDOM([
+    POST_WITH_PROMOTED_BY_IN_BODY,
+    CLEAN_POST,
+    CLEAN_POST,
+    CLEAN_POST,
+    CLEAN_POST,
+    CLEAN_POST,
+  ])
+
+  doFeed({ ...baseConfig, 'hide-promoted': true })
+
+  expect(posts[0].classList.contains('hide')).toBe(false)
+})
+
+it('Scenario: "Promoted by <Page>" hide is counted in daily stats', () => {
+  buildFeedDOM([PROMOTED_BY_PAGE_POST_WITH_AUTHOR, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+  doFeed({ ...baseConfig, 'hide-promoted': true })
+
+  expect(mockTrackPostFiltered).toHaveBeenCalledTimes(1)
+  expect(mockTrackAuthorBlocked).toHaveBeenCalledWith('grace-hopper', 'Grace Hopper')
+})
+
+const PROMOTED_BY_PAGE_SLOP_POST = `
+  <p><span>Promoted by <a href="/company/pymc-labs/"><strong>PyMC Labs</strong></a></span></p>
+  <p data-testid="expandable-text-box">${SLOP_POST}</p>
+`
+
+it('Scenario: "Promoted by <Page>" post is excluded from slop and keyword filters', () => {
+  const posts = buildFeedDOM([PROMOTED_BY_PAGE_SLOP_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+  doFeed({ ...baseConfig, 'detect-slop': true, 'feed-keywords': 'Game-changer', 'hide-promoted': true })
+  expect(posts[0].classList.contains('hide')).toBe(true)
+  expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
+  expect(document.querySelector('.focusedin-slop-collapsed')).toBeNull()
+
+  doFeed({ ...baseConfig, 'detect-slop': true, 'feed-keywords': 'Game-changer', 'hide-promoted': false })
+  expect(posts[0].classList.contains('hide')).toBe(false)
+  expect(posts[0].classList.contains('focusedin-slop-soft-hide')).toBe(false)
+  expect(document.querySelector('.focusedin-slop-collapsed')).toBeNull()
+})
+
+it('Scenario: Both a standalone "Promoted" post and a "Promoted by <Page>" post are hidden in the same feed pass', () => {
+  const posts = buildFeedDOM([PROMOTED_POST, PROMOTED_BY_PAGE_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST, CLEAN_POST])
+
+  doFeed({ ...baseConfig, 'hide-promoted': true })
+
+  expect(posts[0].classList.contains('hide')).toBe(true)
+  expect(posts[1].classList.contains('hide')).toBe(true)
+  for (const clean of Array.from(posts).slice(2)) {
+    expect(clean.classList.contains('hide')).toBe(false)
+  }
 })

@@ -1,0 +1,1423 @@
+id: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+workflowId: b0ac9c84-598d-46f5-8ec6-c6891ec5a2ed
+workflowName: spec-gate
+status: succeeded
+startedAt: '2026-07-02T12:52:47.087Z'
+completedAt: '2026-07-02T12:52:50.605Z'
+jobs:
+  - jobName: generate-features
+    status: succeeded
+    startedAt: '2026-07-02T12:52:47.089Z'
+    completedAt: '2026-07-02T12:52:47.121Z'
+    steps:
+      - stepName: generate
+        status: succeeded
+        startedAt: '2026-07-02T12:52:47.090Z'
+        completedAt: '2026-07-02T12:52:47.120Z'
+        output:
+          type: model_method
+          model: spec-change
+          method: generate-features
+          resources:
+            change:
+              fix-promoted-by-page-detection:
+                id: 62e1cda8-2892-42a3-8f8f-ba87dc985a53
+                name: fix-promoted-by-page-detection
+                version: 28
+                isLatest: true
+                createdAt: '2026-07-02T12:52:47.110Z'
+                namespace: ''
+                attributes:
+                  name: fix-promoted-by-page-detection
+                  phase: implementing
+                  proposal_text: >
+                    Why: The user has hide-promoted enabled but a post is still
+                    showing. It contains LinkedIn's
+
+                    "Promoted by <Company Page>" label (e.g. "Promoted by PyMC
+                    Labs"), used when an individual's
+
+                    post is boosted/sponsored via a company Page, distinct from
+                    a plain "Promoted" ad. The detector
+
+                    in isPromotedPost (src/features/feed.js:256-263) only
+                    matches an element whose trimmed
+
+                    textContent equals exactly "Promoted". Because "Promoted by"
+                    wraps a nested
+
+                    <a><strong>PyMC Labs</strong></a>, the containing element's
+                    textContent is
+
+                    "Promoted by PyMC Labs", not "Promoted", so the check
+                    silently fails and the post is treated
+
+                    as organic content. This is a real detection gap: the spec
+
+                    (openspec/specs/hide-promoted-posts/spec.md) and its tests
+                    only cover the standalone
+
+                    "Promoted" label variant.
+
+
+                    What: Extend isPromotedPost to also recognize the "Promoted
+                    by <Page>" label pattern (leading
+
+                    text "Promoted by" on a label element outside the post
+                    body), in addition to the existing
+
+                    exact-"Promoted" match. Do not loosen matching so broadly
+                    that it catches organic uses of the
+
+                    word "Promoted" inside post body text (existing
+                    POST_WITH_PROMOTED_IN_BODY scenario must keep
+
+                    passing). No changes to the hide-promoted toggle, storage
+                    key, stats tracking, or
+
+                    filter-ordering behavior. Add scenarios/tests for the
+                    "Promoted by <Page>" variant (image-only
+
+                    and text posts) to
+                    tests/spec/hide-promoted-posts.spec.test.js and the cucumber
+                    fixtures,
+
+                    following the existing pattern.
+
+
+                    Out of scope: Any other new "Promoted" label variants not
+                    evidenced by an actual sample.
+
+                    Reworking the broader slop/keyword filter pipeline.
+
+
+                    Success criteria: A post containing the "Promoted by <Page>"
+                    label is hidden when
+
+                    hide-promoted is true. All existing hide-promoted-posts spec
+                    scenarios still pass. New
+
+                    scenario(s) covering "Promoted by <Page>" pass in both the
+                    vitest spec suite and the cucumber
+
+                    BDD suite.
+                  design_text: >
+                    Approach: Extend the existing isPromotedPost() detector in
+                    src/features/feed.js
+
+                    (currently an exact match on trimmed textContent ===
+                    "Promoted") to also match labels
+
+                    that begin with "Promoted by " (e.g. "Promoted by PyMC
+                    Labs"). The check keeps the
+
+                    existing exclusion of elements inside the
+                    [data-testid="expandable-text-box"] post
+
+                    body, so "Promoted by" appearing as ordinary prose in a
+                    post's own text is never
+
+                    matched (identical safety property to the existing
+                    exact-"Promoted" case).
+
+
+                    Files to change:
+
+                    - src/features/feed.js: replace the `el.textContent.trim()
+                    === 'Promoted'` condition
+                      in isPromotedPost with a check that accepts either the exact string "Promoted" or a
+                      string starting with "Promoted by ". No other logic in isPromotedPost, blockPosts, or
+                      the filter-ordering pipeline changes — once a post is correctly flagged as promoted,
+                      the existing hide/stats/exclusion behavior already works.
+                    - tests/spec/hide-promoted-posts.spec.test.js: add
+                    PROMOTED_BY_PAGE_POST,
+                      PROMOTED_BY_PAGE_POST_NO_TEXTBOX, PROMOTED_BY_PAGE_POST_WITH_AUTHOR, and
+                      POST_WITH_PROMOTED_BY_IN_BODY fixtures (mirroring the existing PROMOTED_POST family,
+                      with a nested `<a><strong>Page Name</strong></a>` after "Promoted by" to reproduce the
+                      real LinkedIn markup), plus one `it` per newly approved scenario. The three
+                      "regression" scenarios (standalone "Promoted" still works) are already exercised by
+                      the pre-existing tests in this file, so no duplicate tests are needed for those --
+                      they just need to keep passing.
+                    - tests/cucumber/screenplay/fixtures/posts.js: add the same
+                    new fixtures for BDD use
+                      (PROMOTED_BY_PAGE_POST, PROMOTED_BY_PAGE_POST_NO_TEXTBOX,
+                      PROMOTED_BY_PAGE_POST_WITH_AUTHOR).
+                    - tests/cucumber/step-definitions/hide-promoted-posts.js:
+                    add When/Then step
+                      definitions matching the newly approved scenarios' Given/When/Then text verbatim
+                      (regex), following the file's existing verbatim-match style. Reuse the BuildFeed and
+                      RunFeed screenplay tasks exactly as the existing steps do.
+
+                    Key decisions:
+
+                    - Match by literal prefix "Promoted by " (with trailing
+                    space) rather than a looser
+                      regex like /^Promoted\b/, so a hypothetical future label such as "Promoted content"
+                      isn't accidentally swept in without evidence it exists on LinkedIn.
+                    - Reuse the existing `!textBox?.contains(el)` exclusion
+                    rather than introducing a new
+                      mechanism -- this is what already keeps prose mentions of "Promoted" (and now
+                      "Promoted by") inside the post body from being misdetected.
+                    - No change to the `hide-promoted` toggle, storage schema,
+                    or stats tracking; those are
+                      unaffected by fixing the detector.
+
+                    Step definition strategy:
+
+                    - Each new scenario reuses `BuildFeed.with([...])` to
+                    construct the post DOM and
+                      `RunFeed.withConfig({ ...baseConfig, 'hide-promoted': ... })` to invoke the feed
+                      processor, identical to the existing promoted-post step definitions.
+                    - The "both label variants in one pass" scenario builds a
+                    feed with one
+                      PROMOTED_POST and one PROMOTED_BY_PAGE_POST fixture plus clean posts, and asserts
+                      both index-0 and index-1 posts carry the `hide` class while later clean posts do not.
+                    - The "Promoted by" in body text scenario reuses the same
+                    assertion shape as the
+                      existing POST_WITH_PROMOTED_IN_BODY step (post not hidden).
+
+                    Risk / trade-offs:
+
+                    - Matching is still a literal English-string heuristic
+                    (consistent with the pre-existing
+                      exact-"Promoted" approach) and won't generalize to other locales or label wordings;
+                      this mirrors the existing accepted trade-off in this detector and is explicitly out of
+                      scope per the proposal.
+                  scenarios:
+                    - name: >-
+                        Standalone "Promoted" post is still hidden when toggle
+                        is on
+                      given:
+                        - >-
+                          a feed post contains a label element (outside the post
+                          body) whose trimmed text is exactly "Promoted"
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - >-
+                          the post is hidden with the same CSS class used for
+                          keyword-matched posts
+                      status: pending
+                    - name: Image-only standalone "Promoted" post is still hidden
+                      given:
+                        - >-
+                          a feed post contains a standalone "Promoted" label but
+                          has no `data-testid="expandable-text-box"` element
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the post is identified as promoted and hidden
+                      status: pending
+                    - name: >-
+                        Standalone "Promoted" post is not hidden when toggle is
+                        off
+                      given:
+                        - a feed post contains a standalone "Promoted" label
+                        - '`hide-promoted` is `false`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the post is left visible and unmodified
+                      status: pending
+                    - name: >-
+                        "Promoted by <Page>" post is hidden immediately when
+                        toggle is on
+                      given:
+                        - >-
+                          a feed post contains a label element (outside the post
+                          body) whose text begins with "Promoted by" followed by
+                          a linked company Page name (e.g. "Promoted by PyMC
+                          Labs")
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - >-
+                          the post is hidden with the same CSS class used for
+                          keyword-matched posts
+                      status: pending
+                    - name: >-
+                        Image-only "Promoted by <Page>" post is hidden (no
+                        expandable-text-box)
+                      given:
+                        - >-
+                          a feed post contains a "Promoted by <Page>" label but
+                          has no `data-testid="expandable-text-box"` element
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the post is identified as promoted and hidden
+                      status: pending
+                    - name: >-
+                        "Promoted by <Page>" post is not hidden when toggle is
+                        off
+                      given:
+                        - a feed post contains a "Promoted by <Page>" label
+                        - '`hide-promoted` is `false`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the post is left visible and unmodified
+                      status: pending
+                    - name: Post with "Promoted by" only in body text is not hidden
+                      given:
+                        - >-
+                          a feed post's body text contains the phrase "Promoted
+                          by" as ordinary prose (not a sponsor label outside the
+                          body)
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the post is not hidden by the promoted-post filter
+                      status: pending
+                    - name: '"Promoted by <Page>" hide is counted in daily stats'
+                      given:
+                        - >-
+                          a feed post contains a "Promoted by <Page>" label with
+                          an extractable author
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the daily postsFiltered count increments by 1
+                        - >-
+                          the author's vanity name is recorded in the daily
+                          blocked-authors map
+                      status: pending
+                    - name: >-
+                        "Promoted by <Page>" post is excluded from slop and
+                        keyword filters
+                      given:
+                        - >-
+                          a feed post contains a "Promoted by <Page>" label and
+                          post text that would otherwise trigger slop detection
+                          or a keyword match
+                      when:
+                        - '`hide-promoted` is `true`'
+                        - '`hide-promoted` is `false`'
+                      then:
+                        - >-
+                          when hide-promoted is true, the post is hard-hidden by
+                          the promoted filter and receives no slop-collapse
+                          banner
+                        - >-
+                          when hide-promoted is false, the post is left visible
+                          and does not receive a slop-collapse banner
+                      status: pending
+                    - name: >-
+                        Both a standalone "Promoted" post and a "Promoted by
+                        <Page>" post are hidden in the same feed pass
+                      given:
+                        - >-
+                          a feed contains one post with a standalone "Promoted"
+                          label and another post with a "Promoted by <Page>"
+                          label, alongside clean posts
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - >-
+                          both promoted posts are hidden and the clean posts
+                          remain visible
+                      status: pending
+                  tasks:
+                    - id: '1.1'
+                      description: >-
+                        Add PROMOTED_BY_PAGE_POST fixture to
+                        tests/cucumber/screenplay/fixtures/posts.js: a post with
+                        `<p><span>Promoted by <a
+                        href="/company/pymc-labs/"><strong>PyMC
+                        Labs</strong></a></span></p>` before a
+                        `data-testid="expandable-text-box"` body, mirroring the
+                        existing PROMOTED_POST shape.
+                      done: true
+                    - id: '1.2'
+                      description: >-
+                        Add PROMOTED_BY_PAGE_POST_NO_TEXTBOX fixture to
+                        tests/cucumber/screenplay/fixtures/posts.js: the same
+                        "Promoted by <Page>" label with no expandable-text-box
+                        element (image-only ad), mirroring
+                        PROMOTED_POST_NO_TEXTBOX.
+                      done: true
+                    - id: '1.3'
+                      description: >-
+                        Add PROMOTED_BY_PAGE_POST_WITH_AUTHOR fixture to
+                        tests/cucumber/screenplay/fixtures/posts.js: an actor
+                        div (e.g. Grace Hopper, vanity grace-hopper) plus the
+                        "Promoted by <Page>" label plus body text, mirroring
+                        PROMOTED_POST_WITH_AUTHOR.
+                      done: true
+                    - id: '1.4'
+                      description: >-
+                        Add POST_WITH_PROMOTED_BY_IN_BODY fixture to
+                        tests/cucumber/screenplay/fixtures/posts.js: a post
+                        whose only expandable-text-box body text contains the
+                        ordinary-prose phrase "Promoted by" (no label element
+                        outside the body), mirroring POST_WITH_PROMOTED_IN_BODY
+                        from the vitest spec file.
+                      done: true
+                    - id: '1.5'
+                      description: >-
+                        Mirror the same 4 fixtures (PROMOTED_BY_PAGE_POST,
+                        PROMOTED_BY_PAGE_POST_NO_TEXTBOX,
+                        PROMOTED_BY_PAGE_POST_WITH_AUTHOR,
+                        POST_WITH_PROMOTED_BY_IN_BODY) as local consts at the
+                        top of tests/spec/hide-promoted-posts.spec.test.js,
+                        following the file's existing pattern of file-local
+                        fixture constants with a one-line comment above each.
+                      done: true
+                    - id: '2.1'
+                      description: >-
+                        In src/features/feed.js isPromotedPost (~line 256-263),
+                        replace the condition `el.textContent.trim() ===
+                        'Promoted'` with a check that also accepts text starting
+                        with the literal prefix "Promoted by " (trailing space),
+                        e.g. `const text = el.textContent.trim(); if
+                        (!textBox?.contains(el) && (text === 'Promoted' ||
+                        text.startsWith('Promoted by '))) return true`. Do not
+                        change the existing `!textBox?.contains(el)` exclusion
+                        or any other function in the file.
+                      done: true
+                    - id: '3.1'
+                      description: >-
+                        Append 3 @wip scenarios to
+                        tests/cucumber/features/hide-promoted-posts.feature for
+                        the regression cases: 'Standalone "Promoted" post is
+                        still hidden when toggle is on', 'Image-only standalone
+                        "Promoted" post is still hidden', 'Standalone "Promoted"
+                        post is not hidden when toggle is off' — using the exact
+                        Given/When/Then wording approved in the spec-change
+                        scenarios list.
+                      done: true
+                    - id: '3.2'
+                      description: >-
+                        Append 3 @wip scenarios to
+                        tests/cucumber/features/hide-promoted-posts.feature for
+                        the new label variant: '"Promoted by <Page>" post is
+                        hidden immediately when toggle is on', 'Image-only
+                        "Promoted by <Page>" post is hidden (no
+                        expandable-text-box)', '"Promoted by <Page>" post is not
+                        hidden when toggle is off' — using the exact approved
+                        wording.
+                      done: true
+                    - id: '3.3'
+                      description: >-
+                        Append 3 @wip scenarios to
+                        tests/cucumber/features/hide-promoted-posts.feature:
+                        'Post with "Promoted by" only in body text is not
+                        hidden', '"Promoted by <Page>" hide is counted in daily
+                        stats', '"Promoted by <Page>" post is excluded from slop
+                        and keyword filters' — using the exact approved wording.
+                      done: true
+                    - id: '3.4'
+                      description: >-
+                        Append 1 @wip scenario to
+                        tests/cucumber/features/hide-promoted-posts.feature:
+                        'Both a standalone "Promoted" post and a "Promoted by
+                        <Page>" post are hidden in the same feed pass' — using
+                        the exact approved wording.
+                      done: true
+                    - id: '3.5'
+                      description: >-
+                        In
+                        tests/cucumber/step-definitions/hide-promoted-posts.js,
+                        add When/Then step definitions for the 3 regression
+                        scenarios (task 3.1), reusing
+                        BuildFeed.with([PROMOTED_POST, ...MANY_CLEAN]) and
+                        RunFeed.withConfig with 'hide-promoted' true/false,
+                        matching the new Given/When/Then regex text verbatim.
+                      done: true
+                    - id: '3.6'
+                      description: >-
+                        In
+                        tests/cucumber/step-definitions/hide-promoted-posts.js,
+                        add When/Then step definitions for the 3 new-variant
+                        scenarios (task 3.2), using the PROMOTED_BY_PAGE_POST
+                        and PROMOTED_BY_PAGE_POST_NO_TEXTBOX fixtures with
+                        BuildFeed/RunFeed, matching the new Given/When/Then
+                        regex text verbatim.
+                      done: true
+                    - id: '3.7'
+                      description: >-
+                        In
+                        tests/cucumber/step-definitions/hide-promoted-posts.js,
+                        add step definitions for 'Post with "Promoted by" only
+                        in body text is not hidden' (using
+                        POST_WITH_PROMOTED_BY_IN_BODY), '"Promoted by <Page>"
+                        hide is counted in daily stats' (using
+                        PROMOTED_BY_PAGE_POST_WITH_AUTHOR and the existing
+                        getStats helper), and '"Promoted by <Page>" post is
+                        excluded from slop and keyword filters' (building a
+                        Promoted-by post whose body is SLOP_POST / contains a
+                        configured keyword, asserting hard-hide with no slop
+                        banner when hide-promoted is true, and untouched
+                        visibility when hide-promoted is false).
+                      done: true
+                    - id: '3.8'
+                      description: >-
+                        In
+                        tests/cucumber/step-definitions/hide-promoted-posts.js,
+                        add step definitions for 'Both a standalone "Promoted"
+                        post and a "Promoted by <Page>" post are hidden in the
+                        same feed pass', building a feed with [PROMOTED_POST,
+                        PROMOTED_BY_PAGE_POST, ...MANY_CLEAN] and asserting
+                        posts[0] and posts[1] have the hide class while later
+                        clean posts do not.
+                      done: true
+                    - id: '3.9'
+                      description: >-
+                        Run the cucumber BDD suite for
+                        tests/cucumber/features/hide-promoted-posts.feature and
+                        fix any failing steps until all 10 newly added scenarios
+                        pass, then remove the @wip tag from all 10 of them.
+                      done: true
+                    - id: '4.1'
+                      description: >-
+                        In tests/spec/hide-promoted-posts.spec.test.js, add one
+                        `it()` per newly approved non-regression scenario (6
+                        scenarios: hidden-on, image-only, hidden-off,
+                        body-text-not-hidden, stats-tracking,
+                        excluded-from-slop-and-keyword-filters) using the
+                        fixtures added in task 1.5, following the file's
+                        existing assertion style (classList checks,
+                        mockTrackPostFiltered/mockTrackAuthorBlocked).
+                      done: true
+                    - id: '4.2'
+                      description: >-
+                        In tests/spec/hide-promoted-posts.spec.test.js, add one
+                        `it()` for 'Both a standalone Promoted post and a
+                        Promoted-by-Page post are hidden in the same feed pass',
+                        asserting both posts[0] and posts[1] carry the hide
+                        class.
+                      done: true
+                    - id: '4.3'
+                      description: >-
+                        Run the vitest spec suite
+                        (tests/spec/hide-promoted-posts.spec.test.js and any
+                        other spec files importing src/features/feed.js) and
+                        confirm all existing and new tests pass with no
+                        regressions.
+                      done: true
+                  proposal_approved_at: '2026-07-01T17:12:56.741Z'
+                  scenarios_approved_at: '2026-07-01T17:19:31.040Z'
+                tags:
+                  type: resource
+                  specName: change
+                  modelName: spec-change
+                  source: step-output
+                  workflow: spec-gate
+                  workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                  job: generate-features
+                  step: generate
+                modelName: spec-change
+                modelId: 154bd51c-19b7-4382-ab43-230e5041ca43
+                modelType: '@focusin/spec-change'
+                specName: change
+                dataType: resource
+                contentType: application/json
+                lifetime: 365d
+                ownerType: model-method
+                streaming: false
+                size: 15862
+                content: ''
+                ownerRef: 154bd51c-19b7-4382-ab43-230e5041ca43
+                workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                workflowName: spec-gate
+                jobName: generate-features
+                stepName: generate
+                source: step-output
+          files: {}
+          dataArtifacts:
+            - dataId: 62e1cda8-2892-42a3-8f8f-ba87dc985a53
+              name: fix-promoted-by-page-detection
+              version: 28
+              tags:
+                type: resource
+                specName: change
+                modelName: spec-change
+                source: step-output
+                workflow: spec-gate
+                workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                job: generate-features
+                step: generate
+            - dataId: ef205bbd-85b3-4eb7-842c-c2438a797993
+              name: report-swamp-method-summary
+              version: 142
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+            - dataId: 466c81d6-379c-4d1d-b0ef-f2947132d213
+              name: report-swamp-method-summary-json
+              version: 142
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+          dataHandles:
+            - name: fix-promoted-by-page-detection
+              specName: change
+              kind: resource
+              dataId: 62e1cda8-2892-42a3-8f8f-ba87dc985a53
+              version: 28
+              size: 15862
+              tags:
+                type: resource
+                specName: change
+                modelName: spec-change
+                source: step-output
+                workflow: spec-gate
+                workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                job: generate-features
+                step: generate
+              metadata:
+                contentType: application/json
+                lifetime: 365d
+                garbageCollection: 100
+                streaming: false
+                tags:
+                  type: resource
+                  specName: change
+                  modelName: spec-change
+                  source: step-output
+                  workflow: spec-gate
+                  workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                  job: generate-features
+                  step: generate
+                ownerDefinition:
+                  ownerType: model-method
+                  ownerRef: 154bd51c-19b7-4382-ab43-230e5041ca43
+                  workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                  workflowName: spec-gate
+                  jobName: generate-features
+                  stepName: generate
+                  source: step-output
+        dataArtifacts:
+          - dataId: 62e1cda8-2892-42a3-8f8f-ba87dc985a53
+            name: fix-promoted-by-page-detection
+            version: 28
+            tags:
+              type: resource
+              specName: change
+              modelName: spec-change
+              source: step-output
+              workflow: spec-gate
+              workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+              job: generate-features
+              step: generate
+          - dataId: ef205bbd-85b3-4eb7-842c-c2438a797993
+            name: report-swamp-method-summary
+            version: 142
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+          - dataId: 466c81d6-379c-4d1d-b0ef-f2947132d213
+            name: report-swamp-method-summary-json
+            version: 142
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+  - jobName: run-runner
+    status: succeeded
+    startedAt: '2026-07-02T12:52:47.124Z'
+    completedAt: '2026-07-02T12:52:50.560Z'
+    steps:
+      - stepName: run
+        status: succeeded
+        startedAt: '2026-07-02T12:52:47.124Z'
+        completedAt: '2026-07-02T12:52:50.559Z'
+        output:
+          type: model_method
+          model: focusin-spec-runner
+          method: run
+          resources:
+            runResult:
+              current:
+                id: 933b3841-8fdf-41f7-8b0a-a372ffa55db5
+                name: current
+                version: 9
+                isLatest: true
+                createdAt: '2026-07-02T12:52:50.545Z'
+                namespace: ''
+                attributes:
+                  passed: true
+                  reportPath: /Users/daniel/Repos/FocusIn/cucumber-report.json
+                  ranAt: '2026-07-02T12:52:47.131Z'
+                  exitCode: 0
+                  stderr: >
+                    `publishQuiet` option is no longer needed, you can remove it
+                    from your configuration; see
+                    https://github.com/cucumber/cucumber-js/blob/main/docs/deprecations.md
+
+                    Not implemented: Window's scrollBy() method
+
+                    Not implemented: Window's scrollBy() method
+
+                    Not implemented: Window's scrollBy() method
+
+                    Not implemented: Window's scrollBy() method
+
+                    Not implemented: Window's scrollBy() method
+
+                    Not implemented: Window's scrollBy() method
+                tags:
+                  type: resource
+                  specName: runResult
+                  modelName: focusin-spec-runner
+                  source: step-output
+                  workflow: spec-gate
+                  workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                  job: run-runner
+                  step: run
+                modelName: focusin-spec-runner
+                modelId: 2abde737-6fe8-424b-97c2-ab8cbf7ecff3
+                modelType: '@focusin/spec-runner'
+                specName: runResult
+                dataType: resource
+                contentType: application/json
+                lifetime: 30d
+                ownerType: model-method
+                streaming: false
+                size: 571
+                content: ''
+                ownerRef: 2abde737-6fe8-424b-97c2-ab8cbf7ecff3
+                workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                workflowName: spec-gate
+                jobName: run-runner
+                stepName: run
+                source: step-output
+          files: {}
+          dataArtifacts:
+            - dataId: 933b3841-8fdf-41f7-8b0a-a372ffa55db5
+              name: current
+              version: 9
+              tags:
+                type: resource
+                specName: runResult
+                modelName: focusin-spec-runner
+                source: step-output
+                workflow: spec-gate
+                workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                job: run-runner
+                step: run
+            - dataId: 3e70a796-bc5a-46e2-ba9f-eea16d9d89b6
+              name: report-swamp-method-summary
+              version: 9
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+            - dataId: 91ecc7d8-54d7-4c38-b759-43b9100f6b40
+              name: report-swamp-method-summary-json
+              version: 9
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+          dataHandles:
+            - name: current
+              specName: runResult
+              kind: resource
+              dataId: 933b3841-8fdf-41f7-8b0a-a372ffa55db5
+              version: 9
+              size: 571
+              tags:
+                type: resource
+                specName: runResult
+                modelName: focusin-spec-runner
+                source: step-output
+                workflow: spec-gate
+                workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                job: run-runner
+                step: run
+              metadata:
+                contentType: application/json
+                lifetime: 30d
+                garbageCollection: 20
+                streaming: false
+                tags:
+                  type: resource
+                  specName: runResult
+                  modelName: focusin-spec-runner
+                  source: step-output
+                  workflow: spec-gate
+                  workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                  job: run-runner
+                  step: run
+                ownerDefinition:
+                  ownerType: model-method
+                  ownerRef: 2abde737-6fe8-424b-97c2-ab8cbf7ecff3
+                  workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                  workflowName: spec-gate
+                  jobName: run-runner
+                  stepName: run
+                  source: step-output
+        dataArtifacts:
+          - dataId: 933b3841-8fdf-41f7-8b0a-a372ffa55db5
+            name: current
+            version: 9
+            tags:
+              type: resource
+              specName: runResult
+              modelName: focusin-spec-runner
+              source: step-output
+              workflow: spec-gate
+              workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+              job: run-runner
+              step: run
+          - dataId: 3e70a796-bc5a-46e2-ba9f-eea16d9d89b6
+            name: report-swamp-method-summary
+            version: 9
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+          - dataId: 91ecc7d8-54d7-4c38-b759-43b9100f6b40
+            name: report-swamp-method-summary-json
+            version: 9
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+  - jobName: record-results
+    status: succeeded
+    startedAt: '2026-07-02T12:52:50.565Z'
+    completedAt: '2026-07-02T12:52:50.599Z'
+    steps:
+      - stepName: record
+        status: succeeded
+        startedAt: '2026-07-02T12:52:50.565Z'
+        completedAt: '2026-07-02T12:52:50.598Z'
+        output:
+          type: model_method
+          model: spec-change
+          method: record-results
+          resources:
+            change:
+              fix-promoted-by-page-detection:
+                id: 12634d3e-c042-4fbe-916b-96e932308a43
+                name: fix-promoted-by-page-detection
+                version: 29
+                isLatest: true
+                createdAt: '2026-07-02T12:52:50.589Z'
+                namespace: ''
+                attributes:
+                  name: fix-promoted-by-page-detection
+                  phase: verifying
+                  proposal_text: >
+                    Why: The user has hide-promoted enabled but a post is still
+                    showing. It contains LinkedIn's
+
+                    "Promoted by <Company Page>" label (e.g. "Promoted by PyMC
+                    Labs"), used when an individual's
+
+                    post is boosted/sponsored via a company Page, distinct from
+                    a plain "Promoted" ad. The detector
+
+                    in isPromotedPost (src/features/feed.js:256-263) only
+                    matches an element whose trimmed
+
+                    textContent equals exactly "Promoted". Because "Promoted by"
+                    wraps a nested
+
+                    <a><strong>PyMC Labs</strong></a>, the containing element's
+                    textContent is
+
+                    "Promoted by PyMC Labs", not "Promoted", so the check
+                    silently fails and the post is treated
+
+                    as organic content. This is a real detection gap: the spec
+
+                    (openspec/specs/hide-promoted-posts/spec.md) and its tests
+                    only cover the standalone
+
+                    "Promoted" label variant.
+
+
+                    What: Extend isPromotedPost to also recognize the "Promoted
+                    by <Page>" label pattern (leading
+
+                    text "Promoted by" on a label element outside the post
+                    body), in addition to the existing
+
+                    exact-"Promoted" match. Do not loosen matching so broadly
+                    that it catches organic uses of the
+
+                    word "Promoted" inside post body text (existing
+                    POST_WITH_PROMOTED_IN_BODY scenario must keep
+
+                    passing). No changes to the hide-promoted toggle, storage
+                    key, stats tracking, or
+
+                    filter-ordering behavior. Add scenarios/tests for the
+                    "Promoted by <Page>" variant (image-only
+
+                    and text posts) to
+                    tests/spec/hide-promoted-posts.spec.test.js and the cucumber
+                    fixtures,
+
+                    following the existing pattern.
+
+
+                    Out of scope: Any other new "Promoted" label variants not
+                    evidenced by an actual sample.
+
+                    Reworking the broader slop/keyword filter pipeline.
+
+
+                    Success criteria: A post containing the "Promoted by <Page>"
+                    label is hidden when
+
+                    hide-promoted is true. All existing hide-promoted-posts spec
+                    scenarios still pass. New
+
+                    scenario(s) covering "Promoted by <Page>" pass in both the
+                    vitest spec suite and the cucumber
+
+                    BDD suite.
+                  design_text: >
+                    Approach: Extend the existing isPromotedPost() detector in
+                    src/features/feed.js
+
+                    (currently an exact match on trimmed textContent ===
+                    "Promoted") to also match labels
+
+                    that begin with "Promoted by " (e.g. "Promoted by PyMC
+                    Labs"). The check keeps the
+
+                    existing exclusion of elements inside the
+                    [data-testid="expandable-text-box"] post
+
+                    body, so "Promoted by" appearing as ordinary prose in a
+                    post's own text is never
+
+                    matched (identical safety property to the existing
+                    exact-"Promoted" case).
+
+
+                    Files to change:
+
+                    - src/features/feed.js: replace the `el.textContent.trim()
+                    === 'Promoted'` condition
+                      in isPromotedPost with a check that accepts either the exact string "Promoted" or a
+                      string starting with "Promoted by ". No other logic in isPromotedPost, blockPosts, or
+                      the filter-ordering pipeline changes — once a post is correctly flagged as promoted,
+                      the existing hide/stats/exclusion behavior already works.
+                    - tests/spec/hide-promoted-posts.spec.test.js: add
+                    PROMOTED_BY_PAGE_POST,
+                      PROMOTED_BY_PAGE_POST_NO_TEXTBOX, PROMOTED_BY_PAGE_POST_WITH_AUTHOR, and
+                      POST_WITH_PROMOTED_BY_IN_BODY fixtures (mirroring the existing PROMOTED_POST family,
+                      with a nested `<a><strong>Page Name</strong></a>` after "Promoted by" to reproduce the
+                      real LinkedIn markup), plus one `it` per newly approved scenario. The three
+                      "regression" scenarios (standalone "Promoted" still works) are already exercised by
+                      the pre-existing tests in this file, so no duplicate tests are needed for those --
+                      they just need to keep passing.
+                    - tests/cucumber/screenplay/fixtures/posts.js: add the same
+                    new fixtures for BDD use
+                      (PROMOTED_BY_PAGE_POST, PROMOTED_BY_PAGE_POST_NO_TEXTBOX,
+                      PROMOTED_BY_PAGE_POST_WITH_AUTHOR).
+                    - tests/cucumber/step-definitions/hide-promoted-posts.js:
+                    add When/Then step
+                      definitions matching the newly approved scenarios' Given/When/Then text verbatim
+                      (regex), following the file's existing verbatim-match style. Reuse the BuildFeed and
+                      RunFeed screenplay tasks exactly as the existing steps do.
+
+                    Key decisions:
+
+                    - Match by literal prefix "Promoted by " (with trailing
+                    space) rather than a looser
+                      regex like /^Promoted\b/, so a hypothetical future label such as "Promoted content"
+                      isn't accidentally swept in without evidence it exists on LinkedIn.
+                    - Reuse the existing `!textBox?.contains(el)` exclusion
+                    rather than introducing a new
+                      mechanism -- this is what already keeps prose mentions of "Promoted" (and now
+                      "Promoted by") inside the post body from being misdetected.
+                    - No change to the `hide-promoted` toggle, storage schema,
+                    or stats tracking; those are
+                      unaffected by fixing the detector.
+
+                    Step definition strategy:
+
+                    - Each new scenario reuses `BuildFeed.with([...])` to
+                    construct the post DOM and
+                      `RunFeed.withConfig({ ...baseConfig, 'hide-promoted': ... })` to invoke the feed
+                      processor, identical to the existing promoted-post step definitions.
+                    - The "both label variants in one pass" scenario builds a
+                    feed with one
+                      PROMOTED_POST and one PROMOTED_BY_PAGE_POST fixture plus clean posts, and asserts
+                      both index-0 and index-1 posts carry the `hide` class while later clean posts do not.
+                    - The "Promoted by" in body text scenario reuses the same
+                    assertion shape as the
+                      existing POST_WITH_PROMOTED_IN_BODY step (post not hidden).
+
+                    Risk / trade-offs:
+
+                    - Matching is still a literal English-string heuristic
+                    (consistent with the pre-existing
+                      exact-"Promoted" approach) and won't generalize to other locales or label wordings;
+                      this mirrors the existing accepted trade-off in this detector and is explicitly out of
+                      scope per the proposal.
+                  scenarios:
+                    - name: >-
+                        Standalone "Promoted" post is still hidden when toggle
+                        is on
+                      given:
+                        - >-
+                          a feed post contains a label element (outside the post
+                          body) whose trimmed text is exactly "Promoted"
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - >-
+                          the post is hidden with the same CSS class used for
+                          keyword-matched posts
+                      status: pass
+                    - name: Image-only standalone "Promoted" post is still hidden
+                      given:
+                        - >-
+                          a feed post contains a standalone "Promoted" label but
+                          has no `data-testid="expandable-text-box"` element
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the post is identified as promoted and hidden
+                      status: pass
+                    - name: >-
+                        Standalone "Promoted" post is not hidden when toggle is
+                        off
+                      given:
+                        - a feed post contains a standalone "Promoted" label
+                        - '`hide-promoted` is `false`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the post is left visible and unmodified
+                      status: pass
+                    - name: >-
+                        "Promoted by <Page>" post is hidden immediately when
+                        toggle is on
+                      given:
+                        - >-
+                          a feed post contains a label element (outside the post
+                          body) whose text begins with "Promoted by" followed by
+                          a linked company Page name (e.g. "Promoted by PyMC
+                          Labs")
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - >-
+                          the post is hidden with the same CSS class used for
+                          keyword-matched posts
+                      status: pass
+                    - name: >-
+                        Image-only "Promoted by <Page>" post is hidden (no
+                        expandable-text-box)
+                      given:
+                        - >-
+                          a feed post contains a "Promoted by <Page>" label but
+                          has no `data-testid="expandable-text-box"` element
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the post is identified as promoted and hidden
+                      status: pass
+                    - name: >-
+                        "Promoted by <Page>" post is not hidden when toggle is
+                        off
+                      given:
+                        - a feed post contains a "Promoted by <Page>" label
+                        - '`hide-promoted` is `false`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the post is left visible and unmodified
+                      status: pass
+                    - name: Post with "Promoted by" only in body text is not hidden
+                      given:
+                        - >-
+                          a feed post's body text contains the phrase "Promoted
+                          by" as ordinary prose (not a sponsor label outside the
+                          body)
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the post is not hidden by the promoted-post filter
+                      status: pass
+                    - name: '"Promoted by <Page>" hide is counted in daily stats'
+                      given:
+                        - >-
+                          a feed post contains a "Promoted by <Page>" label with
+                          an extractable author
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - the daily postsFiltered count increments by 1
+                        - >-
+                          the author's vanity name is recorded in the daily
+                          blocked-authors map
+                      status: pass
+                    - name: >-
+                        "Promoted by <Page>" post is excluded from slop and
+                        keyword filters
+                      given:
+                        - >-
+                          a feed post contains a "Promoted by <Page>" label and
+                          post text that would otherwise trigger slop detection
+                          or a keyword match
+                      when:
+                        - '`hide-promoted` is `true`'
+                        - '`hide-promoted` is `false`'
+                      then:
+                        - >-
+                          when hide-promoted is true, the post is hard-hidden by
+                          the promoted filter and receives no slop-collapse
+                          banner
+                        - >-
+                          when hide-promoted is false, the post is left visible
+                          and does not receive a slop-collapse banner
+                      status: pass
+                    - name: >-
+                        Both a standalone "Promoted" post and a "Promoted by
+                        <Page>" post are hidden in the same feed pass
+                      given:
+                        - >-
+                          a feed contains one post with a standalone "Promoted"
+                          label and another post with a "Promoted by <Page>"
+                          label, alongside clean posts
+                        - '`hide-promoted` is `true`'
+                      when:
+                        - the feed processor runs
+                      then:
+                        - >-
+                          both promoted posts are hidden and the clean posts
+                          remain visible
+                      status: pass
+                  tasks:
+                    - id: '1.1'
+                      description: >-
+                        Add PROMOTED_BY_PAGE_POST fixture to
+                        tests/cucumber/screenplay/fixtures/posts.js: a post with
+                        `<p><span>Promoted by <a
+                        href="/company/pymc-labs/"><strong>PyMC
+                        Labs</strong></a></span></p>` before a
+                        `data-testid="expandable-text-box"` body, mirroring the
+                        existing PROMOTED_POST shape.
+                      done: true
+                    - id: '1.2'
+                      description: >-
+                        Add PROMOTED_BY_PAGE_POST_NO_TEXTBOX fixture to
+                        tests/cucumber/screenplay/fixtures/posts.js: the same
+                        "Promoted by <Page>" label with no expandable-text-box
+                        element (image-only ad), mirroring
+                        PROMOTED_POST_NO_TEXTBOX.
+                      done: true
+                    - id: '1.3'
+                      description: >-
+                        Add PROMOTED_BY_PAGE_POST_WITH_AUTHOR fixture to
+                        tests/cucumber/screenplay/fixtures/posts.js: an actor
+                        div (e.g. Grace Hopper, vanity grace-hopper) plus the
+                        "Promoted by <Page>" label plus body text, mirroring
+                        PROMOTED_POST_WITH_AUTHOR.
+                      done: true
+                    - id: '1.4'
+                      description: >-
+                        Add POST_WITH_PROMOTED_BY_IN_BODY fixture to
+                        tests/cucumber/screenplay/fixtures/posts.js: a post
+                        whose only expandable-text-box body text contains the
+                        ordinary-prose phrase "Promoted by" (no label element
+                        outside the body), mirroring POST_WITH_PROMOTED_IN_BODY
+                        from the vitest spec file.
+                      done: true
+                    - id: '1.5'
+                      description: >-
+                        Mirror the same 4 fixtures (PROMOTED_BY_PAGE_POST,
+                        PROMOTED_BY_PAGE_POST_NO_TEXTBOX,
+                        PROMOTED_BY_PAGE_POST_WITH_AUTHOR,
+                        POST_WITH_PROMOTED_BY_IN_BODY) as local consts at the
+                        top of tests/spec/hide-promoted-posts.spec.test.js,
+                        following the file's existing pattern of file-local
+                        fixture constants with a one-line comment above each.
+                      done: true
+                    - id: '2.1'
+                      description: >-
+                        In src/features/feed.js isPromotedPost (~line 256-263),
+                        replace the condition `el.textContent.trim() ===
+                        'Promoted'` with a check that also accepts text starting
+                        with the literal prefix "Promoted by " (trailing space),
+                        e.g. `const text = el.textContent.trim(); if
+                        (!textBox?.contains(el) && (text === 'Promoted' ||
+                        text.startsWith('Promoted by '))) return true`. Do not
+                        change the existing `!textBox?.contains(el)` exclusion
+                        or any other function in the file.
+                      done: true
+                    - id: '3.1'
+                      description: >-
+                        Append 3 @wip scenarios to
+                        tests/cucumber/features/hide-promoted-posts.feature for
+                        the regression cases: 'Standalone "Promoted" post is
+                        still hidden when toggle is on', 'Image-only standalone
+                        "Promoted" post is still hidden', 'Standalone "Promoted"
+                        post is not hidden when toggle is off' — using the exact
+                        Given/When/Then wording approved in the spec-change
+                        scenarios list.
+                      done: true
+                    - id: '3.2'
+                      description: >-
+                        Append 3 @wip scenarios to
+                        tests/cucumber/features/hide-promoted-posts.feature for
+                        the new label variant: '"Promoted by <Page>" post is
+                        hidden immediately when toggle is on', 'Image-only
+                        "Promoted by <Page>" post is hidden (no
+                        expandable-text-box)', '"Promoted by <Page>" post is not
+                        hidden when toggle is off' — using the exact approved
+                        wording.
+                      done: true
+                    - id: '3.3'
+                      description: >-
+                        Append 3 @wip scenarios to
+                        tests/cucumber/features/hide-promoted-posts.feature:
+                        'Post with "Promoted by" only in body text is not
+                        hidden', '"Promoted by <Page>" hide is counted in daily
+                        stats', '"Promoted by <Page>" post is excluded from slop
+                        and keyword filters' — using the exact approved wording.
+                      done: true
+                    - id: '3.4'
+                      description: >-
+                        Append 1 @wip scenario to
+                        tests/cucumber/features/hide-promoted-posts.feature:
+                        'Both a standalone "Promoted" post and a "Promoted by
+                        <Page>" post are hidden in the same feed pass' — using
+                        the exact approved wording.
+                      done: true
+                    - id: '3.5'
+                      description: >-
+                        In
+                        tests/cucumber/step-definitions/hide-promoted-posts.js,
+                        add When/Then step definitions for the 3 regression
+                        scenarios (task 3.1), reusing
+                        BuildFeed.with([PROMOTED_POST, ...MANY_CLEAN]) and
+                        RunFeed.withConfig with 'hide-promoted' true/false,
+                        matching the new Given/When/Then regex text verbatim.
+                      done: true
+                    - id: '3.6'
+                      description: >-
+                        In
+                        tests/cucumber/step-definitions/hide-promoted-posts.js,
+                        add When/Then step definitions for the 3 new-variant
+                        scenarios (task 3.2), using the PROMOTED_BY_PAGE_POST
+                        and PROMOTED_BY_PAGE_POST_NO_TEXTBOX fixtures with
+                        BuildFeed/RunFeed, matching the new Given/When/Then
+                        regex text verbatim.
+                      done: true
+                    - id: '3.7'
+                      description: >-
+                        In
+                        tests/cucumber/step-definitions/hide-promoted-posts.js,
+                        add step definitions for 'Post with "Promoted by" only
+                        in body text is not hidden' (using
+                        POST_WITH_PROMOTED_BY_IN_BODY), '"Promoted by <Page>"
+                        hide is counted in daily stats' (using
+                        PROMOTED_BY_PAGE_POST_WITH_AUTHOR and the existing
+                        getStats helper), and '"Promoted by <Page>" post is
+                        excluded from slop and keyword filters' (building a
+                        Promoted-by post whose body is SLOP_POST / contains a
+                        configured keyword, asserting hard-hide with no slop
+                        banner when hide-promoted is true, and untouched
+                        visibility when hide-promoted is false).
+                      done: true
+                    - id: '3.8'
+                      description: >-
+                        In
+                        tests/cucumber/step-definitions/hide-promoted-posts.js,
+                        add step definitions for 'Both a standalone "Promoted"
+                        post and a "Promoted by <Page>" post are hidden in the
+                        same feed pass', building a feed with [PROMOTED_POST,
+                        PROMOTED_BY_PAGE_POST, ...MANY_CLEAN] and asserting
+                        posts[0] and posts[1] have the hide class while later
+                        clean posts do not.
+                      done: true
+                    - id: '3.9'
+                      description: >-
+                        Run the cucumber BDD suite for
+                        tests/cucumber/features/hide-promoted-posts.feature and
+                        fix any failing steps until all 10 newly added scenarios
+                        pass, then remove the @wip tag from all 10 of them.
+                      done: true
+                    - id: '4.1'
+                      description: >-
+                        In tests/spec/hide-promoted-posts.spec.test.js, add one
+                        `it()` per newly approved non-regression scenario (6
+                        scenarios: hidden-on, image-only, hidden-off,
+                        body-text-not-hidden, stats-tracking,
+                        excluded-from-slop-and-keyword-filters) using the
+                        fixtures added in task 1.5, following the file's
+                        existing assertion style (classList checks,
+                        mockTrackPostFiltered/mockTrackAuthorBlocked).
+                      done: true
+                    - id: '4.2'
+                      description: >-
+                        In tests/spec/hide-promoted-posts.spec.test.js, add one
+                        `it()` for 'Both a standalone Promoted post and a
+                        Promoted-by-Page post are hidden in the same feed pass',
+                        asserting both posts[0] and posts[1] carry the hide
+                        class.
+                      done: true
+                    - id: '4.3'
+                      description: >-
+                        Run the vitest spec suite
+                        (tests/spec/hide-promoted-posts.spec.test.js and any
+                        other spec files importing src/features/feed.js) and
+                        confirm all existing and new tests pass with no
+                        regressions.
+                      done: true
+                  proposal_approved_at: '2026-07-01T17:12:56.741Z'
+                  scenarios_approved_at: '2026-07-01T17:19:31.040Z'
+                tags:
+                  type: resource
+                  specName: change
+                  modelName: spec-change
+                  source: step-output
+                  workflow: spec-gate
+                  workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                  job: record-results
+                  step: record
+                modelName: spec-change
+                modelId: 154bd51c-19b7-4382-ab43-230e5041ca43
+                modelType: '@focusin/spec-change'
+                specName: change
+                dataType: resource
+                contentType: application/json
+                lifetime: 365d
+                ownerType: model-method
+                streaming: false
+                size: 15829
+                content: ''
+                ownerRef: 154bd51c-19b7-4382-ab43-230e5041ca43
+                workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                workflowName: spec-gate
+                jobName: record-results
+                stepName: record
+                source: step-output
+          files: {}
+          dataArtifacts:
+            - dataId: 12634d3e-c042-4fbe-916b-96e932308a43
+              name: fix-promoted-by-page-detection
+              version: 29
+              tags:
+                type: resource
+                specName: change
+                modelName: spec-change
+                source: step-output
+                workflow: spec-gate
+                workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                job: record-results
+                step: record
+            - dataId: 5775d652-e232-4a4b-a692-70e363ba2c49
+              name: report-swamp-method-summary
+              version: 143
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+            - dataId: 73eedd06-8428-4d23-af78-541feaa7e310
+              name: report-swamp-method-summary-json
+              version: 143
+              tags:
+                type: report
+                reportName: '@swamp/method-summary'
+                reportScope: method
+          dataHandles:
+            - name: fix-promoted-by-page-detection
+              specName: change
+              kind: resource
+              dataId: 12634d3e-c042-4fbe-916b-96e932308a43
+              version: 29
+              size: 15829
+              tags:
+                type: resource
+                specName: change
+                modelName: spec-change
+                source: step-output
+                workflow: spec-gate
+                workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                job: record-results
+                step: record
+              metadata:
+                contentType: application/json
+                lifetime: 365d
+                garbageCollection: 100
+                streaming: false
+                tags:
+                  type: resource
+                  specName: change
+                  modelName: spec-change
+                  source: step-output
+                  workflow: spec-gate
+                  workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                  job: record-results
+                  step: record
+                ownerDefinition:
+                  ownerType: model-method
+                  ownerRef: 154bd51c-19b7-4382-ab43-230e5041ca43
+                  workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+                  workflowName: spec-gate
+                  jobName: record-results
+                  stepName: record
+                  source: step-output
+        dataArtifacts:
+          - dataId: 12634d3e-c042-4fbe-916b-96e932308a43
+            name: fix-promoted-by-page-detection
+            version: 29
+            tags:
+              type: resource
+              specName: change
+              modelName: spec-change
+              source: step-output
+              workflow: spec-gate
+              workflowRunId: 54fd05bd-da8b-4493-97f8-b01d9ef959ef
+              job: record-results
+              step: record
+          - dataId: 5775d652-e232-4a4b-a692-70e363ba2c49
+            name: report-swamp-method-summary
+            version: 143
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+          - dataId: 73eedd06-8428-4d23-af78-541feaa7e310
+            name: report-swamp-method-summary-json
+            version: 143
+            tags:
+              type: report
+              reportName: '@swamp/method-summary'
+              reportScope: method
+tags: {}
+logFile: >-
+  .swamp/workflow-runs/b0ac9c84-598d-46f5-8ec6-c6891ec5a2ed/workflow-run-54fd05bd-da8b-4493-97f8-b01d9ef959ef.log
+workflowDataArtifacts:
+  - dataId: fa341a63-27f5-4d48-8fe1-a3f41271d53e
+    name: report-swamp-workflow-summary
+    version: 3
+    tags:
+      type: report
+      reportName: '@swamp/workflow-summary'
+      reportScope: workflow
+  - dataId: 41de1501-c1b9-4fa2-81a9-de83d6fb90cf
+    name: report-swamp-workflow-summary-json
+    version: 3
+    tags:
+      type: report
+      reportName: '@swamp/workflow-summary'
+      reportScope: workflow

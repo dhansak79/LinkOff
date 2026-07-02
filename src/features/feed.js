@@ -253,11 +253,13 @@ const isPostNode = (node) => {
 const SEMANTIC_THRESHOLD = 0.35
 const SLOP_ARCHETYPE_THRESHOLD = 0.25
 
+const isPromotedLabelText = (text) => text === 'Promoted' || text.startsWith('Promoted by ')
+
 const isPromotedPost = (post) => {
   const textBox = post.querySelector('[data-testid="expandable-text-box"]')
   const candidates = post.querySelectorAll('p, span')
   for (const el of candidates) {
-    if (!textBox?.contains(el) && el.textContent.trim() === 'Promoted') return true
+    if (!textBox?.contains(el) && isPromotedLabelText(el.textContent.trim())) return true
   }
   return false
 }
