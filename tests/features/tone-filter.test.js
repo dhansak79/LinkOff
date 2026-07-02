@@ -93,4 +93,15 @@ describe('toneCheck', () => {
     )
     await expect(import('../../src/features/tone-filter.js')).resolves.toBeDefined()
   })
+
+  it('retries loading the pipeline after a prior load failure', async () => {
+    pipelineMock.mockRejectedValueOnce(new Error('model download failed'))
+    await expect(toneCheck('some post')).rejects.toThrow('model download failed')
+
+    pipelineMock.mockResolvedValueOnce(mockClassifierFn)
+    mockClassifierFn.mockResolvedValue([{ label: 'POSITIVE', score: 0.9 }])
+    const result = await toneCheck('some post')
+    expect(result.label).toBe('POSITIVE')
+    expect(pipelineMock).toHaveBeenCalledTimes(2)
+  })
 })

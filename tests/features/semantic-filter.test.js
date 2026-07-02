@@ -91,6 +91,17 @@ describe('semanticCheck', () => {
     await expect(import('../../src/features/semantic-filter.js')).resolves.toBeDefined()
   })
 
+  it('retries loading the pipeline after a prior load failure', async () => {
+    pipelineMock.mockRejectedValueOnce(new Error('model download failed'))
+    await expect(semanticCheck(['topic'], 'post text')).rejects.toThrow('model download failed')
+
+    pipelineMock.mockResolvedValueOnce(mockEmbedFn)
+    mockEmbedFn.mockResolvedValue(makeEmbedding([1, 0]))
+    const result = await semanticCheck(['topic'], 'post text')
+    expect(result.score).toBeCloseTo(1.0)
+    expect(pipelineMock).toHaveBeenCalledTimes(2)
+  })
+
   it('re-embeds queries when the list changes', async () => {
     mockEmbedFn.mockResolvedValue(makeEmbedding([1, 0]))
     await semanticCheck(['hustle culture'], 'post one')

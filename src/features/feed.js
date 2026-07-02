@@ -245,9 +245,11 @@ const isActivityFeedPost = (node) =>
   node.tagName === 'LI' && !!node.closest(ACTIVITY_FEED_SELECTOR)
 
 // Returns true if a DOM node is a feed post (not an intermediate container).
-// Callers already filter to Element nodes; applyKeywordToPost separately
-// guards on focusinInjected, so neither is re-checked here.
-const isPostNode = (node) => isMainFeedPost(node) || isActivityFeedPost(node)
+// The nodeType guard is load-bearing: isMainFeedPost/isActivityFeedPost call
+// .matches()/.closest(), which throw on a non-Element node (e.g. Text).
+// applyKeywordToPost separately guards on focusinInjected, so that one is
+// not re-checked here.
+const isPostNode = (node) => node.nodeType === Node.ELEMENT_NODE && (isMainFeedPost(node) || isActivityFeedPost(node))
 
 const SEMANTIC_THRESHOLD = 0.35
 const SLOP_ARCHETYPE_THRESHOLD = 0.25
