@@ -1,4 +1,4 @@
-import { When, Then } from '@cucumber/cucumber'
+import { Given, When, Then } from '@cucumber/cucumber'
 import assert from 'node:assert/strict'
 import {
   baseConfig,
@@ -7,6 +7,10 @@ import {
   PROMOTED_POST,
   PROMOTED_POST_NO_TEXTBOX,
   PROMOTED_POST_WITH_AUTHOR,
+  PROMOTED_BY_PAGE_POST,
+  PROMOTED_BY_PAGE_POST_NO_TEXTBOX,
+  PROMOTED_BY_PAGE_POST_WITH_AUTHOR,
+  POST_WITH_PROMOTED_BY_IN_BODY,
 } from '../screenplay/fixtures/posts.js'
 import { BuildFeed } from '../screenplay/tasks/BuildFeed.js'
 import { RunFeed } from '../screenplay/tasks/RunFeed.js'
@@ -199,4 +203,127 @@ Then(/the post is soft-hidden by slop detection with a "Show anyway" banner \(ex
     posts[0].previousElementSibling?.classList.contains('focusedin-slop-collapsed'),
     'slop banner should be present'
   )
+})
+
+// ---------------------------------------------------------------------------
+// "Promoted by <Page>" label variant scenarios
+// ---------------------------------------------------------------------------
+
+const feedPosts = (world) =>
+  world.document.querySelectorAll('[data-testid="mainFeed"] > div[data-lazy-mount-id] > div:not([data-focusin-injected])')
+
+Given(/^a feed post contains a label element \(outside the post body\) whose trimmed text is exactly "Promoted"$/, function () {
+  this.setChromeMockResponses({})
+  this.attemptsTo(BuildFeed.with([PROMOTED_POST, ...MANY_CLEAN]))
+})
+
+Given(/^a feed post contains a standalone "Promoted" label but has no `data-testid="expandable-text-box"` element$/, function () {
+  this.setChromeMockResponses({})
+  this.attemptsTo(BuildFeed.with([PROMOTED_POST_NO_TEXTBOX, ...MANY_CLEAN]))
+})
+
+Given(/^a feed post contains a standalone "Promoted" label$/, function () {
+  this.setChromeMockResponses({})
+  this.attemptsTo(BuildFeed.with([PROMOTED_POST, ...MANY_CLEAN]))
+})
+
+Given(/^a feed post contains a label element \(outside the post body\) whose text begins with "Promoted by" followed by a linked company Page name \(e\.g\. "Promoted by PyMC Labs"\)$/, function () {
+  this.setChromeMockResponses({})
+  this.attemptsTo(BuildFeed.with([PROMOTED_BY_PAGE_POST, ...MANY_CLEAN]))
+})
+
+Given(/^a feed post contains a "Promoted by <Page>" label but has no `data-testid="expandable-text-box"` element$/, function () {
+  this.setChromeMockResponses({})
+  this.attemptsTo(BuildFeed.with([PROMOTED_BY_PAGE_POST_NO_TEXTBOX, ...MANY_CLEAN]))
+})
+
+Given(/^a feed post contains a "Promoted by <Page>" label$/, function () {
+  this.setChromeMockResponses({})
+  this.attemptsTo(BuildFeed.with([PROMOTED_BY_PAGE_POST, ...MANY_CLEAN]))
+})
+
+When(/^the feed processor runs$/, async function () {
+  await this.attemptsTo(
+    RunFeed.withConfig({ ...baseConfig, 'hide-promoted': Boolean(this.hidePromotedOn) })
+  )
+})
+
+Then(/^the post is left visible and unmodified$/, function () {
+  const posts = feedPosts(this)
+  assert.ok(!posts[0].classList.contains('hide'), 'post should remain visible when toggle is off')
+  assert.ok(!posts[0].classList.contains('focusedin-slop-soft-hide'), 'post should not be soft-hidden')
+})
+
+Given(/^a feed post's body text contains the phrase "Promoted by" as ordinary prose \(not a sponsor label outside the body\)$/, function () {
+  this.setChromeMockResponses({})
+  this.attemptsTo(BuildFeed.with([POST_WITH_PROMOTED_BY_IN_BODY, ...MANY_CLEAN]))
+})
+
+Then(/^the post is not hidden by the promoted-post filter$/, function () {
+  const posts = feedPosts(this)
+  assert.ok(!posts[0].classList.contains('hide'), 'prose "Promoted by" post should not be hidden')
+})
+
+Given(/^a feed post contains a "Promoted by <Page>" label with an extractable author$/, function () {
+  this.setChromeMockResponses({})
+  this.attemptsTo(BuildFeed.with([PROMOTED_BY_PAGE_POST_WITH_AUTHOR, ...MANY_CLEAN]))
+})
+
+Then(/^the daily postsFiltered count increments by 1$/, function () {
+  const stats = getStats(this)
+  assert.ok(stats, 'stats should be written to storage')
+  assert.ok(stats.postsFiltered >= 1, `postsFiltered should be at least 1, got ${stats?.postsFiltered}`)
+})
+
+Then(/^the author's vanity name is recorded in the daily blocked-authors map$/, function () {
+  const stats = getStats(this)
+  assert.ok(stats, 'stats should be flushed to storage')
+  const authors = stats?.authors ?? {}
+  assert.ok('grace-hopper' in authors, `grace-hopper should be in authors map, got ${Object.keys(authors)}`)
+})
+
+Given(/^a feed post contains a "Promoted by <Page>" label and post text that would otherwise trigger slop detection or a keyword match$/, function () {
+  this.setChromeMockResponses({})
+  const promotedBySlop = `<p><span>Promoted by <a href="/company/pymc-labs/"><strong>PyMC Labs</strong></a></span></p><p data-testid="expandable-text-box">${SLOP_POST}</p>`
+  this.attemptsTo(BuildFeed.with([promotedBySlop, ...MANY_CLEAN]))
+})
+
+async function assertPromotedByHardHidden() {
+  await this.attemptsTo(
+    RunFeed.withConfig({ ...baseConfig, 'detect-slop': true, 'feed-keywords': 'Game-changer', 'hide-promoted': true })
+  )
+  const posts = feedPosts(this)
+  assert.ok(posts[0].classList.contains('hide'), 'promoted-by post should be hard-hidden')
+  assert.ok(!posts[0].classList.contains('focusedin-slop-soft-hide'), 'should not be soft-hidden')
+  assert.ok(!this.document.querySelector('.focusedin-slop-collapsed'), 'no slop banner should exist')
+}
+
+async function assertPromotedByLeftVisible() {
+  await this.attemptsTo(
+    RunFeed.withConfig({ ...baseConfig, 'detect-slop': true, 'feed-keywords': 'Game-changer', 'hide-promoted': false })
+  )
+  const posts = feedPosts(this)
+  assert.ok(!posts[0].classList.contains('hide'), 'promoted-by post should be visible when toggle is off')
+  assert.ok(!posts[0].classList.contains('focusedin-slop-soft-hide'), 'should not be soft-hidden')
+  assert.ok(!this.document.querySelector('.focusedin-slop-collapsed'), 'no slop banner should exist')
+}
+
+Then(/^the post is hard-hidden by the promoted filter and receives no slop-collapse banner$/, assertPromotedByHardHidden)
+Then(/^when hide-promoted is true, the post is hard-hidden by the promoted filter and receives no slop-collapse banner$/, assertPromotedByHardHidden)
+
+Then(/^the post is left visible and does not receive a slop-collapse banner$/, assertPromotedByLeftVisible)
+Then(/^when hide-promoted is false, the post is left visible and does not receive a slop-collapse banner$/, assertPromotedByLeftVisible)
+
+Given(/^a feed contains one post with a standalone "Promoted" label and another post with a "Promoted by <Page>" label, alongside clean posts$/, function () {
+  this.setChromeMockResponses({})
+  this.attemptsTo(BuildFeed.with([PROMOTED_POST, PROMOTED_BY_PAGE_POST, ...MANY_CLEAN]))
+})
+
+Then(/^both promoted posts are hidden and the clean posts remain visible$/, function () {
+  const posts = feedPosts(this)
+  assert.ok(posts[0].classList.contains('hide'), 'standalone "Promoted" post should be hidden')
+  assert.ok(posts[1].classList.contains('hide'), '"Promoted by <Page>" post should be hidden')
+  for (let i = 2; i < posts.length; i++) {
+    assert.ok(!posts[i].classList.contains('hide'), `clean post at index ${i} should remain visible`)
+  }
 })
