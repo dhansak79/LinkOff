@@ -5,17 +5,17 @@ if (typeof chrome !== 'undefined' && chrome?.runtime?.getURL) {
 }
 env.backends.onnx.wasm.numThreads = 1
 
-let embedderPipeline = null
 let embedderLoading = null
 
+// A resolved promise is memoized, so this also serves as the "already loaded" cache.
+// On rejection the cache is cleared so a transient load failure can be retried.
 const getEmbedder = () => {
-  if (embedderPipeline) return Promise.resolve(embedderPipeline)
   if (embedderLoading) return embedderLoading
   embedderLoading = pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
     quantized: true,
-  }).then((p) => {
-    embedderPipeline = p
-    return p
+  }).catch((err) => {
+    embedderLoading = null
+    throw err
   })
   return embedderLoading
 }
@@ -34,8 +34,12 @@ let cachedQueryEmbeddings = []
 export const semanticCheck = async (queries, postText) => {
   const key = queries.join('|')
   if (key !== cachedQueriesKey) {
+    // Only commit the cache once the embeddings actually resolve — otherwise
+    // a failed load poisons the key and a same-query retry would silently
+    // skip re-embedding and run against the stale (empty) cache.
+    const embeddings = await Promise.all(queries.map(embed))
     cachedQueriesKey = key
-    cachedQueryEmbeddings = await Promise.all(queries.map(embed))
+    cachedQueryEmbeddings = embeddings
   }
   const postEmbedding = await embed(postText)
   const scores = cachedQueryEmbeddings.map((qe) => cosineSimilarity(qe, postEmbedding))

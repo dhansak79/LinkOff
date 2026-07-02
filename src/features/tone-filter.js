@@ -5,17 +5,17 @@ if (typeof chrome !== 'undefined' && chrome?.runtime?.getURL) {
 }
 env.backends.onnx.wasm.numThreads = 1
 
-let classifierPipeline = null
 let classifierLoading = null
 
+// A resolved promise is memoized, so this also serves as the "already loaded" cache.
+// On rejection the cache is cleared so a transient load failure can be retried.
 const getClassifier = () => {
-  if (classifierPipeline) return Promise.resolve(classifierPipeline)
   if (classifierLoading) return classifierLoading
   classifierLoading = pipeline('text-classification', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english', {
     quantized: true,
-  }).then((p) => {
-    classifierPipeline = p
-    return p
+  }).catch((err) => {
+    classifierLoading = null
+    throw err
   })
   return classifierLoading
 }

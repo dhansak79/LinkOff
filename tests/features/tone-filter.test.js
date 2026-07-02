@@ -83,4 +83,25 @@ describe('toneCheck', () => {
     expect(getURL).toHaveBeenCalledWith('src/lib/')
     expect(transformers.env.backends.onnx.wasm.wasmPaths).toBe('chrome-extension://abc/src/lib/')
   })
+
+  it('does not throw when chrome is defined but chrome.runtime is not', async () => {
+    vi.resetModules()
+    vi.stubGlobal('chrome', {})
+    const transformers = await import('../../src/lib/transformers.min.js')
+    transformers.pipeline.mockResolvedValue(
+      vi.fn().mockResolvedValue([{ label: 'POSITIVE', score: 0.9 }])
+    )
+    await expect(import('../../src/features/tone-filter.js')).resolves.toBeDefined()
+  })
+
+  it('retries loading the pipeline after a prior load failure', async () => {
+    pipelineMock.mockRejectedValueOnce(new Error('model download failed'))
+    await expect(toneCheck('some post')).rejects.toThrow('model download failed')
+
+    pipelineMock.mockResolvedValueOnce(mockClassifierFn)
+    mockClassifierFn.mockResolvedValue([{ label: 'POSITIVE', score: 0.9 }])
+    const result = await toneCheck('some post')
+    expect(result.label).toBe('POSITIVE')
+    expect(pipelineMock).toHaveBeenCalledTimes(2)
+  })
 })

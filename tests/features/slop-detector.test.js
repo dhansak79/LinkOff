@@ -120,6 +120,71 @@ describe('getSlopScore - line pattern boundary', () => {
     const text = ['Single thought here.', 'Another single thought.', 'One more single line.', 'This has two sentences. Yes it does.', 'This also has two. And more here.'].join('\n')
     expect(getSlopScore(text)).toBe(0)
   })
+
+  // The tests above use getSlopScore's total, but lineScore only adds to the
+  // total when combined with another signal (otherScore > 0) — so a mutant
+  // that breaks linePatternScore's internals can still produce the same
+  // total of 0 undetected. These pair a phrase signal (otherScore=1) with a
+  // precise line-pattern boundary so a wrong internal lps value changes the
+  // final score.
+
+  it('does not let empty lines count toward the non-empty line minimum, even combined with a phrase', () => {
+    const text = [
+      "In today's fast-paced world.", // phrase + single-sentence
+      'Line 2.',
+      'Line 3.',
+      'Line 4.',
+      ...Array(10).fill(''),
+    ].join('\n')
+    // Only 4 real content lines (below the minimum of 5) — line-pattern must
+    // not contribute on top of the phrase's score of 1.
+    expect(getSlopScore(text)).toBe(1)
+  })
+
+  it('requires strictly more than the minimum line count (exactly 5 lines is enough)', () => {
+    const text = ["In today's fast-paced world.", 'Line 2.', 'Line 3.', 'Line 4.', 'Line 5.'].join('\n')
+    // 5 single-sentence lines meets the minimum and the ratio — phrase (1) + line pattern (1).
+    expect(getSlopScore(text)).toBe(2)
+  })
+
+  it('does not count multi-sentence lines as single-sentence, even combined with a phrase', () => {
+    const text = [
+      "In today's fast-paced world.",
+      'This has two sentences here. Right now.',
+      'Another multi. Sentence line.',
+      'Yet another one. With two parts.',
+      'Final multi line. Also two parts.',
+    ].join('\n')
+    // Only 1 of 5 lines is actually single-sentence (20%) — well below the
+    // 60% ratio, so line-pattern must not add to the phrase's score of 1.
+    expect(getSlopScore(text)).toBe(1)
+  })
+
+  it('computes the single-sentence ratio by division, not multiplication', () => {
+    const text = [
+      "In today's fast-paced world.",
+      'Line 2.',
+      'This has two sentences. Right here.',
+      'Another multi. Sentence here.',
+      'Yet another multi. Line here.',
+    ].join('\n')
+    // 2 of 5 lines single-sentence = 40% ratio (below 60%) via division.
+    // Multiplication (2*5=10) would incorrectly clear the ratio threshold.
+    expect(getSlopScore(text)).toBe(1)
+  })
+
+  it('treats exactly 60% single-sentence as meeting (not below) the ratio threshold, combined with a phrase', () => {
+    const text = [
+      "In today's fast-paced world.",
+      'Line 2.',
+      'Line 3.',
+      'This has two sentences. Right here.',
+      'Another multi. Sentence here.',
+    ].join('\n')
+    // 3 of 5 lines single-sentence = exactly 60% — meets the threshold, so
+    // line pattern (1) should add on top of the phrase (1).
+    expect(getSlopScore(text)).toBe(2)
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -140,6 +205,36 @@ describe('getSlopScore - heavy line stacking', () => {
   it('flags a heavy stacker as slop even without phrases or emojis', () => {
     const post = Array.from({ length: 20 }, (_, i) => `Line number ${i + 1}.`).join('\n')
     expect(isSlop(post)).toBe(true)
+  })
+
+  it('reaches heavy stacking at exactly 15 single-sentence lines (the count boundary)', () => {
+    const post = Array.from({ length: 15 }, (_, i) => `Line ${i}.`).join('\n')
+    expect(getSlopScore(post)).toBe(2)
+  })
+
+  it('does not reach heavy stacking at 14 lines, even all single-sentence', () => {
+    const post = Array.from({ length: 14 }, (_, i) => `Line ${i}.`).join('\n')
+    // 14 lines is below the heavy-stacking count threshold — falls back to
+    // moderate (lps=1), which alone (no other signal) scores 0.
+    expect(getSlopScore(post)).toBe(0)
+  })
+
+  it('reaches heavy stacking at exactly 80% single-sentence ratio (the ratio boundary)', () => {
+    const singleLines = Array.from({ length: 16 }, (_, i) => `Line ${i}.`)
+    const multiLines = Array.from({ length: 4 }, (_, i) => `Multi ${i} one. Multi ${i} two.`)
+    const post = [...singleLines, ...multiLines].join('\n')
+    // 20 lines total, 16 single-sentence = exactly 80% = HEAVY_LINE_RATIO.
+    expect(getSlopScore(post)).toBe(2)
+  })
+
+  it('does not reach heavy stacking below the 80% ratio, even with enough lines', () => {
+    const singleLines = Array.from({ length: 9 }, (_, i) => `Line ${i}.`)
+    const multiLines = Array.from({ length: 6 }, (_, i) => `Multi ${i} one. Multi ${i} two.`)
+    const post = [...singleLines, ...multiLines].join('\n')
+    // 15 lines total (meets the count threshold), 9 single-sentence = 60%
+    // (meets the moderate threshold but not the 80% heavy threshold) — falls
+    // back to moderate (lps=1), which alone scores 0.
+    expect(getSlopScore(post)).toBe(0)
   })
 })
 
@@ -259,6 +354,14 @@ describe('getSlopScore - raw markdown', () => {
   it('does not flag a clean post with a single asterisk used naturally', () => {
     expect(getSlopScore('Revenue grew 3x - it was a great quarter*.')).toBe(0)
   })
+
+  it('does not flag "# " that appears mid-line rather than at the start of a line', () => {
+    expect(getSlopScore('Revenue grew this quarter # too fast to track properly')).toBe(0)
+  })
+
+  it('does not flag "* " that appears mid-line rather than at the start of a line', () => {
+    expect(getSlopScore('Revenue grew this quarter * too fast to track properly')).toBe(0)
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -300,6 +403,16 @@ describe('getSlopScore - emoji bullet lists', () => {
 
   it('does not flag emoji on single line without bullet structure', () => {
     expect(getSlopScore('Big news 🎉 - we just hit a million users 🚀')).toBe(0)
+  })
+
+  it('does not flag emoji that appear mid-line rather than as a line-starting bullet', () => {
+    const post = 'Shipped this 🎉 today\nAnd this 🚀 too\nAlso this 🔥 works'
+    expect(getSlopScore(post)).toBe(0)
+  })
+
+  it('requires strictly more than one bullet line (exactly 2 is enough)', () => {
+    const post = '🎯 Set clear goals\n💡 Think creatively'
+    expect(getSlopScore(post)).toBeGreaterThan(0)
   })
 
   it('reports "emoji bullets" in signals', () => {

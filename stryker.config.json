@@ -2,16 +2,17 @@
   "testRunner": "vitest",
   "plugins": ["@stryker-mutator/vitest-runner"],
   "mutate": [
-    "src/features/feed-keywords.js",
-    "src/features/job-keywords.js",
-    "src/features/slop-detector.js",
     "src/features/feed.js",
-    "src/features/message.js",
+    "src/features/semantic-filter.js",
+    "src/features/slop-detector.js",
+    "src/features/slop-reaction.js",
+    "src/features/tone-filter.js",
+    "src/features/unfollow.js",
     "src/utils.js"
   ],
   "coverageAnalysis": "perTest",
   "reporters": ["html", "json", "progress", "clear-text"],
-  "thresholds": { "break": 75 },
+  "thresholds": { "break": 95 },
   "tempDirName": ".stryker-tmp",
   "htmlReporter": { "fileName": "reports/mutation/index.html" }
 }
